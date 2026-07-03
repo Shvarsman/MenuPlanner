@@ -32,9 +32,9 @@ class FridgeRepositoryImpl @Inject constructor(
 }
 
 private fun ProductEntity.toDomain() = Product(
-    id = id, name = name, iconKey = iconKey, unit = unit, quantity = quantity
+    id = id, name = name, category = category, unit = unit, quantity = quantity
 )
 
 private fun Product.toEntity() = ProductEntity(
-    id = id, name = name, iconKey = iconKey, unit = unit, quantity = quantity
+    id = id, name = name, category = category, unit = unit, quantity = quantity
 )

@@ -39,15 +39,12 @@ import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.shvarsman.menuplanner.domain.model.Product
 import com.shvarsman.menuplanner.domain.model.ShoppingListItem
-import com.shvarsman.menuplanner.presentation.fridge.ProductIcon
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -57,17 +54,7 @@ fun ShoppingListScreen(viewModel: ShoppingListViewModel = hiltViewModel()) {
     val isPickerOpen by viewModel.isPickerOpen.collectAsState()
 
     Scaffold(
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = "Список покупок",
-                        fontSize = 32.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-            )
-        },
+        topBar = { TopAppBar(title = { Text("Список покупок") }) },
         floatingActionButton = {
             FloatingActionButton(onClick = { viewModel.openPicker() }) {
                 Icon(Icons.Filled.Add, contentDescription = "Добавить из холодильника")
@@ -80,7 +67,12 @@ fun ShoppingListScreen(viewModel: ShoppingListViewModel = hiltViewModel()) {
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
-                Icon(Icons.Filled.ShoppingCart, contentDescription = null, modifier = Modifier.size(64.dp), tint = MaterialTheme.colorScheme.outline)
+                Icon(
+                    Icons.Filled.ShoppingCart,
+                    contentDescription = null,
+                    modifier = Modifier.size(64.dp),
+                    tint = MaterialTheme.colorScheme.outline
+                )
                 Spacer(Modifier.height(12.dp))
                 Text(
                     "Список покупок пуст.\nДобавьте продукты из холодильника.",
@@ -118,7 +110,10 @@ fun ShoppingListScreen(viewModel: ShoppingListViewModel = hiltViewModel()) {
 private fun ShoppingItemRow(item: ShoppingListItem, onToggle: () -> Unit, onRemove: () -> Unit) {
     ElevatedCard(modifier = Modifier.fillMaxWidth()) {
         Row(
-            modifier = Modifier.fillMaxWidth().padding(12.dp).clickable { onToggle() },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp)
+                .clickable { onToggle() },
             verticalAlignment = Alignment.CenterVertically
         ) {
             Checkbox(checked = item.isChecked, onCheckedChange = { onToggle() })
@@ -128,7 +123,10 @@ private fun ShoppingItemRow(item: ShoppingListItem, onToggle: () -> Unit, onRemo
                     item.name,
                     style = MaterialTheme.typography.titleMedium,
                     textDecoration = if (item.isChecked) TextDecoration.LineThrough else TextDecoration.None,
-                    color = if (item.isChecked) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface
+                    color = if (item.isChecked)
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                    else
+                        MaterialTheme.colorScheme.onSurface
                 )
                 Text(
                     "${formatQty(item.quantity)} ${item.unit.displayName}",
@@ -163,18 +161,28 @@ private fun FridgeMultiPickerDialog(
                         val isSelected = selected.containsKey(product.id)
                         ListItem(
                             headlineContent = { Text(product.name) },
-                            supportingContent = { Text("${formatQty(product.quantity)} ${product.unit.displayName}") },
-                            leadingContent = { ProductIcon(iconKey = product.iconKey) },
+                            supportingContent = {
+                                Text("${formatQty(product.quantity)} ${product.unit.displayName}")
+                            },
+                            leadingContent = {
+                                Icon(
+                                    imageVector = product.category.icon,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+                            },
                             trailingContent = {
                                 Checkbox(
                                     checked = isSelected,
                                     onCheckedChange = { checked ->
-                                        if (checked) selected[product.id] = product else selected.remove(product.id)
+                                        if (checked) selected[product.id] = product
+                                        else selected.remove(product.id)
                                     }
                                 )
                             },
                             modifier = Modifier.clickable {
-                                if (isSelected) selected.remove(product.id) else selected[product.id] = product
+                                if (isSelected) selected.remove(product.id)
+                                else selected[product.id] = product
                             }
                         )
                     }
@@ -182,9 +190,13 @@ private fun FridgeMultiPickerDialog(
             }
         },
         confirmButton = {
-            TextButton(onClick = { onConfirm(selected.values.toList()) }) { Text("Добавить (${selected.size})") }
+            TextButton(onClick = { onConfirm(selected.values.toList()) }) {
+                Text("Добавить (${selected.size})")
+            }
         },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("Отмена") } }
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text("Отмена") }
+        }
     )
 }
 

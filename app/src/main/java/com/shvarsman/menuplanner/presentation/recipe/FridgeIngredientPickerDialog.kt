@@ -6,10 +6,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.shvarsman.menuplanner.domain.model.Product
-import com.shvarsman.menuplanner.presentation.fridge.ProductIcon
 
 @Composable
 fun FridgeIngredientPickerDialog(
@@ -28,12 +28,23 @@ fun FridgeIngredientPickerDialog(
                 if (products.isEmpty()) {
                     Text("В холодильнике пока нет продуктов.")
                 } else {
-                    LazyColumn(modifier = Modifier.heightIn(max = 320.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    LazyColumn(
+                        modifier = Modifier.heightIn(max = 320.dp),
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
                         items(products, key = { it.id }) { product ->
                             ListItem(
                                 headlineContent = { Text(product.name) },
-                                supportingContent = { Text("В наличии: ${formatQty(product.quantity)} ${product.unit.displayName}") },
-                                leadingContent = { ProductIcon(iconKey = product.iconKey) },
+                                supportingContent = {
+                                    Text("В наличии: ${formatQty(product.quantity)} ${product.unit.displayName}")
+                                },
+                                leadingContent = {
+                                    Icon(
+                                        imageVector = product.category.icon,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.primary
+                                    )
+                                },
                                 modifier = Modifier.clickable {
                                     selectedProduct = product
                                     quantityText = product.quantity.toString()
@@ -44,9 +55,21 @@ fun FridgeIngredientPickerDialog(
                 }
             } else {
                 val product = selectedProduct!!
-                Column {
-                    Text("${product.name} (${product.unit.displayName})")
-                    Spacer(Modifier.height(8.dp))
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Icon(
+                            imageVector = product.category.icon,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                        Text(
+                            "${product.name} (${product.unit.displayName})",
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                    }
                     OutlinedTextField(
                         value = quantityText,
                         onValueChange = { quantityText = it.filter { c -> c.isDigit() || c == '.' } },

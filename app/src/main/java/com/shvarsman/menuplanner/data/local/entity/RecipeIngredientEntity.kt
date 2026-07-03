@@ -2,6 +2,7 @@ package com.shvarsman.menuplanner.data.local.entity
 
 import androidx.room.Entity
 import androidx.room.ForeignKey
+import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.shvarsman.menuplanner.domain.model.MeasureUnit
 
@@ -14,7 +15,8 @@ import com.shvarsman.menuplanner.domain.model.MeasureUnit
             childColumns = ["recipeId"],
             onDelete = ForeignKey.CASCADE
         )
-    ]
+    ],
+    indices = [Index(value = ["recipeId"])]
 )
 data class RecipeIngredientEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,

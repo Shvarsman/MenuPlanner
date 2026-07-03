@@ -14,7 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.shvarsman.menuplanner.domain.model.MealType
 import com.shvarsman.menuplanner.domain.model.MenuEntry
 import com.shvarsman.menuplanner.domain.model.Recipe
@@ -94,7 +94,7 @@ private fun DayCard(
     ElevatedCard(modifier = Modifier.fillMaxWidth()) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(
-                day.getDisplayName(TextStyle.FULL, Locale("ru")).replaceFirstChar { it.uppercase() },
+                day.getDisplayName(TextStyle.FULL, Locale.forLanguageTag("ru")).replaceFirstChar { it.uppercase() },
                 style = MaterialTheme.typography.titleLarge
             )
             Spacer(Modifier.height(8.dp))

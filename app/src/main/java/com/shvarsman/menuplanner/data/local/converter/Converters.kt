@@ -1,13 +1,19 @@
 package com.shvarsman.menuplanner.data.local.converter
 
-
 import androidx.room.TypeConverter
-import com.shvarsman.menuplanner.domain.model.MealType
+import com.shvarsman.menuplanner.domain.model.Category
 import com.shvarsman.menuplanner.domain.model.MeasureUnit
+import com.shvarsman.menuplanner.domain.model.MealType
 import java.time.DayOfWeek
 
 class Converters {
 
+    @TypeConverter
+    fun fromCategory(category: Category): String = category.toString()
+
+    @TypeConverter
+    fun toCategory(value: String): Category =
+        Category.entries.first { it.name == value }
 
     @TypeConverter
     fun fromMeasureUnit(unit: MeasureUnit): String = unit.toString()

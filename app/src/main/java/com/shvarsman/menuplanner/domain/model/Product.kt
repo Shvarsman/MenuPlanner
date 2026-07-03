@@ -4,7 +4,7 @@ package com.shvarsman.menuplanner.domain.model
 data class Product(
     val id: Long = 0,
     val name: String,
-    val iconKey: String,
+    val category: Category,
     val unit: MeasureUnit,
     val quantity: Double
 )

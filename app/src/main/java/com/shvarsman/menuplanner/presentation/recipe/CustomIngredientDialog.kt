@@ -6,6 +6,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.shvarsman.menuplanner.domain.model.MeasureUnit
+import androidx.compose.material3.ExposedDropdownMenuAnchorType
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -49,7 +50,7 @@ fun CustomIngredientDialog(
                             onValueChange = {},
                             label = { Text("Ед. изм.") },
                             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = unitMenuExpanded) },
-                            modifier = Modifier.menuAnchor()
+                            modifier = Modifier.menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable, enabled = true)
                         )
                         ExposedDropdownMenu(expanded = unitMenuExpanded, onDismissRequest = { unitMenuExpanded = false }) {
                             MeasureUnit.entries.forEach { unit ->

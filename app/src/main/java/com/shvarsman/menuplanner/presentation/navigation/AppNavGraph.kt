@@ -2,11 +2,15 @@ package com.shvarsman.menuplanner.presentation.navigation
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material.icons.filled.Kitchen
-import androidx.compose.material.icons.filled.MenuBook
 import androidx.compose.material.icons.filled.RestaurantMenu
 import androidx.compose.material.icons.filled.ShoppingCart
-import androidx.compose.material3.*
+import androidx.compose.material3.Icon
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -30,7 +34,7 @@ private data class BottomItem(val destination: Destination, val label: String, v
 private val bottomItems = listOf(
     BottomItem(Destination.Menu, "Меню", Icons.Filled.RestaurantMenu),
     BottomItem(Destination.Fridge, "Холодильник", Icons.Filled.Kitchen),
-    BottomItem(Destination.Recipes, "Рецепты", Icons.Filled.MenuBook),
+    BottomItem(Destination.Recipes, "Рецепты", Icons.AutoMirrored.Filled.MenuBook),
     BottomItem(Destination.ShoppingList, "Покупки", Icons.Filled.ShoppingCart)
 )
 
