@@ -1,0 +1,36 @@
+package com.shvarsman.menuplanner.di
+
+import com.shvarsman.menuplanner.data.repository.FridgeRepositoryImpl
+import com.shvarsman.menuplanner.data.repository.MenuRepositoryImpl
+import com.shvarsman.menuplanner.data.repository.RecipeRepositoryImpl
+import com.shvarsman.menuplanner.data.repository.ShoppingListRepositoryImpl
+import com.shvarsman.menuplanner.domain.repository.FridgeRepository
+import com.shvarsman.menuplanner.domain.repository.MenuRepository
+import com.shvarsman.menuplanner.domain.repository.RecipeRepository
+import com.shvarsman.menuplanner.domain.repository.ShoppingListRepository
+import dagger.Binds
+import dagger.Module
+import dagger.hilt.InstallIn
+import dagger.hilt.components.SingletonComponent
+import javax.inject.Singleton
+
+@Module
+@InstallIn(SingletonComponent::class)
+abstract class RepositoryModule {
+
+    @Binds
+    @Singleton
+    abstract fun bindFridgeRepository(impl: FridgeRepositoryImpl): FridgeRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindRecipeRepository(impl: RecipeRepositoryImpl): RecipeRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindMenuRepository(impl: MenuRepositoryImpl): MenuRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindShoppingListRepository(impl: ShoppingListRepositoryImpl): ShoppingListRepository
+}

@@ -1,0 +1,26 @@
+package com.shvarsman.menuplanner.data.local.entity
+
+import androidx.room.Entity
+import androidx.room.ForeignKey
+import androidx.room.PrimaryKey
+import com.shvarsman.menuplanner.domain.model.MeasureUnit
+
+@Entity(
+    tableName = "recipe_ingredients",
+    foreignKeys = [
+        ForeignKey(
+            entity = RecipeEntity::class,
+            parentColumns = ["id"],
+            childColumns = ["recipeId"],
+            onDelete = ForeignKey.CASCADE
+        )
+    ]
+)
+data class RecipeIngredientEntity(
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    val recipeId: Long,
+    val fridgeProductId: Long?,
+    val name: String,
+    val unit: MeasureUnit,
+    val quantity: Double
+)
