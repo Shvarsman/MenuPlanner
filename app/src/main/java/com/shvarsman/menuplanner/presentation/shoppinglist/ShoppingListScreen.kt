@@ -17,6 +17,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import com.shvarsman.menuplanner.domain.model.Category
 import com.shvarsman.menuplanner.domain.model.ShoppingListItem
 import com.shvarsman.menuplanner.presentation.common.ProductPickerDialog
 
@@ -29,6 +30,14 @@ fun ShoppingListScreen(viewModel: ShoppingListViewModel = hiltViewModel()) {
 
     val hasCheckedItems = remember(items) { items.any { it.isChecked } }
     var showMoveConfirmation by remember { mutableStateOf(false) }
+
+    // Группируем по категории продукта; купленные позиции — отдельно, в конце
+    val groupedUnchecked = remember(items) {
+        items.filter { !it.isChecked }
+            .groupBy { it.product.category }
+            .toSortedMap(compareBy { it.ordinal })
+    }
+    val checkedItems = remember(items) { items.filter { it.isChecked } }
 
     Scaffold(
         contentWindowInsets = WindowInsets(0),
@@ -83,17 +92,28 @@ fun ShoppingListScreen(viewModel: ShoppingListViewModel = hiltViewModel()) {
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(
-                    top = padding.calculateTopPadding() + 16.dp,
-                    bottom = padding.calculateBottomPadding() + 16.dp,
-                    start = 16.dp, end = 16.dp
-                ),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+                    top = padding.calculateTopPadding(),
+                    bottom = padding.calculateBottomPadding() + 88.dp
+                )
             ) {
-                items(items, key = { it.id }) { item ->
-                    ShoppingItemRow(
-                        item = item,
-                        onToggle = { viewModel.toggleChecked(item) },
-                        onRemove = { viewModel.removeItem(item) })
+                groupedUnchecked.forEach { (category, categoryItems) ->
+                    item(key = "header_${category.name}") { CategoryHeader(category) }
+                    items(categoryItems, key = { it.id }) { item ->
+                        ShoppingItemRow(
+                            item = item,
+                            onToggle = { viewModel.toggleChecked(item) },
+                            onRemove = { viewModel.removeItem(item) })
+                    }
+                }
+
+                if (checkedItems.isNotEmpty()) {
+                    item(key = "header_checked") { CheckedHeader() }
+                    items(checkedItems, key = { it.id }) { item ->
+                        ShoppingItemRow(
+                            item = item,
+                            onToggle = { viewModel.toggleChecked(item) },
+                            onRemove = { viewModel.removeItem(item) })
+                    }
                 }
             }
         }
@@ -133,8 +153,52 @@ fun ShoppingListScreen(viewModel: ShoppingListViewModel = hiltViewModel()) {
 }
 
 @Composable
+private fun CategoryHeader(category: Category) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Icon(
+            category.icon,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.size(20.dp)
+        )
+        Text(
+            category.displayName,
+            style = MaterialTheme.typography.titleSmall,
+            color = MaterialTheme.colorScheme.primary
+        )
+        HorizontalDivider(modifier = Modifier.weight(1f))
+    }
+}
+
+@Composable
+private fun CheckedHeader() {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Text(
+            "Куплено",
+            style = MaterialTheme.typography.titleSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        HorizontalDivider(modifier = Modifier.weight(1f))
+    }
+}
+
+@Composable
 private fun ShoppingItemRow(item: ShoppingListItem, onToggle: () -> Unit, onRemove: () -> Unit) {
-    ElevatedCard(modifier = Modifier.fillMaxWidth()) {
+    ElevatedCard(modifier = Modifier
+        .fillMaxWidth()
+        .padding(horizontal = 16.dp, vertical = 4.dp)) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -143,6 +207,13 @@ private fun ShoppingItemRow(item: ShoppingListItem, onToggle: () -> Unit, onRemo
             verticalAlignment = Alignment.CenterVertically
         ) {
             Checkbox(checked = item.isChecked, onCheckedChange = { onToggle() })
+            Spacer(Modifier.width(8.dp))
+            Icon(
+                item.product.category.icon,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(24.dp)
+            )
             Spacer(Modifier.width(8.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(

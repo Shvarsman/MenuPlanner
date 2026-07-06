@@ -11,17 +11,12 @@ import java.time.DayOfWeek
 import javax.inject.Inject
 
 /**
- * Добавляет рецепт в меню на выбранный день/приём пищи и одновременно
- * списывает ингредиенты рецепта из холодильника:
+ * Добавляет рецепт в меню на выбранный день/приём пищи. Продукты из
+ * холодильника на этом этапе НЕ списываются — списание происходит позже,
+ * на экране "Готовка" (см. CompleteCookingUseCase).
  *
- * - если в холодильнике продукта хватает — вычитаем нужное количество;
- * - если продукта нет вообще — всё нужное количество уходит в список покупок;
- * - если продукта не хватает — остаток в холодильнике удаляется полностью,
- *   а недостающее количество (needed - available) добавляется в список покупок.
- *
- * Добавление в список покупок идёт через AddToShoppingListUseCase, который
- * сам суммирует количество с уже существующей непроверенной позицией того же
- * продукта — так дубликаты не создаются.
+ * Здесь только вычисляется нехватка ингредиентов относительно текущего
+ * холодильника, и недостающее количество добавляется в список покупок.
  */
 class AssignRecipeToMenuUseCase @Inject constructor(
     private val menuRepository: MenuRepository,
@@ -36,23 +31,10 @@ class AssignRecipeToMenuUseCase @Inject constructor(
         val fridgeSnapshot = fridgeRepository.observeItems().first()
 
         recipe.ingredients.forEach { ingredient ->
-            val needed = ingredient.quantity
-            val fridgeItem = fridgeSnapshot.firstOrNull { it.product.id == ingredient.product.id }
-
-            when {
-                fridgeItem == null -> {
-                    addToShoppingList(ingredient.product, ingredient.unit, needed)
-                }
-
-                fridgeItem.quantity >= needed -> {
-                    fridgeRepository.decreaseQuantity(fridgeItem.id, needed)
-                }
-
-                else -> {
-                    val shortage = needed - fridgeItem.quantity
-                    fridgeRepository.deleteItem(fridgeItem.id)
-                    addToShoppingList(ingredient.product, ingredient.unit, shortage)
-                }
+            val available = fridgeSnapshot.firstOrNull { it.product.id == ingredient.product.id }?.quantity ?: 0.0
+            if (available < ingredient.quantity) {
+                val shortage = ingredient.quantity - available
+                addToShoppingList(ingredient.product, ingredient.unit, shortage)
             }
         }
 

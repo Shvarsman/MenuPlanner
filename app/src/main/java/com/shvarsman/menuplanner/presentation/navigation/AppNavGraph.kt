@@ -24,6 +24,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.shvarsman.menuplanner.presentation.catalog.ProductCatalogScreen
+import com.shvarsman.menuplanner.presentation.cooking.CookingScreen
 import com.shvarsman.menuplanner.presentation.fridge.FridgeScreen
 import com.shvarsman.menuplanner.presentation.menu.MenuScreen
 import com.shvarsman.menuplanner.presentation.recipe.RecipeEditorScreen
@@ -80,7 +81,12 @@ fun AppNavGraph() {
             modifier = Modifier.padding(innerPadding)
         ) {
             composable(Destination.Menu.route) {
-                MenuScreen(onNavigateToRecipes = { navController.navigate(Destination.Recipes.route) })
+                MenuScreen(
+                    onNavigateToRecipes = { navController.navigate(Destination.Recipes.route) },
+                    onNavigateToCooking = { recipeId, menuEntryId ->
+                        navController.navigate(Destination.Cooking.createRoute(recipeId, menuEntryId))
+                    }
+                )
             }
             composable(Destination.Fridge.route) {
                 FridgeScreen(onOpenCatalog = { navController.navigate(Destination.ProductCatalog.route) })
@@ -110,6 +116,22 @@ fun AppNavGraph() {
             }
             composable(Destination.ShoppingList.route) {
                 ShoppingListScreen()
+            }
+            composable(
+                route = Destination.Cooking.route,
+                arguments = listOf(
+                    navArgument("recipeId") { type = NavType.LongType },
+                    navArgument("menuEntryId") { type = NavType.LongType }
+                )
+            ) { backStackEntry ->
+                val recipeId = backStackEntry.arguments?.getLong("recipeId") ?: 0L
+                val menuEntryId = backStackEntry.arguments?.getLong("menuEntryId") ?: 0L
+                CookingScreen(
+                    recipeId = recipeId,
+                    menuEntryId = menuEntryId,
+                    onBack = { navController.popBackStack() },
+                    onFinished = { navController.popBackStack() }
+                )
             }
         }
     }

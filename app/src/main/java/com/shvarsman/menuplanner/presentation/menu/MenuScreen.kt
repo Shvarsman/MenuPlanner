@@ -7,11 +7,11 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Restaurant
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.shvarsman.menuplanner.domain.model.FridgeItem
@@ -34,12 +34,22 @@ private val mealTypes = listOf(MealType.BREAKFAST, MealType.LUNCH, MealType.DINN
 @Composable
 fun MenuScreen(
     onNavigateToRecipes: () -> Unit,
+    onNavigateToCooking: (recipeId: Long, menuEntryId: Long) -> Unit,
     viewModel: MenuViewModel = hiltViewModel()
 ) {
     val weekMenu by viewModel.weekMenu.collectAsState()
     val recipes by viewModel.recipes.collectAsState()
     val fridgeItems by viewModel.fridgeItems.collectAsState()
     val pickerTarget by viewModel.pickerTarget.collectAsState()
+    val insufficientDialogEntry by viewModel.insufficientDialogEntry.collectAsState()
+    val navigateToCooking by viewModel.navigateToCooking.collectAsState()
+
+    LaunchedEffect(navigateToCooking) {
+        navigateToCooking?.let { (recipeId, menuEntryId) ->
+            onNavigateToCooking(recipeId, menuEntryId)
+            viewModel.onNavigateToCookingConsumed()
+        }
+    }
 
     val entriesByKey = remember(weekMenu) {
         weekMenu.groupBy { it.dayOfWeek to it.mealType }
@@ -63,7 +73,8 @@ fun MenuScreen(
                     day = day,
                     entriesByMeal = mealTypes.associateWith { meal -> entriesByKey[day to meal].orEmpty() },
                     onAddMeal = { meal -> viewModel.openRecipePicker(day, meal) },
-                    onRemoveEntry = { viewModel.removeEntry(it) }
+                    onRemoveEntry = { viewModel.removeEntry(it) },
+                    onCookEntry = { viewModel.onCookClick(it) }
                 )
             }
         }
@@ -81,6 +92,13 @@ fun MenuScreen(
             }
         )
     }
+
+    if (insufficientDialogEntry != null) {
+        InsufficientIngredientsDialog(
+            onConfirmAnyway = { viewModel.confirmCookAnyway() },
+            onGoToShopping = { viewModel.dismissInsufficientDialog() }
+        )
+    }
 }
 
 @Composable
@@ -88,7 +106,8 @@ private fun DayCard(
     day: DayOfWeek,
     entriesByMeal: Map<MealType, List<MenuEntry>>,
     onAddMeal: (MealType) -> Unit,
-    onRemoveEntry: (MenuEntry) -> Unit
+    onRemoveEntry: (MenuEntry) -> Unit,
+    onCookEntry: (MenuEntry) -> Unit
 ) {
     ElevatedCard(modifier = Modifier.fillMaxWidth()) {
         Column(modifier = Modifier.padding(16.dp)) {
@@ -103,7 +122,8 @@ private fun DayCard(
                     meal = meal,
                     entries = entriesByMeal[meal].orEmpty(),
                     onAdd = { onAddMeal(meal) },
-                    onRemove = onRemoveEntry
+                    onRemove = onRemoveEntry,
+                    onCook = onCookEntry
                 )
             }
         }
@@ -115,7 +135,8 @@ private fun MealRow(
     meal: MealType,
     entries: List<MenuEntry>,
     onAdd: () -> Unit,
-    onRemove: (MenuEntry) -> Unit
+    onRemove: (MenuEntry) -> Unit,
+    onCook: (MenuEntry) -> Unit
 ) {
     Column(modifier = Modifier.padding(vertical = 4.dp)) {
         Row(
@@ -145,7 +166,18 @@ private fun MealRow(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(entry.recipeTitle, style = MaterialTheme.typography.bodyMedium)
+                    Text(
+                        entry.recipeTitle,
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.weight(1f)
+                    )
+                    IconButton(onClick = { onCook(entry) }) {
+                        Icon(
+                            Icons.Filled.Restaurant,
+                            contentDescription = "Приготовить",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
                     IconButton(onClick = { onRemove(entry) }) {
                         Icon(Icons.Filled.Close, contentDescription = "Убрать из меню")
                     }
@@ -153,6 +185,24 @@ private fun MealRow(
             }
         }
     }
+}
+
+@Composable
+private fun InsufficientIngredientsDialog(
+    onConfirmAnyway: () -> Unit,
+    onGoToShopping: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onGoToShopping,
+        title = { Text("Не хватает продуктов") },
+        text = { Text("В холодильнике недостаточно ингредиентов для этого рецепта. Продолжить готовку или сначала докупить продукты?") },
+        confirmButton = {
+            TextButton(onClick = onConfirmAnyway) { Text("Всё равно продолжить") }
+        },
+        dismissButton = {
+            TextButton(onClick = onGoToShopping) { Text("В магазин") }
+        }
+    )
 }
 
 @Composable
@@ -185,7 +235,6 @@ private fun RecipePickerDialog(
                         ) {
                             Text(recipe.title, style = MaterialTheme.typography.titleMedium)
 
-                            // Превью ингредиентов с цветовой индикацией наличия в холодильнике
                             if (expandedRecipeId == recipe.id) {
                                 Column(modifier = Modifier.padding(top = 4.dp, start = 8.dp)) {
                                     recipe.ingredients.forEach { ingredient ->
@@ -209,7 +258,6 @@ private fun RecipePickerDialog(
 
                             Spacer(Modifier.height(8.dp))
 
-                            // Кнопка теперь во всю ширину карточки рецепта — не теснится с названием
                             Button(
                                 onClick = { onSelect(recipe) },
                                 modifier = Modifier.fillMaxWidth()
