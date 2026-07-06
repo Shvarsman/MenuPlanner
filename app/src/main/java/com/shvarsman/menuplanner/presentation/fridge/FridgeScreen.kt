@@ -1,103 +1,94 @@
 package com.shvarsman.menuplanner.presentation.fridge
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ListAlt
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Kitchen
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.ElevatedCard
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.shvarsman.menuplanner.domain.model.Category
-import com.shvarsman.menuplanner.domain.model.Product
+import com.shvarsman.menuplanner.domain.model.FridgeItem
+import com.shvarsman.menuplanner.presentation.common.ProductPickerDialog
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun FridgeScreen(viewModel: FridgeViewModel = hiltViewModel()) {
-    val products by viewModel.products.collectAsState()
-    val editorOpen by viewModel.editorOpen.collectAsState()
-    val editingProduct by viewModel.editingProduct.collectAsState()
+fun FridgeScreen(
+    onOpenCatalog: () -> Unit, viewModel: FridgeViewModel = hiltViewModel()
+) {
+    val items by viewModel.items.collectAsState()
+    val catalog by viewModel.catalog.collectAsState()
+    val isAddPickerOpen by viewModel.isAddPickerOpen.collectAsState()
+    val editingItem by viewModel.editingItem.collectAsState()
     val errorMessage by viewModel.errorMessage.collectAsState()
 
-    // Группируем по категории, порядок — как в enum
-    val grouped = remember(products) {
-        products
-            .groupBy { it.category }
-            .toSortedMap(compareBy { it.ordinal })
+    val grouped = remember(items) {
+        items.groupBy { it.product.category }.toSortedMap(compareBy { it.ordinal })
     }
 
-    Scaffold(
-        topBar = { TopAppBar(title = { Text("Холодильник") }) },
-        floatingActionButton = {
-            FloatingActionButton(onClick = { viewModel.onAddClick() }) {
-                Icon(Icons.Filled.Add, contentDescription = "Добавить продукт")
+    Scaffold(contentWindowInsets = WindowInsets(0), topBar = {
+        TopAppBar(title = { Text("Холодильник") }, actions = {
+            IconButton(onClick = onOpenCatalog) {
+                Icon(Icons.AutoMirrored.Filled.ListAlt, contentDescription = "Все продукты")
             }
+        })
+    }, floatingActionButton = {
+        FloatingActionButton(onClick = { viewModel.openAddPicker() }) {
+            Icon(Icons.Filled.Add, contentDescription = "Добавить продукт")
         }
-    ) { padding ->
-        if (products.isEmpty()) {
-            EmptyFridgeState(modifier = Modifier.padding(padding).fillMaxSize())
+    }) { padding ->
+        if (items.isEmpty()) {
+            EmptyFridgeState(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding)
+            )
         } else {
             LazyColumn(
-                modifier = Modifier.padding(padding).fillMaxSize(),
-                contentPadding = PaddingValues(bottom = 88.dp)
+                modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(
+                    top = padding.calculateTopPadding(),
+                    bottom = padding.calculateBottomPadding() + 88.dp
+                )
             ) {
-                grouped.forEach { (category, items) ->
-                    item(key = "header_${category.name}") {
-                        CategoryHeader(category = category)
-                    }
-                    items(items, key = { it.id }) { product ->
-                        ProductCard(
-                            product = product,
-                            onEdit = { viewModel.onEditClick(product) },
-                            onDelete = { viewModel.onDeleteClick(product) }
-                        )
+                grouped.forEach { (category, categoryItems) ->
+                    item(key = "header_${category.name}") { CategoryHeader(category) }
+                    items(categoryItems, key = { it.id }) { item ->
+                        FridgeItemCard(
+                            item = item,
+                            onEdit = { viewModel.onEditClick(item) },
+                            onDelete = { viewModel.onDeleteClick(item) })
                     }
                 }
             }
         }
     }
 
-    if (editorOpen) {
-        ProductEditorDialog(
-            initial = editingProduct,
-            onDismiss = { viewModel.closeEditor() },
-            onConfirm = { name, category, unit, qty ->
-                viewModel.saveProduct(name, category, unit, qty)
-            }
-        )
+    if (isAddPickerOpen) {
+        ProductPickerDialog(
+            catalog = catalog,
+            onDismiss = { viewModel.closeAddPicker() },
+            onConfirm = { product, unit, qty -> viewModel.addItem(product, unit, qty) },
+            onCreateProduct = { name, category, unit ->
+                viewModel.createProduct(
+                    name, category, unit
+                )
+            })
+    }
+
+    editingItem?.let { item ->
+        FridgeItemQuantityDialog(
+            item = item,
+            onDismiss = { viewModel.closeEditDialog() },
+            onConfirm = { unit, qty -> viewModel.updateItemQuantity(item, unit, qty) })
     }
 
     errorMessage?.let { message ->
@@ -105,8 +96,7 @@ fun FridgeScreen(viewModel: FridgeViewModel = hiltViewModel()) {
             onDismissRequest = { viewModel.clearError() },
             confirmButton = { TextButton(onClick = { viewModel.clearError() }) { Text("Ок") } },
             title = { Text("Ошибка") },
-            text = { Text(message) }
-        )
+            text = { Text(message) })
     }
 }
 
@@ -120,13 +110,13 @@ private fun CategoryHeader(category: Category) {
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         Icon(
-            imageVector = category.icon,
+            category.icon,
             contentDescription = null,
             tint = MaterialTheme.colorScheme.primary,
             modifier = Modifier.size(20.dp)
         )
         Text(
-            text = category.displayName,
+            category.displayName,
             style = MaterialTheme.typography.titleSmall,
             color = MaterialTheme.colorScheme.primary
         )
@@ -135,14 +125,16 @@ private fun CategoryHeader(category: Category) {
 }
 
 @Composable
-private fun ProductCard(product: Product, onEdit: () -> Unit, onDelete: () -> Unit) {
+private fun FridgeItemCard(item: FridgeItem, onEdit: () -> Unit, onDelete: () -> Unit) {
     ElevatedCard(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 4.dp)
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth().padding(12.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Surface(
@@ -152,7 +144,7 @@ private fun ProductCard(product: Product, onEdit: () -> Unit, onDelete: () -> Un
             ) {
                 Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
                     Icon(
-                        imageVector = product.category.icon,
+                        item.product.category.icon,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.onSecondaryContainer
                     )
@@ -160,18 +152,22 @@ private fun ProductCard(product: Product, onEdit: () -> Unit, onDelete: () -> Un
             }
             Spacer(Modifier.width(12.dp))
             Column(modifier = Modifier.weight(1f)) {
-                Text(product.name, style = MaterialTheme.typography.titleMedium)
+                Text(item.product.name, style = MaterialTheme.typography.titleMedium)
                 Text(
-                    "${formatQuantity(product.quantity)} ${product.unit.displayName}",
+                    "${formatQty(item.quantity)} ${item.unit.displayName}",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
             IconButton(onClick = onEdit) {
-                Icon(Icons.Filled.Edit, contentDescription = "Редактировать")
+                Icon(
+                    Icons.Filled.Edit, contentDescription = "Изменить количество"
+                )
             }
             IconButton(onClick = onDelete) {
-                Icon(Icons.Filled.Delete, contentDescription = "Удалить")
+                Icon(
+                    Icons.Filled.Delete, contentDescription = "Удалить"
+                )
             }
         }
     }
@@ -194,11 +190,10 @@ private fun EmptyFridgeState(modifier: Modifier = Modifier) {
         Text(
             "В холодильнике пока пусто.\nДобавьте первый продукт.",
             textAlign = TextAlign.Center,
-            style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
     }
 }
 
-private fun formatQuantity(value: Double): String =
+private fun formatQty(value: Double): String =
     if (value == value.toLong().toDouble()) value.toLong().toString() else value.toString()

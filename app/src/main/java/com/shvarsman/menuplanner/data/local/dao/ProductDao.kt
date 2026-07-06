@@ -12,6 +12,9 @@ interface ProductDao {
     @Query("SELECT * FROM products WHERE id = :id")
     suspend fun getById(id: Long): ProductEntity?
 
+    @Query("SELECT * FROM products WHERE LOWER(name) = LOWER(:name) LIMIT 1")
+    suspend fun findByName(name: String): ProductEntity?
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(product: ProductEntity): Long
 
@@ -20,7 +23,4 @@ interface ProductDao {
 
     @Query("DELETE FROM products WHERE id = :id")
     suspend fun deleteById(id: Long)
-
-    @Query("UPDATE products SET quantity = MAX(0, quantity - :amount) WHERE id = :id")
-    suspend fun decreaseQuantity(id: Long, amount: Double)
 }

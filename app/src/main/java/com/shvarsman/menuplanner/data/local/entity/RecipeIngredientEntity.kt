@@ -14,15 +14,20 @@ import com.shvarsman.menuplanner.domain.model.MeasureUnit
             parentColumns = ["id"],
             childColumns = ["recipeId"],
             onDelete = ForeignKey.CASCADE
+        ),
+        ForeignKey(
+            entity = ProductEntity::class,
+            parentColumns = ["id"],
+            childColumns = ["productId"],
+            onDelete = ForeignKey.CASCADE
         )
     ],
-    indices = [Index(value = ["recipeId"])]
+    indices = [Index("recipeId"), Index("productId")]
 )
 data class RecipeIngredientEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val recipeId: Long,
-    val fridgeProductId: Long?,
-    val name: String,
+    val productId: Long,
     val unit: MeasureUnit,
     val quantity: Double
 )

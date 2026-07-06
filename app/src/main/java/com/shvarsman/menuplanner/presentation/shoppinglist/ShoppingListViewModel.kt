@@ -2,10 +2,13 @@ package com.shvarsman.menuplanner.presentation.shoppinglist
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.shvarsman.menuplanner.domain.model.Category
+import com.shvarsman.menuplanner.domain.model.MeasureUnit
 import com.shvarsman.menuplanner.domain.model.Product
 import com.shvarsman.menuplanner.domain.model.ShoppingListItem
-import com.shvarsman.menuplanner.domain.usecase.fridge.GetFridgeProductsUseCase
-import com.shvarsman.menuplanner.domain.usecase.shoppinglist.AddProductsToShoppingListUseCase
+import com.shvarsman.menuplanner.domain.usecase.product.FindOrCreateProductUseCase
+import com.shvarsman.menuplanner.domain.usecase.product.GetAllProductsUseCase
+import com.shvarsman.menuplanner.domain.usecase.shoppinglist.AddToShoppingListUseCase
 import com.shvarsman.menuplanner.domain.usecase.shoppinglist.GetShoppingListUseCase
 import com.shvarsman.menuplanner.domain.usecase.shoppinglist.RemoveShoppingItemUseCase
 import com.shvarsman.menuplanner.domain.usecase.shoppinglist.ToggleShoppingItemUseCase
@@ -20,27 +23,36 @@ import javax.inject.Inject
 @HiltViewModel
 class ShoppingListViewModel @Inject constructor(
     getShoppingList: GetShoppingListUseCase,
-    getFridgeProducts: GetFridgeProductsUseCase,
-    private val addProductsToShoppingList: AddProductsToShoppingListUseCase,
+    getAllProducts: GetAllProductsUseCase,
+    private val addToShoppingList: AddToShoppingListUseCase,
     private val toggleShoppingItem: ToggleShoppingItemUseCase,
-    private val removeShoppingItem: RemoveShoppingItemUseCase
+    private val removeShoppingItem: RemoveShoppingItemUseCase,
+    private val findOrCreateProduct: FindOrCreateProductUseCase
 ) : ViewModel() {
 
     val items: StateFlow<List<ShoppingListItem>> = getShoppingList()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    val fridgeProducts: StateFlow<List<Product>> = getFridgeProducts()
+    val catalog: StateFlow<List<Product>> = getAllProducts()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     private val _isPickerOpen = MutableStateFlow(false)
     val isPickerOpen: StateFlow<Boolean> = _isPickerOpen
 
-    fun openPicker() { _isPickerOpen.value = true }
-    fun closePicker() { _isPickerOpen.value = false }
+    fun openPicker() {
+        _isPickerOpen.value = true
+    }
 
-    fun addFromFridge(products: List<Product>) {
+    fun closePicker() {
+        _isPickerOpen.value = false
+    }
+
+    suspend fun createProduct(name: String, category: Category, unit: MeasureUnit): Product =
+        findOrCreateProduct(name, category, unit)
+
+    fun addItem(product: Product, unit: MeasureUnit, quantity: Double) {
         viewModelScope.launch {
-            addProductsToShoppingList(products)
+            addToShoppingList(product, unit, quantity)
             closePicker()
         }
     }

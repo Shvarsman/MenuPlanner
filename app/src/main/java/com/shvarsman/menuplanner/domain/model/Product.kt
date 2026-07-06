@@ -5,8 +5,7 @@ data class Product(
     val id: Long = 0,
     val name: String,
     val category: Category,
-    val unit: MeasureUnit,
-    val quantity: Double
+    val defaultUnit: MeasureUnit
 )
 
 enum class MeasureUnit(val displayName: String) {

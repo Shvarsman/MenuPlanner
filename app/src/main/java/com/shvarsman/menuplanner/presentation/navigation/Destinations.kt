@@ -9,4 +9,6 @@ sealed class Destination(val route: String) {
         const val NEW_RECIPE_ID = 0L
     }
     object ShoppingList : Destination("shopping_list")
+
+    object ProductCatalog : Destination("product_catalog")
 }

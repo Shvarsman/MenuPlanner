@@ -4,6 +4,7 @@ import androidx.room.TypeConverter
 import com.shvarsman.menuplanner.domain.model.Category
 import com.shvarsman.menuplanner.domain.model.MeasureUnit
 import com.shvarsman.menuplanner.domain.model.MealType
+import com.shvarsman.menuplanner.domain.model.StepContentItem
 import java.time.DayOfWeek
 
 class Converters {
@@ -35,10 +36,25 @@ class Converters {
     @TypeConverter
     fun toDayOfWeek(value: String): DayOfWeek = DayOfWeek.valueOf(value)
 
+    // StepContentItem: элементы разделены \u241F, тип закодирован первым символом T/I
     @TypeConverter
-    fun fromStepList(steps: List<String>): String = steps.joinToString("§")
+    fun fromStepContentList(steps: List<StepContentItem>): String =
+        steps.joinToString("\u241F") { item ->
+            when (item) {
+                is StepContentItem.Text -> "T${item.content}"
+                is StepContentItem.Image -> "I${item.url}"
+            }
+        }
 
     @TypeConverter
-    fun toStepList(value: String): List<String> =
-        if (value.isBlank()) emptyList() else value.split("§")
+    fun toStepContentList(value: String): List<StepContentItem> {
+        if (value.isBlank()) return emptyList()
+        return value.split("\u241F").map { item ->
+            when {
+                item.startsWith("T") -> StepContentItem.Text(item.drop(1))
+                item.startsWith("I") -> StepContentItem.Image(item.drop(1))
+                else -> StepContentItem.Text(item)
+            }
+        }
+    }
 }

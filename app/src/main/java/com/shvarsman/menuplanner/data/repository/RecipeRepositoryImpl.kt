@@ -1,9 +1,11 @@
 package com.shvarsman.menuplanner.data.repository
 
 import com.shvarsman.menuplanner.data.local.dao.RecipeDao
+import com.shvarsman.menuplanner.data.local.dao.RecipeIngredientWithProduct
 import com.shvarsman.menuplanner.data.local.dao.RecipeWithIngredients
 import com.shvarsman.menuplanner.data.local.entity.RecipeEntity
 import com.shvarsman.menuplanner.data.local.entity.RecipeIngredientEntity
+import com.shvarsman.menuplanner.domain.model.Product
 import com.shvarsman.menuplanner.domain.model.Recipe
 import com.shvarsman.menuplanner.domain.model.RecipeIngredient
 import com.shvarsman.menuplanner.domain.repository.RecipeRepository
@@ -18,8 +20,7 @@ class RecipeRepositoryImpl @Inject constructor(
     override fun observeRecipes(): Flow<List<Recipe>> =
         dao.observeAllWithIngredients().map { list -> list.map { it.toDomain() } }
 
-    override suspend fun getRecipe(id: Long): Recipe? =
-        dao.getByIdWithIngredients(id)?.toDomain()
+    override suspend fun getRecipe(id: Long): Recipe? = dao.getByIdWithIngredients(id)?.toDomain()
 
     override suspend fun addRecipe(recipe: Recipe): Long {
         val recipeId = dao.insertRecipe(recipe.toEntity())
@@ -37,26 +38,19 @@ class RecipeRepositoryImpl @Inject constructor(
 }
 
 private fun RecipeWithIngredients.toDomain() = Recipe(
-    id = recipe.id,
-    title = recipe.title,
-    photoUri = recipe.photoUri,
-    steps = recipe.steps,
-    ingredients = ingredients.map {
-        RecipeIngredient(
-            id = it.id,
-            fridgeProductId = it.fridgeProductId,
-            name = it.name,
-            unit = it.unit,
-            quantity = it.quantity
-        )
-    }
+    id = recipe.id, title = recipe.title, photoUri = recipe.photoUri,
+    steps = recipe.steps, ingredients = ingredients.map { it.toDomain() }
 )
 
-private fun Recipe.toEntity() = RecipeEntity(
-    id = id, title = title, photoUri = photoUri, steps = steps
+private fun RecipeIngredientWithProduct.toDomain() = RecipeIngredient(
+    id = ingredient.id,
+    product = Product(id = product.id, name = product.name, category = product.category, defaultUnit = product.defaultUnit),
+    unit = ingredient.unit,
+    quantity = ingredient.quantity
 )
+
+private fun Recipe.toEntity() = RecipeEntity(id = id, title = title, photoUri = photoUri, steps = steps)
 
 private fun RecipeIngredient.toEntity(recipeId: Long) = RecipeIngredientEntity(
-    id = id, recipeId = recipeId, fridgeProductId = fridgeProductId,
-    name = name, unit = unit, quantity = quantity
+    id = id, recipeId = recipeId, productId = product.id, unit = unit, quantity = quantity
 )

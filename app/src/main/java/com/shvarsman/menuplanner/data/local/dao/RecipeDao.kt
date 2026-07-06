@@ -1,14 +1,25 @@
 package com.shvarsman.menuplanner.data.local.dao
 
 import androidx.room.*
+import com.shvarsman.menuplanner.data.local.entity.ProductEntity
 import com.shvarsman.menuplanner.data.local.entity.RecipeEntity
 import com.shvarsman.menuplanner.data.local.entity.RecipeIngredientEntity
 import kotlinx.coroutines.flow.Flow
 
+data class RecipeIngredientWithProduct(
+    @Embedded val ingredient: RecipeIngredientEntity,
+    @Relation(parentColumn = "productId", entityColumn = "id")
+    val product: ProductEntity
+)
+
 data class RecipeWithIngredients(
     @Embedded val recipe: RecipeEntity,
-    @Relation(parentColumn = "id", entityColumn = "recipeId")
-    val ingredients: List<RecipeIngredientEntity>
+    @Relation(
+        entity = RecipeIngredientEntity::class,
+        parentColumn = "id",
+        entityColumn = "recipeId"
+    )
+    val ingredients: List<RecipeIngredientWithProduct>
 )
 
 @Dao

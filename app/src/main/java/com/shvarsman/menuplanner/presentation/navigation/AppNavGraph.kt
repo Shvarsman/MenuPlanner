@@ -23,13 +23,18 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.shvarsman.menuplanner.presentation.catalog.ProductCatalogScreen
 import com.shvarsman.menuplanner.presentation.fridge.FridgeScreen
 import com.shvarsman.menuplanner.presentation.menu.MenuScreen
 import com.shvarsman.menuplanner.presentation.recipe.RecipeEditorScreen
 import com.shvarsman.menuplanner.presentation.recipe.RecipeListScreen
 import com.shvarsman.menuplanner.presentation.shoppinglist.ShoppingListScreen
 
-private data class BottomItem(val destination: Destination, val label: String, val icon: ImageVector)
+private data class BottomItem(
+    val destination: Destination,
+    val label: String,
+    val icon: ImageVector
+)
 
 private val bottomItems = listOf(
     BottomItem(Destination.Menu, "Меню", Icons.Filled.RestaurantMenu),
@@ -49,12 +54,15 @@ fun AppNavGraph() {
                 val currentDestination = navBackStackEntry?.destination
 
                 bottomItems.forEach { item ->
-                    val selected = currentDestination?.hierarchy?.any { it.route == item.destination.route } == true
+                    val selected =
+                        currentDestination?.hierarchy?.any { it.route == item.destination.route } == true
                     NavigationBarItem(
                         selected = selected,
                         onClick = {
                             navController.navigate(item.destination.route) {
-                                popUpTo(navController.graph.findStartDestination().id) { saveState = true }
+                                popUpTo(navController.graph.findStartDestination().id) {
+                                    saveState = true
+                                }
                                 launchSingleTop = true
                                 restoreState = true
                             }
@@ -75,7 +83,10 @@ fun AppNavGraph() {
                 MenuScreen(onNavigateToRecipes = { navController.navigate(Destination.Recipes.route) })
             }
             composable(Destination.Fridge.route) {
-                FridgeScreen()
+                FridgeScreen(onOpenCatalog = { navController.navigate(Destination.ProductCatalog.route) })
+            }
+            composable(Destination.ProductCatalog.route) {
+                ProductCatalogScreen(onBack = { navController.popBackStack() })
             }
             composable(Destination.Recipes.route) {
                 RecipeListScreen(

@@ -1,7 +1,9 @@
 package com.shvarsman.menuplanner.data.repository
 
-import com.shvarsman.menuplanner.data.local.dao.ProductDao
-import com.shvarsman.menuplanner.data.local.entity.ProductEntity
+import com.shvarsman.menuplanner.data.local.dao.FridgeItemDao
+import com.shvarsman.menuplanner.data.local.dao.FridgeItemWithProduct
+import com.shvarsman.menuplanner.data.local.entity.FridgeItemEntity
+import com.shvarsman.menuplanner.domain.model.FridgeItem
 import com.shvarsman.menuplanner.domain.model.Product
 import com.shvarsman.menuplanner.domain.repository.FridgeRepository
 import kotlinx.coroutines.flow.Flow
@@ -9,32 +11,30 @@ import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
 class FridgeRepositoryImpl @Inject constructor(
-    private val dao: ProductDao
+    private val dao: FridgeItemDao
 ) : FridgeRepository {
 
-    override fun observeProducts(): Flow<List<Product>> =
-        dao.observeAll().map { list -> list.map { it.toDomain() } }
+    override fun observeItems(): Flow<List<FridgeItem>> =
+        dao.observeAllWithProduct().map { list ->
+            list.map { it.toDomain() }.sortedBy { it.product.name }
+        }
 
-    override suspend fun getProduct(id: Long): Product? =
-        dao.getById(id)?.toDomain()
+    override suspend fun getItem(id: Long): FridgeItem? = dao.getByIdWithProduct(id)?.toDomain()
 
-    override suspend fun addProduct(product: Product): Long =
-        dao.insert(product.toEntity())
+    override suspend fun addItem(item: FridgeItem): Long = dao.insert(item.toEntity())
 
-    override suspend fun updateProduct(product: Product) =
-        dao.update(product.toEntity())
+    override suspend fun updateItem(item: FridgeItem) = dao.update(item.toEntity())
 
-    override suspend fun deleteProduct(id: Long) =
-        dao.deleteById(id)
+    override suspend fun deleteItem(id: Long) = dao.deleteById(id)
 
-    override suspend fun decreaseQuantity(id: Long, amount: Double) =
-        dao.decreaseQuantity(id, amount)
+    override suspend fun decreaseQuantity(id: Long, amount: Double) = dao.decreaseQuantity(id, amount)
 }
 
-private fun ProductEntity.toDomain() = Product(
-    id = id, name = name, category = category, unit = unit, quantity = quantity
+private fun FridgeItemWithProduct.toDomain() = FridgeItem(
+    id = item.id,
+    product = Product(id = product.id, name = product.name, category = product.category, defaultUnit = product.defaultUnit),
+    unit = item.unit,
+    quantity = item.quantity
 )
 
-private fun Product.toEntity() = ProductEntity(
-    id = id, name = name, category = category, unit = unit, quantity = quantity
-)
+private fun FridgeItem.toEntity() = FridgeItemEntity(id = id, productId = product.id, unit = unit, quantity = quantity)

@@ -7,7 +7,7 @@ import androidx.room.PrimaryKey
 import com.shvarsman.menuplanner.domain.model.MeasureUnit
 
 @Entity(
-    tableName = "shopping_list_items",
+    tableName = "fridge_items",
     foreignKeys = [
         ForeignKey(
             entity = ProductEntity::class,
@@ -18,10 +18,9 @@ import com.shvarsman.menuplanner.domain.model.MeasureUnit
     ],
     indices = [Index("productId")]
 )
-data class ShoppingListItemEntity(
+data class FridgeItemEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val productId: Long,
     val unit: MeasureUnit,
-    val quantity: Double,
-    val isChecked: Boolean = false
+    val quantity: Double
 )

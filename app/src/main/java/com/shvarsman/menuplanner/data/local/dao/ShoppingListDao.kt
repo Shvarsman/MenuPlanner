@@ -1,13 +1,21 @@
 package com.shvarsman.menuplanner.data.local.dao
 
 import androidx.room.*
+import com.shvarsman.menuplanner.data.local.entity.ProductEntity
 import com.shvarsman.menuplanner.data.local.entity.ShoppingListItemEntity
 import kotlinx.coroutines.flow.Flow
 
+data class ShoppingListItemWithProduct(
+    @Embedded val item: ShoppingListItemEntity,
+    @Relation(parentColumn = "productId", entityColumn = "id")
+    val product: ProductEntity
+)
+
 @Dao
 interface ShoppingListDao {
-    @Query("SELECT * FROM shopping_list_items ORDER BY isChecked ASC, name ASC")
-    fun observeAll(): Flow<List<ShoppingListItemEntity>>
+    @Transaction
+    @Query("SELECT * FROM shopping_list_items")
+    fun observeAllWithProduct(): Flow<List<ShoppingListItemWithProduct>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(item: ShoppingListItemEntity): Long

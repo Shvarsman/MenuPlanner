@@ -10,6 +10,5 @@ data class ProductEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val name: String,
     val category: Category,
-    val unit: MeasureUnit,
-    val quantity: Double
+    val defaultUnit: MeasureUnit
 )

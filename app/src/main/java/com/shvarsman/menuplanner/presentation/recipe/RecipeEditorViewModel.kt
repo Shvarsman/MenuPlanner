@@ -1,14 +1,18 @@
 package com.shvarsman.menuplanner.presentation.recipe
 
-import androidx.lifecycle.SavedStateHandle
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.shvarsman.menuplanner.data.local.ImageFileManager
+import com.shvarsman.menuplanner.domain.model.Category
 import com.shvarsman.menuplanner.domain.model.MeasureUnit
 import com.shvarsman.menuplanner.domain.model.Product
 import com.shvarsman.menuplanner.domain.model.Recipe
 import com.shvarsman.menuplanner.domain.model.RecipeIngredient
+import com.shvarsman.menuplanner.domain.model.StepContentItem
 import com.shvarsman.menuplanner.domain.repository.RecipeRepository
-import com.shvarsman.menuplanner.domain.usecase.fridge.GetFridgeProductsUseCase
+import com.shvarsman.menuplanner.domain.usecase.product.FindOrCreateProductUseCase
+import com.shvarsman.menuplanner.domain.usecase.product.GetAllProductsUseCase
 import com.shvarsman.menuplanner.domain.usecase.recipe.SaveRecipeUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -23,7 +27,7 @@ data class RecipeEditorState(
     val title: String = "",
     val photoUri: String? = null,
     val ingredients: List<RecipeIngredient> = emptyList(),
-    val steps: List<String> = emptyList(),
+    val steps: List<StepContentItem> = listOf(StepContentItem.Text("")),
     val isLoading: Boolean = true,
     val isSaved: Boolean = false,
     val errorMessage: String? = null
@@ -31,16 +35,23 @@ data class RecipeEditorState(
 
 @HiltViewModel
 class RecipeEditorViewModel @Inject constructor(
-    savedStateHandle: SavedStateHandle,
     private val recipeRepository: RecipeRepository,
     private val saveRecipe: SaveRecipeUseCase,
-    getFridgeProducts: GetFridgeProductsUseCase
+    private val imageFileManager: ImageFileManager,
+    private val findOrCreateProduct: FindOrCreateProductUseCase,
+    getAllProducts: GetAllProductsUseCase
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(RecipeEditorState())
     val state: StateFlow<RecipeEditorState> = _state
 
-    val fridgeProducts: StateFlow<List<Product>> = getFridgeProducts()
+    private val _focusRequestIndex = MutableStateFlow<Int?>(null)
+    val focusRequestIndex: StateFlow<Int?> = _focusRequestIndex
+
+    private val _isIngredientPickerOpen = MutableStateFlow(false)
+    val isIngredientPickerOpen: StateFlow<Boolean> = _isIngredientPickerOpen
+
+    val catalog: StateFlow<List<Product>> = getAllProducts()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     fun load(recipeId: Long) {
@@ -50,12 +61,17 @@ class RecipeEditorViewModel @Inject constructor(
             } else {
                 val recipe = recipeRepository.getRecipe(recipeId)
                 _state.value = if (recipe != null) {
+                    val steps = recipe.steps.let { list ->
+                        if (list.lastOrNull() !is StepContentItem.Text) {
+                            list + StepContentItem.Text("")
+                        } else list
+                    }
                     RecipeEditorState(
                         recipeId = recipe.id,
                         title = recipe.title,
                         photoUri = recipe.photoUri,
                         ingredients = recipe.ingredients,
-                        steps = recipe.steps,
+                        steps = steps,
                         isLoading = false
                     )
                 } else {
@@ -69,55 +85,134 @@ class RecipeEditorViewModel @Inject constructor(
         _state.value = _state.value.copy(title = value)
     }
 
-    fun onPhotoSelected(uri: String?) {
-        _state.value = _state.value.copy(photoUri = uri)
+    /** Копирует выбранное фото обложки во внутреннее хранилище перед сохранением в state. */
+    fun onCoverPhotoSelected(uri: Uri) {
+        viewModelScope.launch {
+            val persistedUri = imageFileManager.persistImage(uri)
+            _state.value = _state.value.copy(photoUri = persistedUri)
+        }
     }
 
-    fun addIngredientFromFridge(product: Product, quantity: Double) {
-        val ingredient = RecipeIngredient(
-            fridgeProductId = product.id,
-            name = product.name,
-            unit = product.unit,
-            quantity = quantity
+    // ── Ингредиенты ────────────────────────────────────────────────────────────
+
+    fun openIngredientPicker() {
+        _isIngredientPickerOpen.value = true
+    }
+
+    fun closeIngredientPicker() {
+        _isIngredientPickerOpen.value = false
+    }
+
+    suspend fun createProduct(name: String, category: Category, unit: MeasureUnit): Product =
+        findOrCreateProduct(name, category, unit)
+
+    fun addIngredient(product: Product, unit: MeasureUnit, quantity: Double) {
+        _state.value = _state.value.copy(
+            ingredients = _state.value.ingredients + RecipeIngredient(
+                product = product,
+                unit = unit,
+                quantity = quantity
+            )
         )
-        _state.value = _state.value.copy(ingredients = _state.value.ingredients + ingredient)
-    }
-
-    fun addCustomIngredient(name: String, unit: MeasureUnit, quantity: Double) {
-        val ingredient = RecipeIngredient(name = name, unit = unit, quantity = quantity)
-        _state.value = _state.value.copy(ingredients = _state.value.ingredients + ingredient)
+        closeIngredientPicker()
     }
 
     fun removeIngredient(ingredient: RecipeIngredient) {
         _state.value = _state.value.copy(ingredients = _state.value.ingredients - ingredient)
     }
 
-    fun addStep(text: String) {
-        if (text.isBlank()) return
-        _state.value = _state.value.copy(steps = _state.value.steps + text.trim())
-    }
+    // ── Шаги ──────────────────────────────────────────────────────────────────
 
-    fun removeStepAt(index: Int) {
-        _state.value = _state.value.copy(steps = _state.value.steps.toMutableList().apply { removeAt(index) })
-    }
-
-    fun updateStepAt(index: Int, text: String) {
+    fun onStepTextChange(index: Int, text: String) {
         _state.value = _state.value.copy(
-            steps = _state.value.steps.toMutableList().apply { set(index, text) }
+            steps = _state.value.steps.mapIndexed { i, item ->
+                if (i == index && item is StepContentItem.Text) item.copy(content = text) else item
+            }
         )
     }
+
+    fun onStepNext(currentIndex: Int) {
+        val steps = _state.value.steps
+        val nextTextIndex = steps.indices
+            .drop(currentIndex + 1)
+            .firstOrNull { steps[it] is StepContentItem.Text }
+
+        if (nextTextIndex != null) {
+            _focusRequestIndex.value = nextTextIndex
+        } else {
+            addTextStep()
+        }
+    }
+
+    fun addTextStep() {
+        val current = _state.value.steps
+        val lastIsEmptyText = current.lastOrNull()
+            .let { it is StepContentItem.Text && (it as StepContentItem.Text).content.isBlank() }
+
+        if (lastIsEmptyText) {
+            _focusRequestIndex.value = current.lastIndex
+        } else {
+            val newSteps = current + StepContentItem.Text("")
+            _state.value = _state.value.copy(steps = newSteps)
+            _focusRequestIndex.value = newSteps.lastIndex
+        }
+    }
+
+    /** Копирует изображение шага во внутреннее хранилище перед добавлением в список шагов. */
+    fun addStepImage(uri: Uri) {
+        viewModelScope.launch {
+            val persistedUri = imageFileManager.persistImage(uri)
+
+            val current = _state.value.steps.toMutableList()
+            if (current.lastOrNull().let {
+                    it is StepContentItem.Text && (it as StepContentItem.Text).content.isBlank()
+                }) {
+                current.removeAt(current.lastIndex)
+            }
+            current.add(StepContentItem.Image(persistedUri))
+            current.add(StepContentItem.Text(""))
+            _state.value = _state.value.copy(steps = current)
+            _focusRequestIndex.value = current.lastIndex
+        }
+    }
+
+    fun deleteStepItem(index: Int) {
+        val itemToRemove = _state.value.steps.getOrNull(index)
+        if (itemToRemove is StepContentItem.Image) {
+            imageFileManager.deleteImage(itemToRemove.url)
+        }
+        _state.value = _state.value.copy(
+            steps = _state.value.steps.toMutableList()
+                .apply { removeAt(index) }
+                .let { list ->
+                    if (list.lastOrNull() !is StepContentItem.Text) {
+                        list + StepContentItem.Text("")
+                    } else list
+                }
+        )
+    }
+
+    fun clearFocusRequest() {
+        _focusRequestIndex.value = null
+    }
+
+    // ── Сохранение ─────────────────────────────────────────────────────────────
 
     fun save() {
         val current = _state.value
         viewModelScope.launch {
             try {
+                val stepsToSave = current.steps.filter {
+                    it !is StepContentItem.Text || it.content.isNotBlank()
+                }
+                require(stepsToSave.isNotEmpty()) { "Добавьте хотя бы один шаг приготовления" }
                 saveRecipe(
                     Recipe(
                         id = current.recipeId,
                         title = current.title,
                         photoUri = current.photoUri,
                         ingredients = current.ingredients,
-                        steps = current.steps
+                        steps = stepsToSave
                     )
                 )
                 _state.value = current.copy(isSaved = true)

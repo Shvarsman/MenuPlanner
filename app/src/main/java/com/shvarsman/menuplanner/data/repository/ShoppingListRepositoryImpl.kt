@@ -1,7 +1,9 @@
 package com.shvarsman.menuplanner.data.repository
 
 import com.shvarsman.menuplanner.data.local.dao.ShoppingListDao
+import com.shvarsman.menuplanner.data.local.dao.ShoppingListItemWithProduct
 import com.shvarsman.menuplanner.data.local.entity.ShoppingListItemEntity
+import com.shvarsman.menuplanner.domain.model.Product
 import com.shvarsman.menuplanner.domain.model.ShoppingListItem
 import com.shvarsman.menuplanner.domain.repository.ShoppingListRepository
 import kotlinx.coroutines.flow.Flow
@@ -13,7 +15,9 @@ class ShoppingListRepositoryImpl @Inject constructor(
 ) : ShoppingListRepository {
 
     override fun observeItems(): Flow<List<ShoppingListItem>> =
-        dao.observeAll().map { list -> list.map { it.toDomain() } }
+        dao.observeAllWithProduct().map { list ->
+            list.map { it.toDomain() }.sortedWith(compareBy({ it.isChecked }, { it.product.name }))
+        }
 
     override suspend fun addItem(item: ShoppingListItem): Long = dao.insert(item.toEntity())
 
@@ -26,12 +30,12 @@ class ShoppingListRepositoryImpl @Inject constructor(
     override suspend fun clearChecked() = dao.clearChecked()
 }
 
-private fun ShoppingListItemEntity.toDomain() = ShoppingListItem(
-    id = id, name = name, unit = unit, quantity = quantity,
-    isChecked = isChecked, fridgeProductId = fridgeProductId
+private fun ShoppingListItemWithProduct.toDomain() = ShoppingListItem(
+    id = item.id,
+    product = Product(id = product.id, name = product.name, category = product.category, defaultUnit = product.defaultUnit),
+    unit = item.unit, quantity = item.quantity, isChecked = item.isChecked
 )
 
 private fun ShoppingListItem.toEntity() = ShoppingListItemEntity(
-    id = id, name = name, unit = unit, quantity = quantity,
-    isChecked = isChecked, fridgeProductId = fridgeProductId
+    id = id, productId = product.id, unit = unit, quantity = quantity, isChecked = isChecked
 )

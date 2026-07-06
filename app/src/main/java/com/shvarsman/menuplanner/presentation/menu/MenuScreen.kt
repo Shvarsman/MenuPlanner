@@ -2,6 +2,7 @@ package com.shvarsman.menuplanner.presentation.menu
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -53,10 +54,13 @@ fun MenuScreen(
                     )
                 }
             )
-        }
+        },
+        contentWindowInsets = WindowInsets(0),
     ) { padding ->
         LazyColumn(
-            modifier = Modifier.padding(padding).fillMaxSize(),
+            modifier = Modifier
+                .padding(padding)
+                .fillMaxSize(),
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
@@ -94,7 +98,8 @@ private fun DayCard(
     ElevatedCard(modifier = Modifier.fillMaxWidth()) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(
-                day.getDisplayName(TextStyle.FULL, Locale.forLanguageTag("ru")).replaceFirstChar { it.uppercase() },
+                day.getDisplayName(TextStyle.FULL, Locale.forLanguageTag("ru"))
+                    .replaceFirstChar { it.uppercase() },
                 style = MaterialTheme.typography.titleLarge
             )
             Spacer(Modifier.height(8.dp))
@@ -111,14 +116,23 @@ private fun DayCard(
 }
 
 @Composable
-private fun MealRow(meal: MealType, entries: List<MenuEntry>, onAdd: () -> Unit, onRemove: (MenuEntry) -> Unit) {
+private fun MealRow(
+    meal: MealType,
+    entries: List<MenuEntry>,
+    onAdd: () -> Unit,
+    onRemove: (MenuEntry) -> Unit
+) {
     Column(modifier = Modifier.padding(vertical = 4.dp)) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(meal.displayName, style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary)
+            Text(
+                meal.displayName,
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.primary
+            )
             IconButton(onClick = onAdd) {
                 Icon(Icons.Filled.Add, contentDescription = "Добавить блюдо")
             }

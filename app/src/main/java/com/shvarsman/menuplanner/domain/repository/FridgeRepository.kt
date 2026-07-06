@@ -1,14 +1,13 @@
 package com.shvarsman.menuplanner.domain.repository
 
-import com.shvarsman.menuplanner.domain.model.Product
+import com.shvarsman.menuplanner.domain.model.FridgeItem
 import kotlinx.coroutines.flow.Flow
 
 interface FridgeRepository {
-    fun observeProducts(): Flow<List<Product>>
-    suspend fun getProduct(id: Long): Product?
-    suspend fun addProduct(product: Product): Long
-    suspend fun updateProduct(product: Product)
-    suspend fun deleteProduct(id: Long)
-    /** Уменьшает количество продукта (например, при списании по рецепту), не уходя в минус. */
+    fun observeItems(): Flow<List<FridgeItem>>
+    suspend fun getItem(id: Long): FridgeItem?
+    suspend fun addItem(item: FridgeItem): Long
+    suspend fun updateItem(item: FridgeItem)
+    suspend fun deleteItem(id: Long)
     suspend fun decreaseQuantity(id: Long, amount: Double)
 }

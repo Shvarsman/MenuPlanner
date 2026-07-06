@@ -3,6 +3,7 @@ package com.shvarsman.menuplanner.di
 import android.content.Context
 import androidx.room.Room
 import com.shvarsman.menuplanner.data.local.AppDatabase
+import com.shvarsman.menuplanner.data.local.dao.FridgeItemDao
 import com.shvarsman.menuplanner.data.local.dao.MenuDao
 import com.shvarsman.menuplanner.data.local.dao.ProductDao
 import com.shvarsman.menuplanner.data.local.dao.RecipeDao
@@ -36,4 +37,7 @@ object DatabaseModule {
 
     @Provides
     fun provideShoppingListDao(db: AppDatabase): ShoppingListDao = db.shoppingListDao()
+
+    @Provides
+    fun provideFridgeItemDao(db: AppDatabase): FridgeItemDao = db.fridgeItemDao()
 }

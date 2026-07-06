@@ -3,12 +3,15 @@ package com.shvarsman.menuplanner.presentation.fridge
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.shvarsman.menuplanner.domain.model.Category
+import com.shvarsman.menuplanner.domain.model.FridgeItem
 import com.shvarsman.menuplanner.domain.model.MeasureUnit
 import com.shvarsman.menuplanner.domain.model.Product
-import com.shvarsman.menuplanner.domain.usecase.fridge.AddProductUseCase
-import com.shvarsman.menuplanner.domain.usecase.fridge.DeleteProductUseCase
-import com.shvarsman.menuplanner.domain.usecase.fridge.GetFridgeProductsUseCase
-import com.shvarsman.menuplanner.domain.usecase.fridge.UpdateProductUseCase
+import com.shvarsman.menuplanner.domain.usecase.fridge.AddFridgeItemUseCase
+import com.shvarsman.menuplanner.domain.usecase.fridge.DeleteFridgeItemUseCase
+import com.shvarsman.menuplanner.domain.usecase.fridge.GetFridgeItemsUseCase
+import com.shvarsman.menuplanner.domain.usecase.fridge.UpdateFridgeItemUseCase
+import com.shvarsman.menuplanner.domain.usecase.product.FindOrCreateProductUseCase
+import com.shvarsman.menuplanner.domain.usecase.product.GetAllProductsUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -17,64 +20,64 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-data class FridgeUiState(
-    val products: List<Product> = emptyList(),
-    val isEditorOpen: Boolean = false,
-    val editingProduct: Product? = null,
-    val errorMessage: String? = null
-)
-
 @HiltViewModel
 class FridgeViewModel @Inject constructor(
-    getFridgeProducts: GetFridgeProductsUseCase,
-    private val addProduct: AddProductUseCase,
-    private val updateProduct: UpdateProductUseCase,
-    private val deleteProduct: DeleteProductUseCase
+    getFridgeItems: GetFridgeItemsUseCase,
+    getAllProducts: GetAllProductsUseCase,
+    private val addFridgeItem: AddFridgeItemUseCase,
+    private val updateFridgeItem: UpdateFridgeItemUseCase,
+    private val deleteFridgeItem: DeleteFridgeItemUseCase,
+    private val findOrCreateProduct: FindOrCreateProductUseCase
 ) : ViewModel() {
 
-    val products: StateFlow<List<Product>> = getFridgeProducts()
+    val items: StateFlow<List<FridgeItem>> = getFridgeItems()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    private val _editingProduct = MutableStateFlow<Product?>(null)
-    val editingProduct: StateFlow<Product?> = _editingProduct
+    val catalog: StateFlow<List<Product>> = getAllProducts()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    private val _editorOpen = MutableStateFlow(false)
-    val editorOpen: StateFlow<Boolean> = _editorOpen
+    private val _isAddPickerOpen = MutableStateFlow(false)
+    val isAddPickerOpen: StateFlow<Boolean> = _isAddPickerOpen
+
+    private val _editingItem = MutableStateFlow<FridgeItem?>(null)
+    val editingItem: StateFlow<FridgeItem?> = _editingItem
 
     private val _errorMessage = MutableStateFlow<String?>(null)
     val errorMessage: StateFlow<String?> = _errorMessage
 
-    fun onAddClick() = openEditor(null)
-    fun onEditClick(product: Product) = openEditor(product)
+    fun openAddPicker() { _isAddPickerOpen.value = true }
+    fun closeAddPicker() { _isAddPickerOpen.value = false }
 
-    private fun openEditor(product: Product?) {
-        _editingProduct.value = product
-        _editorOpen.value = true
-    }
+    fun onEditClick(item: FridgeItem) { _editingItem.value = item }
+    fun closeEditDialog() { _editingItem.value = null }
 
-    fun closeEditor() {
-        _editorOpen.value = false
-        _editingProduct.value = null
-    }
+    suspend fun createProduct(name: String, category: Category, unit: MeasureUnit): Product =
+        findOrCreateProduct(name, category, unit)
 
-    fun saveProduct(name: String, category: Category, unit: MeasureUnit, quantity: Double) {
+    fun addItem(product: Product, unit: MeasureUnit, quantity: Double) {
         viewModelScope.launch {
             try {
-                val current = _editingProduct.value
-                if (current == null) {
-                    addProduct(Product(name = name, category = category, unit = unit, quantity = quantity))
-                } else {
-                    updateProduct(current.copy(name = name, category = category, unit = unit, quantity = quantity))
-                }
-                closeEditor()
+                addFridgeItem(FridgeItem(product = product, unit = unit, quantity = quantity))
+                closeAddPicker()
             } catch (e: IllegalArgumentException) {
                 _errorMessage.value = e.message
             }
         }
     }
 
-    fun onDeleteClick(product: Product) {
-        viewModelScope.launch { deleteProduct(product.id) }
+    fun updateItemQuantity(item: FridgeItem, unit: MeasureUnit, quantity: Double) {
+        viewModelScope.launch {
+            try {
+                updateFridgeItem(item.copy(unit = unit, quantity = quantity))
+                closeEditDialog()
+            } catch (e: IllegalArgumentException) {
+                _errorMessage.value = e.message
+            }
+        }
+    }
+
+    fun onDeleteClick(item: FridgeItem) {
+        viewModelScope.launch { deleteFridgeItem(item.id) }
     }
 
     fun clearError() { _errorMessage.value = null }
