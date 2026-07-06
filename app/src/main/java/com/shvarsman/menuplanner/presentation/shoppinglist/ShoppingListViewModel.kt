@@ -10,6 +10,7 @@ import com.shvarsman.menuplanner.domain.usecase.product.FindOrCreateProductUseCa
 import com.shvarsman.menuplanner.domain.usecase.product.GetAllProductsUseCase
 import com.shvarsman.menuplanner.domain.usecase.shoppinglist.AddToShoppingListUseCase
 import com.shvarsman.menuplanner.domain.usecase.shoppinglist.GetShoppingListUseCase
+import com.shvarsman.menuplanner.domain.usecase.shoppinglist.MoveCheckedItemsToFridgeUseCase
 import com.shvarsman.menuplanner.domain.usecase.shoppinglist.RemoveShoppingItemUseCase
 import com.shvarsman.menuplanner.domain.usecase.shoppinglist.ToggleShoppingItemUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -27,7 +28,8 @@ class ShoppingListViewModel @Inject constructor(
     private val addToShoppingList: AddToShoppingListUseCase,
     private val toggleShoppingItem: ToggleShoppingItemUseCase,
     private val removeShoppingItem: RemoveShoppingItemUseCase,
-    private val findOrCreateProduct: FindOrCreateProductUseCase
+    private val findOrCreateProduct: FindOrCreateProductUseCase,
+    private val moveCheckedItemsToFridge: MoveCheckedItemsToFridgeUseCase
 ) : ViewModel() {
 
     val items: StateFlow<List<ShoppingListItem>> = getShoppingList()
@@ -63,5 +65,10 @@ class ShoppingListViewModel @Inject constructor(
 
     fun removeItem(item: ShoppingListItem) {
         viewModelScope.launch { removeShoppingItem(item.id) }
+    }
+
+    /** Переносит отмеченные позиции в холодильник и убирает их из списка покупок. */
+    fun moveCheckedToFridge() {
+        viewModelScope.launch { moveCheckedItemsToFridge() }
     }
 }
