@@ -51,7 +51,10 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import coil3.compose.AsyncImage
+import com.shvarsman.menuplanner.domain.model.FridgeItem
+import com.shvarsman.menuplanner.domain.model.IngredientAvailability
 import com.shvarsman.menuplanner.domain.model.RecipeIngredient
+import com.shvarsman.menuplanner.domain.model.availability
 import com.shvarsman.menuplanner.presentation.common.ProductPickerDialog
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -82,6 +85,8 @@ fun RecipeEditorScreen(
     ) { uri -> uri?.let { viewModel.addStepImage(it) } }
 
     val focusRequestIndex by viewModel.focusRequestIndex.collectAsState()
+
+    val fridgeItems by viewModel.fridgeItems.collectAsState()
 
     LaunchedEffect(state.isSaved) {
         if (state.isSaved) onDone()
@@ -178,7 +183,9 @@ fun RecipeEditorScreen(
             items(state.ingredients) { ingredient ->
                 IngredientRow(
                     ingredient = ingredient,
-                    onRemove = { viewModel.removeIngredient(ingredient) })
+                    fridgeItems = fridgeItems,
+                    onRemove = { viewModel.removeIngredient(ingredient) }
+                )
             }
 
             // ── Шаги приготовления ────────────────────────────────────────────────
@@ -275,7 +282,17 @@ private fun CoverPhotoPicker(
 }
 
 @Composable
-private fun IngredientRow(ingredient: RecipeIngredient, onRemove: () -> Unit) {
+private fun IngredientRow(
+    ingredient: RecipeIngredient,
+    fridgeItems: List<FridgeItem>,
+    onRemove: () -> Unit
+) {
+    val status = ingredient.availability(fridgeItems)
+    val textColor = when (status) {
+        IngredientAvailability.AVAILABLE -> MaterialTheme.colorScheme.primary
+        IngredientAvailability.INSUFFICIENT -> MaterialTheme.colorScheme.error
+    }
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -285,13 +302,11 @@ private fun IngredientRow(ingredient: RecipeIngredient, onRemove: () -> Unit) {
     ) {
         Text(
             "${ingredient.product.name} — ${formatQty(ingredient.quantity)} ${ingredient.unit.displayName}",
-            style = MaterialTheme.typography.bodyMedium
+            style = MaterialTheme.typography.bodyMedium,
+            color = textColor
         )
         IconButton(onClick = onRemove) {
-            Icon(
-                Icons.Filled.Close,
-                contentDescription = "Удалить ингредиент"
-            )
+            Icon(Icons.Filled.Close, contentDescription = "Удалить ингредиент")
         }
     }
 }

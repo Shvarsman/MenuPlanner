@@ -2,7 +2,6 @@ package com.shvarsman.menuplanner.presentation.menu
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -12,13 +11,15 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import com.shvarsman.menuplanner.domain.model.FridgeItem
+import com.shvarsman.menuplanner.domain.model.IngredientAvailability
 import com.shvarsman.menuplanner.domain.model.MealType
 import com.shvarsman.menuplanner.domain.model.MenuEntry
 import com.shvarsman.menuplanner.domain.model.Recipe
+import com.shvarsman.menuplanner.domain.model.availability
 import java.time.DayOfWeek
 import java.time.format.TextStyle
 import java.util.Locale
@@ -37,6 +38,7 @@ fun MenuScreen(
 ) {
     val weekMenu by viewModel.weekMenu.collectAsState()
     val recipes by viewModel.recipes.collectAsState()
+    val fridgeItems by viewModel.fridgeItems.collectAsState()
     val pickerTarget by viewModel.pickerTarget.collectAsState()
 
     val entriesByKey = remember(weekMenu) {
@@ -44,24 +46,16 @@ fun MenuScreen(
     }
 
     Scaffold(
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = "Меню на неделю",
-                        fontSize = 32.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-            )
-        },
         contentWindowInsets = WindowInsets(0),
+        topBar = { TopAppBar(title = { Text("Меню на неделю") }) }
     ) { padding ->
         LazyColumn(
-            modifier = Modifier
-                .padding(padding)
-                .fillMaxSize(),
-            contentPadding = PaddingValues(16.dp),
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(
+                top = padding.calculateTopPadding() + 16.dp,
+                bottom = padding.calculateBottomPadding() + 16.dp,
+                start = 16.dp, end = 16.dp
+            ),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             items(weekDays) { day ->
@@ -78,6 +72,7 @@ fun MenuScreen(
     if (pickerTarget != null) {
         RecipePickerDialog(
             recipes = recipes,
+            fridgeItems = fridgeItems,
             onDismiss = { viewModel.closeRecipePicker() },
             onSelect = { viewModel.assignRecipe(it) },
             onCreateNew = {
@@ -163,10 +158,13 @@ private fun MealRow(
 @Composable
 private fun RecipePickerDialog(
     recipes: List<Recipe>,
+    fridgeItems: List<FridgeItem>,
     onDismiss: () -> Unit,
     onSelect: (Recipe) -> Unit,
     onCreateNew: () -> Unit
 ) {
+    var expandedRecipeId by remember { mutableStateOf<Long?>(null) }
+
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("Выбрать рецепт") },
@@ -174,12 +172,54 @@ private fun RecipePickerDialog(
             if (recipes.isEmpty()) {
                 Text("У вас пока нет рецептов. Создайте первый рецепт во вкладке «Рецепты».")
             } else {
-                LazyColumn(modifier = Modifier.heightIn(max = 360.dp)) {
+                LazyColumn(modifier = Modifier.heightIn(max = 420.dp)) {
                     items(recipes, key = { it.id }) { recipe ->
-                        ListItem(
-                            headlineContent = { Text(recipe.title) },
-                            modifier = Modifier.clickable { onSelect(recipe) }
-                        )
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    expandedRecipeId =
+                                        if (expandedRecipeId == recipe.id) null else recipe.id
+                                }
+                                .padding(vertical = 8.dp)
+                        ) {
+                            Text(recipe.title, style = MaterialTheme.typography.titleMedium)
+
+                            // Превью ингредиентов с цветовой индикацией наличия в холодильнике
+                            if (expandedRecipeId == recipe.id) {
+                                Column(modifier = Modifier.padding(top = 4.dp, start = 8.dp)) {
+                                    recipe.ingredients.forEach { ingredient ->
+                                        val status = ingredient.availability(fridgeItems)
+                                        val color = when (status) {
+                                            IngredientAvailability.AVAILABLE -> MaterialTheme.colorScheme.primary
+                                            IngredientAvailability.INSUFFICIENT -> MaterialTheme.colorScheme.error
+                                        }
+                                        Text(
+                                            text = "${ingredient.product.name} — ${
+                                                formatQty(
+                                                    ingredient.quantity
+                                                )
+                                            } ${ingredient.unit.displayName}",
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = color
+                                        )
+                                    }
+                                }
+                            }
+
+                            Spacer(Modifier.height(8.dp))
+
+                            // Кнопка теперь во всю ширину карточки рецепта — не теснится с названием
+                            Button(
+                                onClick = { onSelect(recipe) },
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Text("Выбрать этот рецепт")
+                            }
+
+                            Spacer(Modifier.height(4.dp))
+                            HorizontalDivider()
+                        }
                     }
                 }
             }
@@ -192,3 +232,6 @@ private fun RecipePickerDialog(
         }
     )
 }
+
+private fun formatQty(value: Double): String =
+    if (value == value.toLong().toDouble()) value.toLong().toString() else value.toString()

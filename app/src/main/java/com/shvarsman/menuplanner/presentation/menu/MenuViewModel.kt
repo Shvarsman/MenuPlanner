@@ -2,10 +2,12 @@ package com.shvarsman.menuplanner.presentation.menu
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.shvarsman.menuplanner.domain.model.FridgeItem
 import com.shvarsman.menuplanner.domain.model.MealType
 import com.shvarsman.menuplanner.domain.model.MenuEntry
 import com.shvarsman.menuplanner.domain.model.Recipe
-import com.shvarsman.menuplanner.domain.usecase.menu.AddMenuEntryUseCase
+import com.shvarsman.menuplanner.domain.usecase.fridge.GetFridgeItemsUseCase
+import com.shvarsman.menuplanner.domain.usecase.menu.AssignRecipeToMenuUseCase
 import com.shvarsman.menuplanner.domain.usecase.menu.GetWeekMenuUseCase
 import com.shvarsman.menuplanner.domain.usecase.menu.RemoveMenuEntryUseCase
 import com.shvarsman.menuplanner.domain.usecase.recipe.GetRecipesUseCase
@@ -22,7 +24,8 @@ import javax.inject.Inject
 class MenuViewModel @Inject constructor(
     getWeekMenu: GetWeekMenuUseCase,
     getRecipes: GetRecipesUseCase,
-    private val addMenuEntry: AddMenuEntryUseCase,
+    getFridgeItems: GetFridgeItemsUseCase,
+    private val assignRecipeToMenu: AssignRecipeToMenuUseCase,
     private val removeMenuEntry: RemoveMenuEntryUseCase
 ) : ViewModel() {
 
@@ -30,6 +33,10 @@ class MenuViewModel @Inject constructor(
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     val recipes: StateFlow<List<Recipe>> = getRecipes()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    // Нужен для покраски ингредиентов в диалоге выбора рецепта
+    val fridgeItems: StateFlow<List<FridgeItem>> = getFridgeItems()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     private val _pickerTarget = MutableStateFlow<Pair<DayOfWeek, MealType>?>(null)
@@ -46,7 +53,7 @@ class MenuViewModel @Inject constructor(
     fun assignRecipe(recipe: Recipe) {
         val target = _pickerTarget.value ?: return
         viewModelScope.launch {
-            addMenuEntry(MenuEntry(dayOfWeek = target.first, mealType = target.second, recipeId = recipe.id))
+            assignRecipeToMenu(target.first, target.second, recipe)
             closeRecipePicker()
         }
     }

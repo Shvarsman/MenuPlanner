@@ -5,12 +5,14 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.shvarsman.menuplanner.data.local.ImageFileManager
 import com.shvarsman.menuplanner.domain.model.Category
+import com.shvarsman.menuplanner.domain.model.FridgeItem
 import com.shvarsman.menuplanner.domain.model.MeasureUnit
 import com.shvarsman.menuplanner.domain.model.Product
 import com.shvarsman.menuplanner.domain.model.Recipe
 import com.shvarsman.menuplanner.domain.model.RecipeIngredient
 import com.shvarsman.menuplanner.domain.model.StepContentItem
 import com.shvarsman.menuplanner.domain.repository.RecipeRepository
+import com.shvarsman.menuplanner.domain.usecase.fridge.GetFridgeItemsUseCase
 import com.shvarsman.menuplanner.domain.usecase.product.FindOrCreateProductUseCase
 import com.shvarsman.menuplanner.domain.usecase.product.GetAllProductsUseCase
 import com.shvarsman.menuplanner.domain.usecase.recipe.SaveRecipeUseCase
@@ -39,7 +41,8 @@ class RecipeEditorViewModel @Inject constructor(
     private val saveRecipe: SaveRecipeUseCase,
     private val imageFileManager: ImageFileManager,
     private val findOrCreateProduct: FindOrCreateProductUseCase,
-    getAllProducts: GetAllProductsUseCase
+    getAllProducts: GetAllProductsUseCase,
+    getFridgeItems: GetFridgeItemsUseCase
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(RecipeEditorState())
@@ -52,6 +55,10 @@ class RecipeEditorViewModel @Inject constructor(
     val isIngredientPickerOpen: StateFlow<Boolean> = _isIngredientPickerOpen
 
     val catalog: StateFlow<List<Product>> = getAllProducts()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    // Нужен для покраски ингредиентов в зависимости от наличия в холодильнике
+    val fridgeItems: StateFlow<List<FridgeItem>> = getFridgeItems()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     fun load(recipeId: Long) {
@@ -85,7 +92,6 @@ class RecipeEditorViewModel @Inject constructor(
         _state.value = _state.value.copy(title = value)
     }
 
-    /** Копирует выбранное фото обложки во внутреннее хранилище перед сохранением в state. */
     fun onCoverPhotoSelected(uri: Uri) {
         viewModelScope.launch {
             val persistedUri = imageFileManager.persistImage(uri)
@@ -95,24 +101,15 @@ class RecipeEditorViewModel @Inject constructor(
 
     // ── Ингредиенты ────────────────────────────────────────────────────────────
 
-    fun openIngredientPicker() {
-        _isIngredientPickerOpen.value = true
-    }
-
-    fun closeIngredientPicker() {
-        _isIngredientPickerOpen.value = false
-    }
+    fun openIngredientPicker() { _isIngredientPickerOpen.value = true }
+    fun closeIngredientPicker() { _isIngredientPickerOpen.value = false }
 
     suspend fun createProduct(name: String, category: Category, unit: MeasureUnit): Product =
         findOrCreateProduct(name, category, unit)
 
     fun addIngredient(product: Product, unit: MeasureUnit, quantity: Double) {
         _state.value = _state.value.copy(
-            ingredients = _state.value.ingredients + RecipeIngredient(
-                product = product,
-                unit = unit,
-                quantity = quantity
-            )
+            ingredients = _state.value.ingredients + RecipeIngredient(product = product, unit = unit, quantity = quantity)
         )
         closeIngredientPicker()
     }
@@ -158,7 +155,6 @@ class RecipeEditorViewModel @Inject constructor(
         }
     }
 
-    /** Копирует изображение шага во внутреннее хранилище перед добавлением в список шагов. */
     fun addStepImage(uri: Uri) {
         viewModelScope.launch {
             val persistedUri = imageFileManager.persistImage(uri)
