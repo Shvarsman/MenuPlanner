@@ -61,8 +61,8 @@ fun RecipeListScreen(
                 title = {
                     Text(
                         text = "Рецепты",
-                        fontSize = 32.sp,
-                        fontWeight = FontWeight.Bold
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Medium
                     )
                 }
             )

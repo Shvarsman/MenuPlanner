@@ -48,7 +48,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import coil3.compose.AsyncImage
 import com.shvarsman.menuplanner.domain.model.FridgeItem
@@ -71,15 +73,10 @@ fun RecipeEditorScreen(
 
     val state by viewModel.state.collectAsState()
 
-    var showFridgePicker by remember { mutableStateOf(false) }
-    var showCustomIngredientDialog by remember { mutableStateOf(false) }
-
-    // Лаунчер для фото обложки рецепта
     val coverPhotoPicker = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri -> uri?.let { viewModel.onCoverPhotoSelected(it) } }
 
-    // Лаунчер для фото внутри шагов
     val stepPhotoPicker = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri -> uri?.let { viewModel.addStepImage(it) } }
@@ -97,7 +94,11 @@ fun RecipeEditorScreen(
         topBar = {
             TopAppBar(
                 title = {
-                    Text(if (state.recipeId == 0L) "Новый рецепт" else "Редактировать рецепт")
+                    Text(
+                        text = if (state.recipeId == 0L) "Новый рецепт" else "Редактировать рецепт",
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Medium
+                    )
                 },
                 actions = {
                     // Кнопка добавления фото в шаги — прямо в топбаре как в NotesApp

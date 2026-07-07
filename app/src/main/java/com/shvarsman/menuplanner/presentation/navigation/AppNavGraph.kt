@@ -78,7 +78,7 @@ fun AppNavGraph() {
         NavHost(
             navController = navController,
             startDestination = Destination.Menu.route,
-            modifier = Modifier.padding(innerPadding)
+            modifier = Modifier.padding(bottom = innerPadding.calculateBottomPadding())
         ) {
             composable(Destination.Menu.route) {
                 MenuScreen(

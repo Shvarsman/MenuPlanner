@@ -12,7 +12,9 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.shvarsman.menuplanner.domain.model.FridgeItem
 import com.shvarsman.menuplanner.domain.model.IngredientAvailability
@@ -43,6 +45,7 @@ fun MenuScreen(
     val pickerTarget by viewModel.pickerTarget.collectAsState()
     val insufficientDialogEntry by viewModel.insufficientDialogEntry.collectAsState()
     val navigateToCooking by viewModel.navigateToCooking.collectAsState()
+    val reservedQuantities by viewModel.reservedQuantities.collectAsState()
 
     LaunchedEffect(navigateToCooking) {
         navigateToCooking?.let { (recipeId, menuEntryId) ->
@@ -57,7 +60,17 @@ fun MenuScreen(
 
     Scaffold(
         contentWindowInsets = WindowInsets(0),
-        topBar = { TopAppBar(title = { Text("Меню на неделю") }) }
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(
+                        text = "Меню на неделю",
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+            )
+        }
     ) { padding ->
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
@@ -84,6 +97,7 @@ fun MenuScreen(
         RecipePickerDialog(
             recipes = recipes,
             fridgeItems = fridgeItems,
+            reservedQuantities = reservedQuantities,
             onDismiss = { viewModel.closeRecipePicker() },
             onSelect = { viewModel.assignRecipe(it) },
             onCreateNew = {
@@ -209,6 +223,7 @@ private fun InsufficientIngredientsDialog(
 private fun RecipePickerDialog(
     recipes: List<Recipe>,
     fridgeItems: List<FridgeItem>,
+    reservedQuantities: Map<Long, Double>,
     onDismiss: () -> Unit,
     onSelect: (Recipe) -> Unit,
     onCreateNew: () -> Unit
@@ -238,7 +253,11 @@ private fun RecipePickerDialog(
                             if (expandedRecipeId == recipe.id) {
                                 Column(modifier = Modifier.padding(top = 4.dp, start = 8.dp)) {
                                     recipe.ingredients.forEach { ingredient ->
-                                        val status = ingredient.availability(fridgeItems)
+                                        // Учитываем резервы других рецептов в меню — этот рецепт ещё не добавлен,
+                                        // поэтому исключать нечего
+                                        val reserved =
+                                            reservedQuantities[ingredient.product.id] ?: 0.0
+                                        val status = ingredient.availability(fridgeItems, reserved)
                                         val color = when (status) {
                                             IngredientAvailability.AVAILABLE -> MaterialTheme.colorScheme.primary
                                             IngredientAvailability.INSUFFICIENT -> MaterialTheme.colorScheme.error

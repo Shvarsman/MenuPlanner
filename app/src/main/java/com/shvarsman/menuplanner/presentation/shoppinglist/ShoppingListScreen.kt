@@ -13,9 +13,11 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.shvarsman.menuplanner.domain.model.Category
 import com.shvarsman.menuplanner.domain.model.ShoppingListItem
@@ -43,7 +45,13 @@ fun ShoppingListScreen(viewModel: ShoppingListViewModel = hiltViewModel()) {
         contentWindowInsets = WindowInsets(0),
         topBar = {
             TopAppBar(
-                title = { Text("Список покупок") },
+                title = {
+                    Text(
+                        text = "Список покупок",
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Medium
+                    )
+                },
                 actions = {
                     IconButton(
                         onClick = { showMoveConfirmation = true },
@@ -196,9 +204,11 @@ private fun CheckedHeader() {
 
 @Composable
 private fun ShoppingItemRow(item: ShoppingListItem, onToggle: () -> Unit, onRemove: () -> Unit) {
-    ElevatedCard(modifier = Modifier
-        .fillMaxWidth()
-        .padding(horizontal = 16.dp, vertical = 4.dp)) {
+    ElevatedCard(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 4.dp)
+    ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()

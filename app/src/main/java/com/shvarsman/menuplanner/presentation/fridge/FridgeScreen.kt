@@ -13,8 +13,10 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.shvarsman.menuplanner.domain.model.Category
 import com.shvarsman.menuplanner.domain.model.FridgeItem
@@ -36,11 +38,19 @@ fun FridgeScreen(
     }
 
     Scaffold(contentWindowInsets = WindowInsets(0), topBar = {
-        TopAppBar(title = { Text("Холодильник") }, actions = {
-            IconButton(onClick = onOpenCatalog) {
-                Icon(Icons.AutoMirrored.Filled.ListAlt, contentDescription = "Все продукты")
-            }
-        })
+        TopAppBar(
+            title = {
+                Text(
+                    text = "Холодильник",
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Medium
+                )
+            },
+            actions = {
+                IconButton(onClick = onOpenCatalog) {
+                    Icon(Icons.AutoMirrored.Filled.ListAlt, contentDescription = "Все продукты")
+                }
+            })
     }, floatingActionButton = {
         FloatingActionButton(onClick = { viewModel.openAddPicker() }) {
             Icon(Icons.Filled.Add, contentDescription = "Добавить продукт")

@@ -17,6 +17,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.time.DayOfWeek
@@ -40,14 +41,27 @@ class MenuViewModel @Inject constructor(
     val fridgeItems: StateFlow<List<FridgeItem>> = getFridgeItems()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
+    /** Сколько каждого продукта уже "занято" рецептами, добавленными в меню
+     * (по productId → суммарное нужное количество). Пересчитывается реактивно
+     * при изменении меню или списка рецептов. */
+    val reservedQuantities: StateFlow<Map<Long, Double>> =
+        combine(weekMenu, recipes) { entries, allRecipes ->
+            val reserved = mutableMapOf<Long, Double>()
+            entries.forEach { entry ->
+                val recipe = allRecipes.firstOrNull { it.id == entry.recipeId } ?: return@forEach
+                recipe.ingredients.forEach { ingredient ->
+                    reserved[ingredient.product.id] = (reserved[ingredient.product.id] ?: 0.0) + ingredient.quantity
+                }
+            }
+            reserved
+        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyMap())
+
     private val _pickerTarget = MutableStateFlow<Pair<DayOfWeek, MealType>?>(null)
     val pickerTarget: StateFlow<Pair<DayOfWeek, MealType>?> = _pickerTarget
 
-    // Показывается, когда нажали "Приготовить", но каких-то ингредиентов не хватает
     private val _insufficientDialogEntry = MutableStateFlow<MenuEntry?>(null)
     val insufficientDialogEntry: StateFlow<MenuEntry?> = _insufficientDialogEntry
 
-    // Одноразовое событие навигации на экран готовки: (recipeId, menuEntryId)
     private val _navigateToCooking = MutableStateFlow<Pair<Long, Long>?>(null)
     val navigateToCooking: StateFlow<Pair<Long, Long>?> = _navigateToCooking
 
@@ -71,12 +85,16 @@ class MenuViewModel @Inject constructor(
         viewModelScope.launch { removeMenuEntry(entry.id) }
     }
 
-    /** Проверяет наличие всех ингредиентов рецепта в холодильнике.
-     * Если хватает — сразу переходим к готовке, иначе показываем предупреждение. */
+    /** Проверяет наличие всех ингредиентов рецепта в холодильнике — только для
+     * этого конкретного рецепта, без учёта резервов других рецептов в меню.
+     * Резервирование учитывается только при добавлении в меню (чтобы корректно
+     * пополнять список покупок), но не при проверке готовности к готовке —
+     * здесь важен только физический остаток на данный момент. */
     fun onCookClick(entry: MenuEntry) {
         val recipe = recipes.value.firstOrNull { it.id == entry.recipeId } ?: return
-        val allAvailable = recipe.ingredients.all {
-            it.availability(fridgeItems.value) == IngredientAvailability.AVAILABLE
+
+        val allAvailable = recipe.ingredients.all { ingredient ->
+            ingredient.availability(fridgeItems.value) == IngredientAvailability.AVAILABLE
         }
 
         if (allAvailable) {

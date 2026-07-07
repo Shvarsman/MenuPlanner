@@ -12,28 +12,36 @@ import javax.inject.Inject
 
 /**
  * Добавляет рецепт в меню на выбранный день/приём пищи. Продукты из
- * холодильника на этом этапе НЕ списываются — списание происходит позже,
- * на экране "Готовка" (см. CompleteCookingUseCase).
+ * холодильника не списываются на этом этапе — только на "Готовке".
  *
- * Здесь только вычисляется нехватка ингредиентов относительно текущего
- * холодильника, и недостающее количество добавляется в список покупок.
+ * Нехватка считается с учётом того, что часть холодильника уже
+ * зарезервирована другими рецептами, ранее добавленными в меню:
+ * реально доступно = остаток в холодильнике − то, что уже нужно другим
+ * рецептам в меню. Если этого не хватает на текущий рецепт — разница
+ * уходит в список покупок.
  */
 class AssignRecipeToMenuUseCase @Inject constructor(
     private val menuRepository: MenuRepository,
     private val fridgeRepository: FridgeRepository,
-    private val addToShoppingList: AddToShoppingListUseCase
+    private val addToShoppingList: AddToShoppingListUseCase,
+    private val getReservedQuantities: GetReservedQuantitiesUseCase
 ) {
     suspend operator fun invoke(day: DayOfWeek, mealType: MealType, recipe: Recipe): Long {
+        // Считаем резервы ДО добавления нового рецепта в меню — сам он ещё не должен себя резервировать
+        val reserved = getReservedQuantities()
+        val fridgeSnapshot = fridgeRepository.observeItems().first()
+
         val entryId = menuRepository.addEntry(
             MenuEntry(dayOfWeek = day, mealType = mealType, recipeId = recipe.id)
         )
 
-        val fridgeSnapshot = fridgeRepository.observeItems().first()
-
         recipe.ingredients.forEach { ingredient ->
-            val available = fridgeSnapshot.firstOrNull { it.product.id == ingredient.product.id }?.quantity ?: 0.0
-            if (available < ingredient.quantity) {
-                val shortage = ingredient.quantity - available
+            val fridgeQty = fridgeSnapshot.firstOrNull { it.product.id == ingredient.product.id }?.quantity ?: 0.0
+            val alreadyReserved = reserved[ingredient.product.id] ?: 0.0
+            val trulyAvailable = (fridgeQty - alreadyReserved).coerceAtLeast(0.0)
+
+            if (trulyAvailable < ingredient.quantity) {
+                val shortage = ingredient.quantity - trulyAvailable
                 addToShoppingList(ingredient.product, ingredient.unit, shortage)
             }
         }
