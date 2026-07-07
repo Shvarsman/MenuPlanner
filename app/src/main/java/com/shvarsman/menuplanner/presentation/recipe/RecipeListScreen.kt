@@ -1,38 +1,16 @@
 package com.shvarsman.menuplanner.presentation.recipe
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material3.ElevatedCard
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.MenuBook
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -49,22 +27,16 @@ import com.shvarsman.menuplanner.domain.model.Recipe
 @Composable
 fun RecipeListScreen(
     onAddRecipe: () -> Unit,
+    onViewRecipe: (Long) -> Unit,
     onEditRecipe: (Long) -> Unit,
     viewModel: RecipeListViewModel = hiltViewModel()
 ) {
     val recipes by viewModel.recipes.collectAsState()
 
     Scaffold(
-        contentWindowInsets = WindowInsets(0),
         topBar = {
             TopAppBar(
-                title = {
-                    Text(
-                        text = "Рецепты",
-                        fontSize = 24.sp,
-                        fontWeight = FontWeight.Medium
-                    )
-                }
+                title = { Text("Рецепты", fontSize = 24.sp, fontWeight = FontWeight.Medium) }
             )
         },
         floatingActionButton = {
@@ -75,18 +47,11 @@ fun RecipeListScreen(
     ) { padding ->
         if (recipes.isEmpty()) {
             Column(
-                modifier = Modifier
-                    .padding(padding)
-                    .fillMaxSize(),
+                modifier = Modifier.fillMaxSize().padding(padding),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
-                Icon(
-                    Icons.AutoMirrored.Filled.MenuBook,
-                    contentDescription = null,
-                    modifier = Modifier.size(64.dp),
-                    tint = MaterialTheme.colorScheme.outline
-                )
+                Icon(Icons.Filled.MenuBook, contentDescription = null, modifier = Modifier.size(64.dp), tint = MaterialTheme.colorScheme.outline)
                 Spacer(Modifier.height(12.dp))
                 Text(
                     "Рецептов пока нет.\nДобавьте свой первый рецепт.",
@@ -96,16 +61,19 @@ fun RecipeListScreen(
             }
         } else {
             LazyColumn(
-                modifier = Modifier
-                    .padding(padding)
-                    .fillMaxSize(),
-                contentPadding = PaddingValues(16.dp),
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(
+                    top = padding.calculateTopPadding() + 16.dp,
+                    bottom = padding.calculateBottomPadding() + 16.dp,
+                    start = 16.dp, end = 16.dp
+                ),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 items(recipes, key = { it.id }) { recipe ->
                     RecipeCard(
                         recipe = recipe,
-                        onClick = { onEditRecipe(recipe.id) },
+                        onClick = { onViewRecipe(recipe.id) },
+                        onEdit = { onEditRecipe(recipe.id) },
                         onDelete = { viewModel.onDelete(recipe) }
                     )
                 }
@@ -115,7 +83,7 @@ fun RecipeListScreen(
 }
 
 @Composable
-private fun RecipeCard(recipe: Recipe, onClick: () -> Unit, onDelete: () -> Unit) {
+private fun RecipeCard(recipe: Recipe, onClick: () -> Unit, onEdit: () -> Unit, onDelete: () -> Unit) {
     ElevatedCard(onClick = onClick, modifier = Modifier.fillMaxWidth()) {
         Row(modifier = Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
             if (recipe.photoUri != null) {
@@ -123,26 +91,16 @@ private fun RecipeCard(recipe: Recipe, onClick: () -> Unit, onDelete: () -> Unit
                     model = recipe.photoUri,
                     contentDescription = recipe.title,
                     contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .size(64.dp)
-                        .clip(RoundedCornerShape(12.dp))
+                    modifier = Modifier.size(64.dp).clip(RoundedCornerShape(12.dp))
                 )
             } else {
                 Box(
-                    modifier = Modifier
-                        .size(64.dp)
-                        .clip(RoundedCornerShape(12.dp)),
+                    modifier = Modifier.size(64.dp).clip(RoundedCornerShape(12.dp)),
                     contentAlignment = Alignment.Center
                 ) {
-                    Surface(
-                        color = MaterialTheme.colorScheme.secondaryContainer,
-                        modifier = Modifier.fillMaxSize()
-                    ) {
-                        Box(
-                            contentAlignment = Alignment.Center,
-                            modifier = Modifier.fillMaxSize()
-                        ) {
-                            Icon(Icons.AutoMirrored.Filled.MenuBook, contentDescription = null)
+                    Surface(color = MaterialTheme.colorScheme.secondaryContainer, modifier = Modifier.fillMaxSize()) {
+                        Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
+                            Icon(Icons.Filled.MenuBook, contentDescription = null)
                         }
                     }
                 }
@@ -155,6 +113,9 @@ private fun RecipeCard(recipe: Recipe, onClick: () -> Unit, onDelete: () -> Unit
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
+            }
+            IconButton(onClick = onEdit) {
+                Icon(Icons.Filled.Edit, contentDescription = "Редактировать рецепт")
             }
             IconButton(onClick = onDelete) {
                 Icon(Icons.Filled.Delete, contentDescription = "Удалить рецепт")

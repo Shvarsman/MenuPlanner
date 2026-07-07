@@ -29,6 +29,7 @@ import com.shvarsman.menuplanner.presentation.fridge.FridgeScreen
 import com.shvarsman.menuplanner.presentation.menu.MenuScreen
 import com.shvarsman.menuplanner.presentation.recipe.RecipeEditorScreen
 import com.shvarsman.menuplanner.presentation.recipe.RecipeListScreen
+import com.shvarsman.menuplanner.presentation.recipe.RecipeViewScreen
 import com.shvarsman.menuplanner.presentation.shoppinglist.ShoppingListScreen
 
 private data class BottomItem(
@@ -99,7 +100,23 @@ fun AppNavGraph() {
                     onAddRecipe = {
                         navController.navigate(Destination.RecipeEditor.createRoute(Destination.RecipeEditor.NEW_RECIPE_ID))
                     },
+                    onViewRecipe = { id ->
+                        navController.navigate(Destination.RecipeView.createRoute(id))
+                    },
                     onEditRecipe = { id ->
+                        navController.navigate(Destination.RecipeEditor.createRoute(id))
+                    }
+                )
+            }
+            composable(
+                route = Destination.RecipeView.route,
+                arguments = listOf(navArgument("recipeId") { type = NavType.LongType })
+            ) { backStackEntry ->
+                val recipeId = backStackEntry.arguments?.getLong("recipeId") ?: 0L
+                RecipeViewScreen(
+                    recipeId = recipeId,
+                    onBack = { navController.popBackStack() },
+                    onEdit = { id ->
                         navController.navigate(Destination.RecipeEditor.createRoute(id))
                     }
                 )
