@@ -1,9 +1,11 @@
 package com.shvarsman.menuplanner.presentation.menu
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
@@ -12,16 +14,22 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import coil3.compose.AsyncImage
 import com.shvarsman.menuplanner.domain.model.FridgeItem
 import com.shvarsman.menuplanner.domain.model.IngredientAvailability
 import com.shvarsman.menuplanner.domain.model.MealType
 import com.shvarsman.menuplanner.domain.model.MenuEntry
 import com.shvarsman.menuplanner.domain.model.Recipe
 import com.shvarsman.menuplanner.domain.model.availability
+import com.shvarsman.menuplanner.presentation.ui.theme.AppCornerRadius
 import java.time.DayOfWeek
 import java.time.format.TextStyle
 import java.util.Locale
@@ -123,7 +131,10 @@ private fun DayCard(
     onRemoveEntry: (MenuEntry) -> Unit,
     onCookEntry: (MenuEntry) -> Unit
 ) {
-    ElevatedCard(modifier = Modifier.fillMaxWidth()) {
+    ElevatedCard(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(AppCornerRadius)
+    ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(
                 day.getDisplayName(TextStyle.FULL, Locale.forLanguageTag("ru"))
@@ -174,28 +185,77 @@ private fun MealRow(
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         } else {
-            entries.forEach { entry ->
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                entries.forEach { entry ->
+                    MenuEntryCard(
+                        entry = entry,
+                        onRemove = { onRemove(entry) },
+                        onCook = { onCook(entry) })
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun MenuEntryCard(entry: MenuEntry, onRemove: () -> Unit, onCook: () -> Unit) {
+    ElevatedCard(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(AppCornerRadius)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(88.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Квадратное фото слева, скруглённое только с левой стороны — совпадает с формой карточки
+            if (entry.recipePhotoUri != null) {
+                AsyncImage(
+                    model = entry.recipePhotoUri,
+                    contentDescription = entry.recipeTitle,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .aspectRatio(1f)
+                        .clip(RoundedCornerShape(topEnd = AppCornerRadius, bottomEnd = AppCornerRadius))
+                )
+            } else {
+                Box(
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .aspectRatio(1f)
+                        .clip(RoundedCornerShape(topStart = AppCornerRadius, bottomStart = AppCornerRadius)),
+                    contentAlignment = Alignment.Center
                 ) {
-                    Text(
-                        entry.recipeTitle,
-                        style = MaterialTheme.typography.bodyMedium,
-                        modifier = Modifier.weight(1f)
-                    )
-                    IconButton(onClick = { onCook(entry) }) {
-                        Icon(
-                            Icons.Filled.Restaurant,
-                            contentDescription = "Приготовить",
-                            tint = MaterialTheme.colorScheme.primary
-                        )
-                    }
-                    IconButton(onClick = { onRemove(entry) }) {
-                        Icon(Icons.Filled.Close, contentDescription = "Убрать из меню")
+                    Surface(color = MaterialTheme.colorScheme.secondaryContainer, modifier = Modifier.fillMaxSize()) {
+                        Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
+                            Icon(
+                                Icons.Filled.Restaurant,
+                                contentDescription = null,
+                                modifier = Modifier.size(32.dp),
+                                tint = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.6f)
+                            )
+                        }
                     }
                 }
+            }
+
+            Text(
+                entry.recipeTitle,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Medium,
+                maxLines = 2,
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(horizontal = 12.dp)
+            )
+
+            IconButton(onClick = onCook) {
+                Icon(Icons.Filled.Restaurant, contentDescription = "Приготовить", tint = MaterialTheme.colorScheme.primary)
+            }
+            IconButton(onClick = onRemove) {
+                Icon(Icons.Filled.Close, contentDescription = "Убрать из меню")
             }
         }
     }

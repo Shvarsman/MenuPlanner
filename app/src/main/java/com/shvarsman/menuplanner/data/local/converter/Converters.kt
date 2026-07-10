@@ -4,6 +4,7 @@ import androidx.room.TypeConverter
 import com.shvarsman.menuplanner.domain.model.Category
 import com.shvarsman.menuplanner.domain.model.MeasureUnit
 import com.shvarsman.menuplanner.domain.model.MealType
+import com.shvarsman.menuplanner.domain.model.RecipeCategory
 import com.shvarsman.menuplanner.domain.model.StepContentItem
 import java.time.DayOfWeek
 
@@ -15,6 +16,13 @@ class Converters {
     @TypeConverter
     fun toCategory(value: String): Category =
         Category.entries.first { it.name == value }
+
+    @TypeConverter
+    fun fromRecipeCategory(category: RecipeCategory): String = category.toString()
+
+    @TypeConverter
+    fun toRecipeCategory(value: String): RecipeCategory =
+        RecipeCategory.entries.first { it.name == value }
 
     @TypeConverter
     fun fromMeasureUnit(unit: MeasureUnit): String = unit.toString()

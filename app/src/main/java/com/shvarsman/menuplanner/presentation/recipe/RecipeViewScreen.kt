@@ -23,6 +23,7 @@ import com.shvarsman.menuplanner.domain.model.IngredientAvailability
 import com.shvarsman.menuplanner.domain.model.RecipeIngredient
 import com.shvarsman.menuplanner.domain.model.availability
 import com.shvarsman.menuplanner.presentation.cooking.CookingStepsReadOnly
+import com.shvarsman.menuplanner.presentation.ui.theme.AppCornerRadius
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -87,6 +88,15 @@ fun RecipeViewScreen(
             )
         ) {
             item {
+                AssistChip(
+                    onClick = {},
+                    enabled = false,
+                    leadingIcon = { Icon(recipe.category.icon, contentDescription = null, modifier = Modifier.size(18.dp)) },
+                    label = { Text(recipe.category.displayName) },
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
+                )
+            }
+            item {
                 if (recipe.photoUri != null) {
                     AsyncImage(
                         model = recipe.photoUri,
@@ -96,7 +106,7 @@ fun RecipeViewScreen(
                             .fillMaxWidth()
                             .padding(horizontal = 16.dp)
                             .height(200.dp)
-                            .clip(RoundedCornerShape(16.dp))
+                            .clip(RoundedCornerShape(AppCornerRadius))
                     )
                     Spacer(Modifier.height(12.dp))
                 }

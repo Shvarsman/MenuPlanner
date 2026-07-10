@@ -1,39 +1,34 @@
 package com.shvarsman.menuplanner.presentation.recipe
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.shvarsman.menuplanner.domain.model.Recipe
+import com.shvarsman.menuplanner.domain.model.RecipeCategory
 import com.shvarsman.menuplanner.domain.usecase.recipe.DeleteRecipeUseCase
 import com.shvarsman.menuplanner.domain.usecase.recipe.GetRecipesUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class RecipeListViewModel @Inject constructor(
+class RecipeCategoryViewModel @Inject constructor(
+    savedStateHandle: SavedStateHandle,
     getRecipes: GetRecipesUseCase,
     private val deleteRecipe: DeleteRecipeUseCase
 ) : ViewModel() {
 
-    private val _searchQuery = MutableStateFlow("")
-    val searchQuery: StateFlow<String> = _searchQuery
+    val category: RecipeCategory = RecipeCategory.valueOf(
+        savedStateHandle.get<String>("category") ?: RecipeCategory.OTHER.name
+    )
 
-    private val allRecipes: StateFlow<List<Recipe>> = getRecipes()
+    val recipes: StateFlow<List<Recipe>> = getRecipes()
+        .map { list -> list.filter { it.category == category } }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
-
-    val filteredRecipes: StateFlow<List<Recipe>> = combine(allRecipes, _searchQuery) { recipes, query ->
-        if (query.isBlank()) recipes
-        else recipes.filter { it.title.contains(query, ignoreCase = true) }
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
-
-    fun onSearchQueryChange(query: String) {
-        _searchQuery.value = query
-    }
 
     fun onDelete(recipe: Recipe) {
         viewModelScope.launch { deleteRecipe(recipe.id) }

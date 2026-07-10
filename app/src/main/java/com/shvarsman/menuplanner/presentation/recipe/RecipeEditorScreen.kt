@@ -25,8 +25,10 @@ import coil3.compose.AsyncImage
 import com.shvarsman.menuplanner.domain.model.FridgeItem
 import com.shvarsman.menuplanner.domain.model.IngredientAvailability
 import com.shvarsman.menuplanner.domain.model.MeasureUnit
+import com.shvarsman.menuplanner.domain.model.RecipeCategory
 import com.shvarsman.menuplanner.domain.model.RecipeIngredient
 import com.shvarsman.menuplanner.domain.model.availability
+import com.shvarsman.menuplanner.presentation.ui.theme.AppCornerRadius
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -124,6 +126,44 @@ fun RecipeEditorScreen(
                     placeholder = { Text("Название рецепта") },
                     textStyle = MaterialTheme.typography.headlineSmall
                 )
+            }
+
+            // ── Категория ─────────────────────────────────────────────────────
+            item {
+                var categoryMenuExpanded by remember { mutableStateOf(false) }
+                Box(modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)) {
+                    ExposedDropdownMenuBox(
+                        expanded = categoryMenuExpanded,
+                        onExpandedChange = { categoryMenuExpanded = it }
+                    ) {
+                        OutlinedTextField(
+                            readOnly = true,
+                            value = state.category.displayName,
+                            onValueChange = {},
+                            label = { Text("Категория рецепта") },
+                            leadingIcon = { Icon(state.category.icon, contentDescription = null) },
+                            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = categoryMenuExpanded) },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable, enabled = true)
+                        )
+                        ExposedDropdownMenu(
+                            expanded = categoryMenuExpanded,
+                            onDismissRequest = { categoryMenuExpanded = false }
+                        ) {
+                            RecipeCategory.entries.forEach { category ->
+                                DropdownMenuItem(
+                                    text = { Text(category.displayName) },
+                                    leadingIcon = { Icon(category.icon, contentDescription = null) },
+                                    onClick = {
+                                        viewModel.onCategoryChange(category)
+                                        categoryMenuExpanded = false
+                                    }
+                                )
+                            }
+                        }
+                    }
+                }
             }
 
             // ── Ингредиенты ───────────────────────────────────────────────────
@@ -228,7 +268,7 @@ private fun CoverPhotoPicker(
 ) {
     Surface(
         onClick = onPick,
-        modifier = modifier.fillMaxWidth().height(180.dp).clip(RoundedCornerShape(16.dp)),
+        modifier = modifier.fillMaxWidth().height(180.dp).clip(RoundedCornerShape(AppCornerRadius)),
         color = MaterialTheme.colorScheme.surfaceVariant
     ) {
         Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {

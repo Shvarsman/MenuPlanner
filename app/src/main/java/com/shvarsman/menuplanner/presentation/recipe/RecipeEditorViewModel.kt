@@ -9,6 +9,7 @@ import com.shvarsman.menuplanner.domain.model.FridgeItem
 import com.shvarsman.menuplanner.domain.model.MeasureUnit
 import com.shvarsman.menuplanner.domain.model.Product
 import com.shvarsman.menuplanner.domain.model.Recipe
+import com.shvarsman.menuplanner.domain.model.RecipeCategory
 import com.shvarsman.menuplanner.domain.model.RecipeIngredient
 import com.shvarsman.menuplanner.domain.model.StepContentItem
 import com.shvarsman.menuplanner.domain.repository.RecipeRepository
@@ -27,6 +28,7 @@ import javax.inject.Inject
 data class RecipeEditorState(
     val recipeId: Long = 0,
     val title: String = "",
+    val category: RecipeCategory = RecipeCategory.OTHER,
     val photoUri: String? = null,
     val ingredients: List<RecipeIngredient> = emptyList(),
     val steps: List<StepContentItem> = listOf(StepContentItem.Text("")),
@@ -76,6 +78,7 @@ class RecipeEditorViewModel @Inject constructor(
                     RecipeEditorState(
                         recipeId = recipe.id,
                         title = recipe.title,
+                        category = recipe.category,
                         photoUri = recipe.photoUri,
                         ingredients = recipe.ingredients,
                         steps = steps,
@@ -90,6 +93,10 @@ class RecipeEditorViewModel @Inject constructor(
 
     fun onTitleChange(value: String) {
         _state.value = _state.value.copy(title = value)
+    }
+
+    fun onCategoryChange(category: RecipeCategory) {
+        _state.value = _state.value.copy(category = category)
     }
 
     fun onCoverPhotoSelected(uri: Uri) {
@@ -206,6 +213,7 @@ class RecipeEditorViewModel @Inject constructor(
                     Recipe(
                         id = current.recipeId,
                         title = current.title,
+                        category = current.category,
                         photoUri = current.photoUri,
                         ingredients = current.ingredients,
                         steps = stepsToSave

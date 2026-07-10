@@ -1,5 +1,7 @@
 package com.shvarsman.menuplanner.presentation.navigation
 
+import com.shvarsman.menuplanner.domain.model.RecipeCategory
+
 sealed class Destination(val route: String) {
 
     object Menu : Destination("menu")
@@ -23,5 +25,9 @@ sealed class Destination(val route: String) {
 
     object RecipeView : Destination("recipe_view/{recipeId}") {
         fun createRoute(recipeId: Long) = "recipe_view/$recipeId"
+    }
+
+    object RecipeCategoryList : Destination("recipe_category/{category}") {
+        fun createRoute(category: RecipeCategory) = "recipe_category/${category.name}"
     }
 }

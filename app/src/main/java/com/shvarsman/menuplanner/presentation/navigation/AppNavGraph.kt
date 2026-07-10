@@ -27,6 +27,7 @@ import com.shvarsman.menuplanner.presentation.catalog.ProductCatalogScreen
 import com.shvarsman.menuplanner.presentation.cooking.CookingScreen
 import com.shvarsman.menuplanner.presentation.fridge.FridgeScreen
 import com.shvarsman.menuplanner.presentation.menu.MenuScreen
+import com.shvarsman.menuplanner.presentation.recipe.RecipeCategoryScreen
 import com.shvarsman.menuplanner.presentation.recipe.RecipeEditorScreen
 import com.shvarsman.menuplanner.presentation.recipe.RecipeListScreen
 import com.shvarsman.menuplanner.presentation.recipe.RecipeViewScreen
@@ -105,7 +106,20 @@ fun AppNavGraph() {
                     },
                     onEditRecipe = { id ->
                         navController.navigate(Destination.RecipeEditor.createRoute(id))
+                    },
+                    onCategoryClick = { category ->
+                        navController.navigate(Destination.RecipeCategoryList.createRoute(category))
                     }
+                )
+            }
+            composable(
+                route = Destination.RecipeCategoryList.route,
+                arguments = listOf(navArgument("category") { type = NavType.StringType })
+            ) {
+                RecipeCategoryScreen(
+                    onBack = { navController.popBackStack() },
+                    onViewRecipe = { id -> navController.navigate(Destination.RecipeView.createRoute(id)) },
+                    onEditRecipe = { id -> navController.navigate(Destination.RecipeEditor.createRoute(id)) }
                 )
             }
             composable(

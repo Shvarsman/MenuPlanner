@@ -38,18 +38,25 @@ class RecipeRepositoryImpl @Inject constructor(
 }
 
 private fun RecipeWithIngredients.toDomain() = Recipe(
-    id = recipe.id, title = recipe.title, photoUri = recipe.photoUri,
+    id = recipe.id, title = recipe.title, category = recipe.category, photoUri = recipe.photoUri,
     steps = recipe.steps, ingredients = ingredients.map { it.toDomain() }
 )
 
 private fun RecipeIngredientWithProduct.toDomain() = RecipeIngredient(
     id = ingredient.id,
-    product = Product(id = product.id, name = product.name, category = product.category, defaultUnit = product.defaultUnit),
+    product = Product(
+        id = product.id,
+        name = product.name,
+        category = product.category,
+        defaultUnit = product.defaultUnit
+    ),
     unit = ingredient.unit,
     quantity = ingredient.quantity
 )
 
-private fun Recipe.toEntity() = RecipeEntity(id = id, title = title, photoUri = photoUri, steps = steps)
+private fun Recipe.toEntity() = RecipeEntity(
+    id = id, title = title, category = category, photoUri = photoUri, steps = steps
+)
 
 private fun RecipeIngredient.toEntity(recipeId: Long) = RecipeIngredientEntity(
     id = id, recipeId = recipeId, productId = product.id, unit = unit, quantity = quantity
