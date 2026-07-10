@@ -41,6 +41,9 @@ class MenuViewModel @Inject constructor(
     val fridgeItems: StateFlow<List<FridgeItem>> = getFridgeItems()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
+    private val _recipeSearchQuery = MutableStateFlow("")
+    val recipeSearchQuery: StateFlow<String> = _recipeSearchQuery
+
     /** Сколько каждого продукта уже "занято" рецептами, добавленными в меню
      * (по productId → суммарное нужное количество). Пересчитывается реактивно
      * при изменении меню или списка рецептов. */
@@ -71,6 +74,7 @@ class MenuViewModel @Inject constructor(
 
     fun closeRecipePicker() {
         _pickerTarget.value = null
+        _recipeSearchQuery.value = ""
     }
 
     fun assignRecipe(recipe: Recipe) {
@@ -116,5 +120,9 @@ class MenuViewModel @Inject constructor(
 
     fun onNavigateToCookingConsumed() {
         _navigateToCooking.value = null
+    }
+
+    fun onRecipeSearchQueryChange(query: String) {
+        _recipeSearchQuery.value = query
     }
 }

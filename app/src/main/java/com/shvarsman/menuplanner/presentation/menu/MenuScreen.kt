@@ -7,9 +7,12 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.MenuBook
 import androidx.compose.material.icons.filled.Restaurant
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -21,6 +24,8 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import coil3.compose.AsyncImage
 import com.shvarsman.menuplanner.domain.model.FridgeItem
@@ -45,6 +50,7 @@ private val mealTypes = listOf(MealType.BREAKFAST, MealType.LUNCH, MealType.DINN
 fun MenuScreen(
     onNavigateToRecipes: () -> Unit,
     onNavigateToCooking: (recipeId: Long, menuEntryId: Long) -> Unit,
+    onViewRecipe: (recipeId: Long) -> Unit,
     viewModel: MenuViewModel = hiltViewModel()
 ) {
     val weekMenu by viewModel.weekMenu.collectAsState()
@@ -54,6 +60,7 @@ fun MenuScreen(
     val insufficientDialogEntry by viewModel.insufficientDialogEntry.collectAsState()
     val navigateToCooking by viewModel.navigateToCooking.collectAsState()
     val reservedQuantities by viewModel.reservedQuantities.collectAsState()
+    val recipeSearchQuery by viewModel.recipeSearchQuery.collectAsState()
 
     LaunchedEffect(navigateToCooking) {
         navigateToCooking?.let { (recipeId, menuEntryId) ->
@@ -95,7 +102,8 @@ fun MenuScreen(
                     entriesByMeal = mealTypes.associateWith { meal -> entriesByKey[day to meal].orEmpty() },
                     onAddMeal = { meal -> viewModel.openRecipePicker(day, meal) },
                     onRemoveEntry = { viewModel.removeEntry(it) },
-                    onCookEntry = { viewModel.onCookClick(it) }
+                    onCookEntry = { viewModel.onCookClick(it) },
+                    onViewEntry = { entry -> onViewRecipe(entry.recipeId) }
                 )
             }
         }
@@ -106,6 +114,8 @@ fun MenuScreen(
             recipes = recipes,
             fridgeItems = fridgeItems,
             reservedQuantities = reservedQuantities,
+            searchQuery = recipeSearchQuery,
+            onSearchQueryChange = { viewModel.onRecipeSearchQueryChange(it) },
             onDismiss = { viewModel.closeRecipePicker() },
             onSelect = { viewModel.assignRecipe(it) },
             onCreateNew = {
@@ -129,7 +139,8 @@ private fun DayCard(
     entriesByMeal: Map<MealType, List<MenuEntry>>,
     onAddMeal: (MealType) -> Unit,
     onRemoveEntry: (MenuEntry) -> Unit,
-    onCookEntry: (MenuEntry) -> Unit
+    onCookEntry: (MenuEntry) -> Unit,
+    onViewEntry: (MenuEntry) -> Unit
 ) {
     ElevatedCard(
         modifier = Modifier.fillMaxWidth(),
@@ -148,7 +159,8 @@ private fun DayCard(
                     entries = entriesByMeal[meal].orEmpty(),
                     onAdd = { onAddMeal(meal) },
                     onRemove = onRemoveEntry,
-                    onCook = onCookEntry
+                    onCook = onCookEntry,
+                    onView = onViewEntry
                 )
             }
         }
@@ -161,7 +173,8 @@ private fun MealRow(
     entries: List<MenuEntry>,
     onAdd: () -> Unit,
     onRemove: (MenuEntry) -> Unit,
-    onCook: (MenuEntry) -> Unit
+    onCook: (MenuEntry) -> Unit,
+    onView: (MenuEntry) -> Unit
 ) {
     Column(modifier = Modifier.padding(vertical = 4.dp)) {
         Row(
@@ -190,7 +203,9 @@ private fun MealRow(
                     MenuEntryCard(
                         entry = entry,
                         onRemove = { onRemove(entry) },
-                        onCook = { onCook(entry) })
+                        onCook = { onCook(entry) },
+                        onView = { onView(entry) }
+                    )
                 }
             }
         }
@@ -198,8 +213,14 @@ private fun MealRow(
 }
 
 @Composable
-private fun MenuEntryCard(entry: MenuEntry, onRemove: () -> Unit, onCook: () -> Unit) {
+private fun MenuEntryCard(
+    entry: MenuEntry,
+    onRemove: () -> Unit,
+    onCook: () -> Unit,
+    onView: () -> Unit
+) {
     ElevatedCard(
+        onClick = onView,
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(AppCornerRadius)
     ) {
@@ -209,7 +230,6 @@ private fun MenuEntryCard(entry: MenuEntry, onRemove: () -> Unit, onCook: () -> 
                 .height(88.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Квадратное фото слева, скруглённое только с левой стороны — совпадает с формой карточки
             if (entry.recipePhotoUri != null) {
                 AsyncImage(
                     model = entry.recipePhotoUri,
@@ -218,18 +238,34 @@ private fun MenuEntryCard(entry: MenuEntry, onRemove: () -> Unit, onCook: () -> 
                     modifier = Modifier
                         .fillMaxHeight()
                         .aspectRatio(1f)
-                        .clip(RoundedCornerShape(topEnd = AppCornerRadius, bottomEnd = AppCornerRadius))
+                        .clip(
+                            RoundedCornerShape(
+                                topEnd = AppCornerRadius,
+                                bottomEnd = AppCornerRadius
+                            )
+                        )
                 )
             } else {
                 Box(
                     modifier = Modifier
                         .fillMaxHeight()
                         .aspectRatio(1f)
-                        .clip(RoundedCornerShape(topStart = AppCornerRadius, bottomStart = AppCornerRadius)),
+                        .clip(
+                            RoundedCornerShape(
+                                topStart = AppCornerRadius,
+                                bottomStart = AppCornerRadius
+                            )
+                        ),
                     contentAlignment = Alignment.Center
                 ) {
-                    Surface(color = MaterialTheme.colorScheme.secondaryContainer, modifier = Modifier.fillMaxSize()) {
-                        Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
+                    Surface(
+                        color = MaterialTheme.colorScheme.secondaryContainer,
+                        modifier = Modifier.fillMaxSize()
+                    ) {
+                        Box(
+                            contentAlignment = Alignment.Center,
+                            modifier = Modifier.fillMaxSize()
+                        ) {
                             Icon(
                                 Icons.Filled.Restaurant,
                                 contentDescription = null,
@@ -252,7 +288,11 @@ private fun MenuEntryCard(entry: MenuEntry, onRemove: () -> Unit, onCook: () -> 
             )
 
             IconButton(onClick = onCook) {
-                Icon(Icons.Filled.Restaurant, contentDescription = "Приготовить", tint = MaterialTheme.colorScheme.primary)
+                Icon(
+                    Icons.Filled.Restaurant,
+                    contentDescription = "Приготовить",
+                    tint = MaterialTheme.colorScheme.primary
+                )
             }
             IconButton(onClick = onRemove) {
                 Icon(Icons.Filled.Close, contentDescription = "Убрать из меню")
@@ -284,80 +324,227 @@ private fun RecipePickerDialog(
     recipes: List<Recipe>,
     fridgeItems: List<FridgeItem>,
     reservedQuantities: Map<Long, Double>,
+    searchQuery: String,
+    onSearchQueryChange: (String) -> Unit,
     onDismiss: () -> Unit,
     onSelect: (Recipe) -> Unit,
     onCreateNew: () -> Unit
 ) {
     var expandedRecipeId by remember { mutableStateOf<Long?>(null) }
 
-    AlertDialog(
+    val filteredRecipes = remember(recipes, searchQuery) {
+        if (searchQuery.isBlank()) recipes
+        else recipes.filter { it.title.contains(searchQuery, ignoreCase = true) }
+    }
+
+    Dialog(
         onDismissRequest = onDismiss,
-        title = { Text("Выбрать рецепт") },
-        text = {
-            if (recipes.isEmpty()) {
-                Text("У вас пока нет рецептов. Создайте первый рецепт во вкладке «Рецепты».")
-            } else {
-                LazyColumn(modifier = Modifier.heightIn(max = 420.dp)) {
-                    items(recipes, key = { it.id }) { recipe ->
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable {
+        properties = DialogProperties(usePlatformDefaultWidth = false)
+    ) {
+        Surface(
+            modifier = Modifier
+                .fillMaxWidth()
+                .fillMaxHeight(0.9f),
+            shape = RoundedCornerShape(AppCornerRadius),
+            color = MaterialTheme.colorScheme.surface
+        ) {
+            Column(modifier = Modifier.fillMaxSize()) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text("Выбрать рецепт", style = MaterialTheme.typography.titleLarge)
+                    IconButton(onClick = onDismiss) {
+                        Icon(Icons.Filled.Close, contentDescription = "Закрыть")
+                    }
+                }
+
+                OutlinedTextField(
+                    value = searchQuery,
+                    onValueChange = onSearchQueryChange,
+                    placeholder = { Text("Поиск рецептов") },
+                    leadingIcon = { Icon(Icons.Filled.Search, contentDescription = null) },
+                    trailingIcon = {
+                        if (searchQuery.isNotEmpty()) {
+                            IconButton(onClick = { onSearchQueryChange("") }) {
+                                Icon(Icons.Filled.Close, contentDescription = "Очистить")
+                            }
+                        }
+                    },
+                    singleLine = true,
+                    shape = RoundedCornerShape(AppCornerRadius),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 4.dp)
+                )
+
+                Spacer(Modifier.height(8.dp))
+
+                TextButton(
+                    onClick = onCreateNew,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp)
+                ) {
+                    Icon(
+                        Icons.Filled.Add,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(Modifier.width(4.dp))
+                    Text("Новый рецепт")
+                }
+
+                if (filteredRecipes.isEmpty()) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            if (recipes.isEmpty()) "У вас пока нет рецептов" else "Ничего не найдено",
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                } else {
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f),
+                        contentPadding = PaddingValues(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        items(filteredRecipes, key = { it.id }) { recipe ->
+                            RecipePickerCard(
+                                recipe = recipe,
+                                isExpanded = expandedRecipeId == recipe.id,
+                                onToggleExpand = {
                                     expandedRecipeId =
                                         if (expandedRecipeId == recipe.id) null else recipe.id
-                                }
-                                .padding(vertical = 8.dp)
-                        ) {
-                            Text(recipe.title, style = MaterialTheme.typography.titleMedium)
-
-                            if (expandedRecipeId == recipe.id) {
-                                Column(modifier = Modifier.padding(top = 4.dp, start = 8.dp)) {
-                                    recipe.ingredients.forEach { ingredient ->
-                                        // Учитываем резервы других рецептов в меню — этот рецепт ещё не добавлен,
-                                        // поэтому исключать нечего
-                                        val reserved =
-                                            reservedQuantities[ingredient.product.id] ?: 0.0
-                                        val status = ingredient.availability(fridgeItems, reserved)
-                                        val color = when (status) {
-                                            IngredientAvailability.AVAILABLE -> MaterialTheme.colorScheme.primary
-                                            IngredientAvailability.INSUFFICIENT -> MaterialTheme.colorScheme.error
-                                        }
-                                        Text(
-                                            text = "${ingredient.product.name} — ${
-                                                formatQty(
-                                                    ingredient.quantity
-                                                )
-                                            } ${ingredient.unit.displayName}",
-                                            style = MaterialTheme.typography.bodySmall,
-                                            color = color
-                                        )
-                                    }
-                                }
-                            }
-
-                            Spacer(Modifier.height(8.dp))
-
-                            Button(
-                                onClick = { onSelect(recipe) },
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                Text("Выбрать этот рецепт")
-                            }
-
-                            Spacer(Modifier.height(4.dp))
-                            HorizontalDivider()
+                                },
+                                onSelect = { onSelect(recipe) },
+                                fridgeItems = fridgeItems,
+                                reservedQuantities = reservedQuantities
+                            )
                         }
                     }
                 }
             }
-        },
-        confirmButton = {
-            TextButton(onClick = onCreateNew) { Text("Новый рецепт") }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) { Text("Закрыть") }
         }
-    )
+    }
+}
+
+@Composable
+private fun RecipePickerCard(
+    recipe: Recipe,
+    isExpanded: Boolean,
+    onToggleExpand: () -> Unit,
+    onSelect: () -> Unit,
+    fridgeItems: List<FridgeItem>,
+    reservedQuantities: Map<Long, Double>
+) {
+    ElevatedCard(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(AppCornerRadius)
+    ) {
+        Column {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(88.dp)
+                    .clickable { onToggleExpand() },
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                if (recipe.photoUri != null) {
+                    AsyncImage(
+                        model = recipe.photoUri,
+                        contentDescription = recipe.title,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .fillMaxHeight()
+                            .aspectRatio(1f)
+                            .clip(
+                                RoundedCornerShape(
+                                    topEnd = AppCornerRadius,
+                                    bottomEnd = AppCornerRadius
+                                )
+                            )
+                    )
+                } else {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxHeight()
+                            .aspectRatio(1f)
+                            .clip(
+                                RoundedCornerShape(
+                                    topStart = AppCornerRadius,
+                                    bottomStart = AppCornerRadius
+                                )
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Surface(
+                            color = MaterialTheme.colorScheme.secondaryContainer,
+                            modifier = Modifier.fillMaxSize()
+                        ) {
+                            Box(
+                                contentAlignment = Alignment.Center,
+                                modifier = Modifier.fillMaxSize()
+                            ) {
+                                Icon(
+                                    Icons.Filled.MenuBook,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(32.dp),
+                                    tint = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.6f)
+                                )
+                            }
+                        }
+                    }
+                }
+
+                Text(
+                    recipe.title,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Medium,
+                    maxLines = 2,
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(horizontal = 12.dp)
+                )
+
+                Button(
+                    onClick = onSelect,
+                    modifier = Modifier.padding(end = 12.dp)
+                ) {
+                    Text("Выбрать")
+                }
+            }
+
+            // Превью ингредиентов с цветовой индикацией наличия в холодильнике
+            if (isExpanded) {
+                Column(modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 12.dp)) {
+                    HorizontalDivider(modifier = Modifier.padding(bottom = 8.dp))
+                    recipe.ingredients.forEach { ingredient ->
+                        val reserved = reservedQuantities[ingredient.product.id] ?: 0.0
+                        val status = ingredient.availability(fridgeItems, reserved)
+                        val color = when (status) {
+                            IngredientAvailability.AVAILABLE -> MaterialTheme.colorScheme.primary
+                            IngredientAvailability.INSUFFICIENT -> MaterialTheme.colorScheme.error
+                        }
+                        Text(
+                            text = "${ingredient.product.name} — ${formatQty(ingredient.quantity)} ${ingredient.unit.displayName}",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = color
+                        )
+                    }
+                }
+            }
+        }
+    }
 }
 
 private fun formatQty(value: Double): String =

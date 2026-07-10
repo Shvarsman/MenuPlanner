@@ -87,6 +87,9 @@ fun AppNavGraph() {
                     onNavigateToRecipes = { navController.navigate(Destination.Recipes.route) },
                     onNavigateToCooking = { recipeId, menuEntryId ->
                         navController.navigate(Destination.Cooking.createRoute(recipeId, menuEntryId))
+                    },
+                    onViewRecipe = { recipeId ->
+                        navController.navigate(Destination.RecipeView.createRoute(recipeId))
                     }
                 )
             }
