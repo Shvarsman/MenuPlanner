@@ -63,9 +63,10 @@ fun RecipeListScreen(
     }
 
     Scaffold(
+        contentWindowInsets = WindowInsets(0),
         topBar = {
             Surface(
-                color = MaterialTheme.colorScheme.background, // было surface — теперь сливается с фоном списка
+                color = MaterialTheme.colorScheme.background,
                 tonalElevation = 0.dp
             ) {
                 Column {

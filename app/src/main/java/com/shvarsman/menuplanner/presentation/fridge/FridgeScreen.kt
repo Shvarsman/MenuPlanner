@@ -39,25 +39,27 @@ fun FridgeScreen(
         items.groupBy { it.product.category }.toSortedMap(compareBy { it.ordinal })
     }
 
-    Scaffold(contentWindowInsets = WindowInsets(0), topBar = {
-        TopAppBar(
-            title = {
-                Text(
-                    text = "Холодильник",
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Medium
-                )
-            },
-            actions = {
-                IconButton(onClick = onOpenCatalog) {
-                    Icon(Icons.AutoMirrored.Filled.ListAlt, contentDescription = "Все продукты")
-                }
-            })
-    }, floatingActionButton = {
-        FloatingActionButton(onClick = { viewModel.openAddPicker() }) {
-            Icon(Icons.Filled.Add, contentDescription = "Добавить продукт")
-        }
-    }) { padding ->
+    Scaffold(
+        contentWindowInsets = WindowInsets(0),
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(
+                        text = "Холодильник",
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Medium
+                    )
+                },
+                actions = {
+                    IconButton(onClick = onOpenCatalog) {
+                        Icon(Icons.AutoMirrored.Filled.ListAlt, contentDescription = "Все продукты")
+                    }
+                })
+        }, floatingActionButton = {
+            FloatingActionButton(onClick = { viewModel.openAddPicker() }) {
+                Icon(Icons.Filled.Add, contentDescription = "Добавить продукт")
+            }
+        }) { padding ->
         if (items.isEmpty()) {
             EmptyFridgeState(
                 modifier = Modifier

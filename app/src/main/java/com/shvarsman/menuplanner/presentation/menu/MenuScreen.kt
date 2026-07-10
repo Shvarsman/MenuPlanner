@@ -13,6 +13,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.MenuBook
 import androidx.compose.material.icons.filled.Restaurant
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.SettingsBackupRestore
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -51,6 +52,7 @@ fun MenuScreen(
     onNavigateToRecipes: () -> Unit,
     onNavigateToCooking: (recipeId: Long, menuEntryId: Long) -> Unit,
     onViewRecipe: (recipeId: Long) -> Unit,
+    onOpenBackup: () -> Unit,
     viewModel: MenuViewModel = hiltViewModel()
 ) {
     val weekMenu by viewModel.weekMenu.collectAsState()
@@ -83,6 +85,11 @@ fun MenuScreen(
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Medium
                     )
+                },
+                actions = {
+                    IconButton(onClick = onOpenBackup) {
+                        Icon(Icons.Filled.SettingsBackupRestore, contentDescription = "Резервное копирование")
+                    }
                 }
             )
         }

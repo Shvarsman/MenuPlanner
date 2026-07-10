@@ -30,4 +30,6 @@ sealed class Destination(val route: String) {
     object RecipeCategoryList : Destination("recipe_category/{category}") {
         fun createRoute(category: RecipeCategory) = "recipe_category/${category.name}"
     }
+
+    object Backup : Destination("backup")
 }

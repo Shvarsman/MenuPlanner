@@ -23,6 +23,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.shvarsman.menuplanner.presentation.backup.BackupScreen
 import com.shvarsman.menuplanner.presentation.catalog.ProductCatalogScreen
 import com.shvarsman.menuplanner.presentation.cooking.CookingScreen
 import com.shvarsman.menuplanner.presentation.fridge.FridgeScreen
@@ -90,7 +91,8 @@ fun AppNavGraph() {
                     },
                     onViewRecipe = { recipeId ->
                         navController.navigate(Destination.RecipeView.createRoute(recipeId))
-                    }
+                    },
+                    onOpenBackup = { navController.navigate(Destination.Backup.route) }
                 )
             }
             composable(Destination.Fridge.route) {
@@ -166,6 +168,9 @@ fun AppNavGraph() {
                     onBack = { navController.popBackStack() },
                     onFinished = { navController.popBackStack() }
                 )
+            }
+            composable(Destination.Backup.route) {
+                BackupScreen(onBack = { navController.popBackStack() })
             }
         }
     }
