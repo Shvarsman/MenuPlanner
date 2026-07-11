@@ -7,6 +7,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Kitchen
+import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -113,6 +115,34 @@ fun RecipeViewScreen(
             }
 
             item {
+                if (recipe.cookingMethod != null || recipe.cookingTimeMinutes != null) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 4.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        recipe.cookingMethod?.let { method ->
+                            AssistChip(
+                                onClick = {},
+                                enabled = false,
+                                leadingIcon = { Icon(Icons.Filled.Kitchen, contentDescription = null, modifier = Modifier.size(18.dp)) },
+                                label = { Text(method.displayName) }
+                            )
+                        }
+                        recipe.cookingTimeMinutes?.let { minutes ->
+                            AssistChip(
+                                onClick = {},
+                                enabled = false,
+                                leadingIcon = { Icon(Icons.Filled.Schedule, contentDescription = null, modifier = Modifier.size(18.dp)) },
+                                label = { Text(formatCookingTime(minutes)) }
+                            )
+                        }
+                    }
+                }
+            }
+
+            item {
                 Text(
                     "Ингредиенты",
                     style = MaterialTheme.typography.titleMedium,
@@ -149,6 +179,16 @@ private fun IngredientViewRow(ingredient: RecipeIngredient, fridgeItems: List<Fr
         color = color,
         modifier = Modifier.padding(horizontal = 16.dp, vertical = 2.dp)
     )
+}
+
+private fun formatCookingTime(totalMinutes: Int): String {
+    val hours = totalMinutes / 60
+    val minutes = totalMinutes % 60
+    return when {
+        hours > 0 && minutes > 0 -> "$hours ч $minutes мин"
+        hours > 0 -> "$hours ч"
+        else -> "$minutes мин"
+    }
 }
 
 private fun formatQty(value: Double): String =

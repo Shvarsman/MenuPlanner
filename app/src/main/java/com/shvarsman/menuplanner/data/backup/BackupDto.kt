@@ -29,6 +29,8 @@ data class BackupRecipeDto(
     val title: String,
     val category: String,
     val photoFileName: String? = null,
+    val cookingMethod: String? = null,
+    val cookingTimeMinutes: Int? = null,
     val ingredients: List<BackupIngredientDto>,
     val steps: List<BackupStepDto>
 )

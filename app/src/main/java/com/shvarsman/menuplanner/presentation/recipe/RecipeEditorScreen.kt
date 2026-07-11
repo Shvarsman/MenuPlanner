@@ -3,6 +3,7 @@ package com.shvarsman.menuplanner.presentation.recipe
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -88,7 +89,9 @@ fun RecipeEditorScreen(
     ) { padding ->
         if (state.isLoading) {
             Box(
-                Modifier.fillMaxSize().padding(padding),
+                Modifier
+                    .fillMaxSize()
+                    .padding(padding),
                 contentAlignment = Alignment.Center
             ) { CircularProgressIndicator() }
             return@Scaffold
@@ -116,7 +119,9 @@ fun RecipeEditorScreen(
                 TextField(
                     value = state.title,
                     onValueChange = viewModel::onTitleChange,
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 8.dp),
                     colors = TextFieldDefaults.colors(
                         focusedContainerColor = Color.Transparent,
                         unfocusedContainerColor = Color.Transparent,
@@ -145,7 +150,10 @@ fun RecipeEditorScreen(
                             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = categoryMenuExpanded) },
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable, enabled = true)
+                                .menuAnchor(
+                                    ExposedDropdownMenuAnchorType.PrimaryNotEditable,
+                                    enabled = true
+                                )
                         )
                         ExposedDropdownMenu(
                             expanded = categoryMenuExpanded,
@@ -154,7 +162,12 @@ fun RecipeEditorScreen(
                             RecipeCategory.entries.forEach { category ->
                                 DropdownMenuItem(
                                     text = { Text(category.displayName) },
-                                    leadingIcon = { Icon(category.icon, contentDescription = null) },
+                                    leadingIcon = {
+                                        Icon(
+                                            category.icon,
+                                            contentDescription = null
+                                        )
+                                    },
                                     onClick = {
                                         viewModel.onCategoryChange(category)
                                         categoryMenuExpanded = false
@@ -166,16 +179,78 @@ fun RecipeEditorScreen(
                 }
             }
 
+            item {
+                var showCookingMethodPicker by remember { mutableStateOf(false) }
+
+                Column(
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    // Способ приготовления — readonly-поле, открывающее диалог поиска
+                    Box {
+                        OutlinedTextField(
+                            value = state.cookingMethod?.displayName ?: "",
+                            onValueChange = {},
+                            readOnly = true,
+                            label = { Text("Способ приготовления") },
+                            placeholder = { Text("Выберите способ") },
+                            leadingIcon = { Icon(Icons.Filled.Kitchen, contentDescription = null) },
+                            trailingIcon = {
+                                Icon(
+                                    Icons.Filled.ArrowDropDown,
+                                    contentDescription = null
+                                )
+                            },
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                        Box(
+                            modifier = Modifier
+                                .matchParentSize()
+                                .clickable { showCookingMethodPicker = true }
+                        )
+                    }
+
+                    if (showCookingMethodPicker) {
+                        CookingMethodPickerDialog(
+                            current = state.cookingMethod,
+                            onDismiss = { showCookingMethodPicker = false },
+                            onSelect = { method ->
+                                viewModel.onCookingMethodChange(method)
+                                showCookingMethodPicker = false
+                            }
+                        )
+                    }
+
+                    // Время приготовления — Material3 TimeInput (часы/минуты как поля ввода)
+                    Text("Время приготовления", style = MaterialTheme.typography.labelLarge)
+                    val timePickerState = rememberTimePickerState(
+                        initialHour = state.cookingHours,
+                        initialMinute = state.cookingMinutes,
+                        is24Hour = true
+                    )
+                    LaunchedEffect(timePickerState.hour, timePickerState.minute) {
+                        viewModel.onCookingTimeChange(timePickerState.hour, timePickerState.minute)
+                    }
+                    TimeInput(state = timePickerState)
+                }
+            }
+
             // ── Ингредиенты ───────────────────────────────────────────────────
             item {
                 Row(
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text("Ингредиенты", style = MaterialTheme.typography.titleMedium)
                     TextButton(onClick = { viewModel.openIngredientPicker() }) {
-                        Icon(Icons.Filled.Add, contentDescription = null, modifier = Modifier.size(18.dp))
+                        Icon(
+                            Icons.Filled.Add,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp)
+                        )
                         Spacer(Modifier.width(4.dp))
                         Text("Добавить")
                     }
@@ -192,7 +267,9 @@ fun RecipeEditorScreen(
             // ── Шаги приготовления ───────────────────────────────────────────
             item {
                 Row(
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -200,7 +277,10 @@ fun RecipeEditorScreen(
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         // Кнопка фото перенесена сюда из TopAppBar
                         IconButton(onClick = { stepPhotoPicker.launch("image/*") }) {
-                            Icon(Icons.Filled.AddAPhoto, contentDescription = "Добавить фото к шагу")
+                            Icon(
+                                Icons.Filled.AddAPhoto,
+                                contentDescription = "Добавить фото к шагу"
+                            )
                         }
                         IconButton(onClick = { viewModel.addTextStep() }) {
                             Icon(
@@ -229,7 +309,13 @@ fun RecipeEditorScreen(
             catalog = fridgeProducts,
             onDismiss = { viewModel.closeIngredientPicker() },
             onConfirm = { product, unit, qty -> viewModel.addIngredient(product, unit, qty) },
-            onCreateProduct = { name, category, unit -> viewModel.createProduct(name, category, unit) }
+            onCreateProduct = { name, category, unit ->
+                viewModel.createProduct(
+                    name,
+                    category,
+                    unit
+                )
+            }
         )
     }
 
@@ -268,7 +354,10 @@ private fun CoverPhotoPicker(
 ) {
     Surface(
         onClick = onPick,
-        modifier = modifier.fillMaxWidth().height(180.dp).clip(RoundedCornerShape(AppCornerRadius)),
+        modifier = modifier
+            .fillMaxWidth()
+            .height(180.dp)
+            .clip(RoundedCornerShape(AppCornerRadius)),
         color = MaterialTheme.colorScheme.surfaceVariant
     ) {
         Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
@@ -303,7 +392,9 @@ private fun IngredientRow(
     }
 
     Row(
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 2.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 2.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {

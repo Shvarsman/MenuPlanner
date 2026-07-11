@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.shvarsman.menuplanner.data.local.ImageFileManager
 import com.shvarsman.menuplanner.domain.model.Category
+import com.shvarsman.menuplanner.domain.model.CookingMethod
 import com.shvarsman.menuplanner.domain.model.FridgeItem
 import com.shvarsman.menuplanner.domain.model.MeasureUnit
 import com.shvarsman.menuplanner.domain.model.Product
@@ -30,6 +31,9 @@ data class RecipeEditorState(
     val title: String = "",
     val category: RecipeCategory = RecipeCategory.OTHER,
     val photoUri: String? = null,
+    val cookingMethod: CookingMethod? = null,
+    val cookingHours: Int = 0,
+    val cookingMinutes: Int = 0,
     val ingredients: List<RecipeIngredient> = emptyList(),
     val steps: List<StepContentItem> = listOf(StepContentItem.Text("")),
     val isLoading: Boolean = true,
@@ -75,11 +79,15 @@ class RecipeEditorViewModel @Inject constructor(
                             list + StepContentItem.Text("")
                         } else list
                     }
+                    val totalMinutes = recipe.cookingTimeMinutes ?: 0
                     RecipeEditorState(
                         recipeId = recipe.id,
                         title = recipe.title,
                         category = recipe.category,
                         photoUri = recipe.photoUri,
+                        cookingMethod = recipe.cookingMethod,
+                        cookingHours = totalMinutes / 60,
+                        cookingMinutes = totalMinutes % 60,
                         ingredients = recipe.ingredients,
                         steps = steps,
                         isLoading = false
@@ -99,6 +107,14 @@ class RecipeEditorViewModel @Inject constructor(
         _state.value = _state.value.copy(category = category)
     }
 
+    fun onCookingMethodChange(method: CookingMethod?) {
+        _state.value = _state.value.copy(cookingMethod = method)
+    }
+
+    fun onCookingTimeChange(hours: Int, minutes: Int) {
+        _state.value = _state.value.copy(cookingHours = hours, cookingMinutes = minutes)
+    }
+
     fun onCoverPhotoSelected(uri: Uri) {
         viewModelScope.launch {
             val persistedUri = imageFileManager.persistImage(uri)
@@ -108,15 +124,24 @@ class RecipeEditorViewModel @Inject constructor(
 
     // ── Ингредиенты ────────────────────────────────────────────────────────────
 
-    fun openIngredientPicker() { _isIngredientPickerOpen.value = true }
-    fun closeIngredientPicker() { _isIngredientPickerOpen.value = false }
+    fun openIngredientPicker() {
+        _isIngredientPickerOpen.value = true
+    }
+
+    fun closeIngredientPicker() {
+        _isIngredientPickerOpen.value = false
+    }
 
     suspend fun createProduct(name: String, category: Category, unit: MeasureUnit): Product =
         findOrCreateProduct(name, category, unit)
 
     fun addIngredient(product: Product, unit: MeasureUnit, quantity: Double) {
         _state.value = _state.value.copy(
-            ingredients = _state.value.ingredients + RecipeIngredient(product = product, unit = unit, quantity = quantity)
+            ingredients = _state.value.ingredients + RecipeIngredient(
+                product = product,
+                unit = unit,
+                quantity = quantity
+            )
         )
         closeIngredientPicker()
     }
@@ -209,12 +234,17 @@ class RecipeEditorViewModel @Inject constructor(
                     it !is StepContentItem.Text || it.content.isNotBlank()
                 }
                 require(stepsToSave.isNotEmpty()) { "Добавьте хотя бы один шаг приготовления" }
+
+                val totalMinutes = current.cookingHours * 60 + current.cookingMinutes
+
                 saveRecipe(
                     Recipe(
                         id = current.recipeId,
                         title = current.title,
                         category = current.category,
                         photoUri = current.photoUri,
+                        cookingMethod = current.cookingMethod,
+                        cookingTimeMinutes = if (totalMinutes > 0) totalMinutes else null,
                         ingredients = current.ingredients,
                         steps = stepsToSave
                     )

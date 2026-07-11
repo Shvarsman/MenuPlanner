@@ -2,6 +2,7 @@ package com.shvarsman.menuplanner.data.local.converter
 
 import androidx.room.TypeConverter
 import com.shvarsman.menuplanner.domain.model.Category
+import com.shvarsman.menuplanner.domain.model.CookingMethod
 import com.shvarsman.menuplanner.domain.model.MeasureUnit
 import com.shvarsman.menuplanner.domain.model.MealType
 import com.shvarsman.menuplanner.domain.model.RecipeCategory
@@ -65,4 +66,11 @@ class Converters {
             }
         }
     }
+
+    @TypeConverter
+    fun fromCookingMethod(method: CookingMethod?): String? = method?.name
+
+    @TypeConverter
+    fun toCookingMethod(value: String?): CookingMethod? =
+        value?.let { v -> CookingMethod.entries.firstOrNull { it.name == v } }
 }

@@ -10,6 +10,7 @@ import com.shvarsman.menuplanner.data.backup.BackupRecipeDto
 import com.shvarsman.menuplanner.data.backup.BackupStepDto
 import com.shvarsman.menuplanner.data.local.ImageFileManager
 import com.shvarsman.menuplanner.domain.model.Category
+import com.shvarsman.menuplanner.domain.model.CookingMethod
 import com.shvarsman.menuplanner.domain.model.MeasureUnit
 import com.shvarsman.menuplanner.domain.model.Recipe
 import com.shvarsman.menuplanner.domain.model.RecipeCategory
@@ -66,6 +67,8 @@ class BackupRepositoryImpl @Inject constructor(
                 title = recipe.title,
                 category = recipe.category.name,
                 photoFileName = photoFileName,
+                cookingMethod = recipe.cookingMethod?.name,
+                cookingTimeMinutes = recipe.cookingTimeMinutes,
                 ingredients = recipe.ingredients.map { ingredient ->
                     BackupIngredientDto(
                         productName = ingredient.product.name,
@@ -187,6 +190,10 @@ class BackupRepositoryImpl @Inject constructor(
                     title = recipeDto.title,
                     category = RecipeCategory.valueOf(recipeDto.category),
                     photoUri = photoUri,
+                    cookingMethod = recipeDto.cookingMethod?.let { name ->
+                        CookingMethod.values().firstOrNull { it.name == name }
+                    },
+                    cookingTimeMinutes = recipeDto.cookingTimeMinutes,
                     ingredients = ingredients,
                     steps = steps
                 )
