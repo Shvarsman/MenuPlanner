@@ -2,14 +2,21 @@ package com.shvarsman.menuplanner.domain.repository
 
 import android.net.Uri
 
-data class BackupResult(val fridgeItemsCount: Int, val recipesCount: Int)
+enum class BackupType { FULL, RECIPES_ONLY, SINGLE_RECIPE }
+
+data class BackupResult(
+    val fridgeItemsCount: Int = 0,
+    val shoppingItemsCount: Int = 0,
+    val menuEntriesCount: Int = 0,
+    val recipesCount: Int = 0
+)
 
 interface BackupRepository {
-    /** Экспортирует все продукты и рецепты в zip-архив по указанному URI. */
-    suspend fun exportBackup(destinationUri: Uri): BackupResult
+    /** Экспортирует резервную копию согласно [type]. Для [BackupType.SINGLE_RECIPE]
+     * обязателен [singleRecipeId]. */
+    suspend fun exportBackup(destinationUri: Uri, type: BackupType, singleRecipeId: Long? = null): BackupResult
 
-    /** Восстанавливает продукты и рецепты из zip-архива. Продукты сопоставляются
-     * с существующими по названию (регистр не важен); рецепты всегда добавляются
-     * как новые записи — повторный импорт одного и того же архива создаст дубли рецептов. */
+    /** Восстанавливает данные из архива. Тип резервной копии определяется
+     * автоматически по содержимому файла — вызывающей стороне не нужно его знать. */
     suspend fun importBackup(sourceUri: Uri): BackupResult
 }

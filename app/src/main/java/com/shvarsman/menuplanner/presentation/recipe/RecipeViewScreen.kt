@@ -1,5 +1,7 @@
 package com.shvarsman.menuplanner.presentation.recipe
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -9,6 +11,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Kitchen
 import androidx.compose.material.icons.filled.Schedule
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -25,7 +28,9 @@ import com.shvarsman.menuplanner.domain.model.IngredientAvailability
 import com.shvarsman.menuplanner.domain.model.RecipeIngredient
 import com.shvarsman.menuplanner.domain.model.availability
 import com.shvarsman.menuplanner.presentation.cooking.CookingStepsReadOnly
-import com.shvarsman.menuplanner.presentation.ui.theme.AppCornerRadius
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -39,6 +44,11 @@ fun RecipeViewScreen(
 
     val state by viewModel.state.collectAsState()
     val fridgeItems by viewModel.fridgeItems.collectAsState()
+    val shareState by viewModel.shareState.collectAsState()
+
+    val shareLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.CreateDocument("application/zip")
+    ) { uri -> uri?.let { viewModel.onShare(recipeId, it) } }
 
     Scaffold(
         topBar = {
@@ -56,6 +66,22 @@ fun RecipeViewScreen(
                     }
                 },
                 actions = {
+                    IconButton(
+                        onClick = {
+                            val safeTitle = state.recipe?.title
+                                ?.replace(Regex("[^a-zA-Zа-яА-Я0-9 ]"), "")
+                                ?.take(40)
+                                ?.ifBlank { "recipe" } ?: "recipe"
+                            val timestamp = SimpleDateFormat(
+                                "yyyy-MM-dd_HHmm",
+                                Locale.getDefault()
+                            ).format(Date())
+                            shareLauncher.launch("${safeTitle}_$timestamp.zip")
+                        },
+                        enabled = shareState !is RecipeShareState.InProgress
+                    ) {
+                        Icon(Icons.Filled.Share, contentDescription = "Поделиться рецептом")
+                    }
                     IconButton(onClick = { onEdit(recipeId) }) {
                         Icon(Icons.Filled.Edit, contentDescription = "Редактировать")
                     }
@@ -90,15 +116,6 @@ fun RecipeViewScreen(
             )
         ) {
             item {
-                AssistChip(
-                    onClick = {},
-                    enabled = false,
-                    leadingIcon = { Icon(recipe.category.icon, contentDescription = null, modifier = Modifier.size(18.dp)) },
-                    label = { Text(recipe.category.displayName) },
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
-                )
-            }
-            item {
                 if (recipe.photoUri != null) {
                     AsyncImage(
                         model = recipe.photoUri,
@@ -108,7 +125,7 @@ fun RecipeViewScreen(
                             .fillMaxWidth()
                             .padding(horizontal = 16.dp)
                             .height(200.dp)
-                            .clip(RoundedCornerShape(AppCornerRadius))
+                            .clip(RoundedCornerShape(16.dp))
                     )
                     Spacer(Modifier.height(12.dp))
                 }
@@ -126,7 +143,13 @@ fun RecipeViewScreen(
                             AssistChip(
                                 onClick = {},
                                 enabled = false,
-                                leadingIcon = { Icon(Icons.Filled.Kitchen, contentDescription = null, modifier = Modifier.size(18.dp)) },
+                                leadingIcon = {
+                                    Icon(
+                                        Icons.Filled.Kitchen,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                },
                                 label = { Text(method.displayName) }
                             )
                         }
@@ -134,7 +157,13 @@ fun RecipeViewScreen(
                             AssistChip(
                                 onClick = {},
                                 enabled = false,
-                                leadingIcon = { Icon(Icons.Filled.Schedule, contentDescription = null, modifier = Modifier.size(18.dp)) },
+                                leadingIcon = {
+                                    Icon(
+                                        Icons.Filled.Schedule,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                },
                                 label = { Text(formatCookingTime(minutes)) }
                             )
                         }
@@ -164,6 +193,43 @@ fun RecipeViewScreen(
             CookingStepsReadOnly(steps = recipe.steps)
         }
     }
+
+    when (val share = shareState) {
+        is RecipeShareState.InProgress -> {
+            AlertDialog(
+                onDismissRequest = {},
+                confirmButton = {},
+                title = { Text("Подождите") },
+                text = {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        CircularProgressIndicator(modifier = Modifier.size(24.dp))
+                        Spacer(Modifier.width(12.dp))
+                        Text("Готовим файл рецепта...")
+                    }
+                }
+            )
+        }
+
+        is RecipeShareState.Success -> {
+            AlertDialog(
+                onDismissRequest = { viewModel.clearShareState() },
+                confirmButton = { TextButton(onClick = { viewModel.clearShareState() }) { Text("Ок") } },
+                title = { Text("Готово") },
+                text = { Text("Рецепт сохранён в файл — можно переслать его другому пользователю приложения.") }
+            )
+        }
+
+        is RecipeShareState.Error -> {
+            AlertDialog(
+                onDismissRequest = { viewModel.clearShareState() },
+                confirmButton = { TextButton(onClick = { viewModel.clearShareState() }) { Text("Ок") } },
+                title = { Text("Ошибка") },
+                text = { Text(share.message) }
+            )
+        }
+
+        RecipeShareState.Idle -> {}
+    }
 }
 
 @Composable
@@ -181,6 +247,9 @@ private fun IngredientViewRow(ingredient: RecipeIngredient, fridgeItems: List<Fr
     )
 }
 
+private fun formatQty(value: Double): String =
+    if (value == value.toLong().toDouble()) value.toLong().toString() else value.toString()
+
 private fun formatCookingTime(totalMinutes: Int): String {
     val hours = totalMinutes / 60
     val minutes = totalMinutes % 60
@@ -190,6 +259,3 @@ private fun formatCookingTime(totalMinutes: Int): String {
         else -> "$minutes мин"
     }
 }
-
-private fun formatQty(value: Double): String =
-    if (value == value.toLong().toDouble()) value.toLong().toString() else value.toString()

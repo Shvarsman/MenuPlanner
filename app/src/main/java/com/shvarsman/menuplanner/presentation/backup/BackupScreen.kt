@@ -2,42 +2,21 @@ package com.shvarsman.menuplanner.presentation.backup
 
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.FileDownload
 import androidx.compose.material.icons.filled.FileUpload
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ElevatedCard
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import com.shvarsman.menuplanner.domain.repository.BackupType
 import com.shvarsman.menuplanner.presentation.ui.theme.AppCornerRadius
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -50,14 +29,27 @@ fun BackupScreen(
     viewModel: BackupViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    var pendingExportType by remember { mutableStateOf<BackupType?>(null) }
 
     val exportLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.CreateDocument("application/zip")
-    ) { uri -> uri?.let { viewModel.onExport(it) } }
+    ) { uri ->
+        val type = pendingExportType
+        if (uri != null && type != null) {
+            viewModel.onExport(uri, type)
+        }
+        pendingExportType = null
+    }
 
     val importLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument()
     ) { uri -> uri?.let { viewModel.onImport(it) } }
+
+    fun startExport(type: BackupType, fileNamePrefix: String) {
+        pendingExportType = type
+        val timestamp = SimpleDateFormat("yyyy-MM-dd_HHmm", Locale.getDefault()).format(Date())
+        exportLauncher.launch("${fileNamePrefix}_$timestamp.zip")
+    }
 
     Scaffold(
         topBar = {
@@ -84,36 +76,46 @@ fun BackupScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Text(
-                "В резервную копию попадают рецепты (включая фото, ингредиенты и шаги) и количество продуктов в холодильнике. Каталог продуктов, меню на неделю и список покупок не сохраняются — каталог продуктов встроен в приложение и одинаков у всех пользователей.",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-
             ElevatedCard(shape = RoundedCornerShape(AppCornerRadius)) {
                 Column(modifier = Modifier.padding(16.dp)) {
-                    Text("Экспорт", style = MaterialTheme.typography.titleMedium)
+                    Text("Полное копирование", style = MaterialTheme.typography.titleMedium)
                     Spacer(Modifier.height(4.dp))
                     Text(
-                        "Сохранить продукты и рецепты в файл .zip",
+                        "Рецепты, холодильник, список покупок и меню на неделю целиком.",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Spacer(Modifier.height(12.dp))
                     Button(
-                        onClick = {
-                            val timestamp = SimpleDateFormat(
-                                "yyyy-MM-dd_HHmm",
-                                Locale.getDefault()
-                            ).format(Date())
-                            exportLauncher.launch("menuplanner_backup_$timestamp.zip")
-                        },
+                        onClick = { startExport(BackupType.FULL, "menuplanner_full_backup") },
                         modifier = Modifier.fillMaxWidth(),
                         enabled = uiState !is BackupUiState.InProgress
                     ) {
                         Icon(Icons.Filled.FileDownload, contentDescription = null)
                         Spacer(Modifier.width(8.dp))
-                        Text("Создать резервную копию")
+                        Text("Создать полную копию")
+                    }
+                }
+            }
+
+            ElevatedCard(shape = RoundedCornerShape(AppCornerRadius)) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text("Только рецепты", style = MaterialTheme.typography.titleMedium)
+                    Spacer(Modifier.height(4.dp))
+                    Text(
+                        "Все рецепты с фото, ингредиентами и шагами — без холодильника, покупок и меню.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Spacer(Modifier.height(12.dp))
+                    Button(
+                        onClick = { startExport(BackupType.RECIPES_ONLY, "menuplanner_recipes") },
+                        modifier = Modifier.fillMaxWidth(),
+                        enabled = uiState !is BackupUiState.InProgress
+                    ) {
+                        Icon(Icons.Filled.FileDownload, contentDescription = null)
+                        Spacer(Modifier.width(8.dp))
+                        Text("Сохранить все рецепты")
                     }
                 }
             }
@@ -123,7 +125,7 @@ fun BackupScreen(
                     Text("Восстановление", style = MaterialTheme.typography.titleMedium)
                     Spacer(Modifier.height(4.dp))
                     Text(
-                        "Продукты объединяются с существующими по названию. Рецепты всегда добавляются как новые — повторное восстановление одного и того же файла создаст дубликаты рецептов.",
+                        "Подходит любой файл резервной копии — полный, только рецепты или один рецепт. Продукты объединяются по названию. Рецепты и записи меню всегда добавляются как новые.",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -170,7 +172,7 @@ fun BackupScreen(
                 onDismissRequest = { viewModel.clearState() },
                 confirmButton = { TextButton(onClick = { viewModel.clearState() }) { Text("Ок") } },
                 title = { Text("Готово") },
-                text = { Text("Сохранено продуктов: ${state.fridgeItemsCount}, рецептов: ${state.recipesCount}") }
+                text = { Text(exportSummary(state)) }
             )
         }
 
@@ -179,7 +181,7 @@ fun BackupScreen(
                 onDismissRequest = { viewModel.clearState() },
                 confirmButton = { TextButton(onClick = { viewModel.clearState() }) { Text("Ок") } },
                 title = { Text("Готово") },
-                text = { Text("Восстановлено продуктов: ${state.fridgeItemsCount}, рецептов: ${state.recipesCount}") }
+                text = { Text(importSummary(state.result)) }
             )
         }
 
@@ -194,4 +196,26 @@ fun BackupScreen(
 
         BackupUiState.Idle -> {}
     }
+}
+
+private fun exportSummary(state: BackupUiState.ExportSuccess): String {
+    val r = state.result
+    return when (state.type) {
+        BackupType.FULL -> "Сохранено: рецептов — ${r.recipesCount}, продуктов в холодильнике — ${r.fridgeItemsCount}, позиций в списке покупок — ${r.shoppingItemsCount}, записей в меню — ${r.menuEntriesCount}"
+        BackupType.RECIPES_ONLY -> "Сохранено рецептов: ${r.recipesCount}"
+        BackupType.SINGLE_RECIPE -> "Рецепт сохранён"
+    }
+}
+
+private fun importSummary(r: com.shvarsman.menuplanner.domain.repository.BackupResult): String {
+    val parts = mutableListOf<String>()
+    if (r.recipesCount > 0) parts.add("рецептов — ${r.recipesCount}")
+    if (r.fridgeItemsCount > 0) parts.add("продуктов в холодильнике — ${r.fridgeItemsCount}")
+    if (r.shoppingItemsCount > 0) parts.add("позиций в списке покупок — ${r.shoppingItemsCount}")
+    if (r.menuEntriesCount > 0) parts.add("записей в меню — ${r.menuEntriesCount}")
+    return if (parts.isEmpty()) "Файл не содержал данных для восстановления" else "Восстановлено: ${
+        parts.joinToString(
+            ", "
+        )
+    }"
 }
