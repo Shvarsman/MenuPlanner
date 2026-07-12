@@ -16,6 +16,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -30,8 +31,24 @@ class FridgeViewModel @Inject constructor(
     private val findOrCreateProduct: FindOrCreateProductUseCase
 ) : ViewModel() {
 
-    val items: StateFlow<List<FridgeItem>> = getFridgeItems()
+    private val _searchQuery = MutableStateFlow("")
+    val searchQuery: StateFlow<String> = _searchQuery
+
+    fun onSearchQueryChange(query: String) {
+        _searchQuery.value = query
+    }
+
+    private val allItems: StateFlow<List<FridgeItem>> = getFridgeItems()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    val items: StateFlow<List<FridgeItem>> = combine(allItems, _searchQuery) { list, query ->
+        if (query.isBlank()) list else list.filter {
+            it.product.name.contains(
+                query,
+                ignoreCase = true
+            )
+        }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     val catalog: StateFlow<List<Product>> = getAllProducts()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
@@ -45,11 +62,21 @@ class FridgeViewModel @Inject constructor(
     private val _errorMessage = MutableStateFlow<String?>(null)
     val errorMessage: StateFlow<String?> = _errorMessage
 
-    fun openAddPicker() { _isAddPickerOpen.value = true }
-    fun closeAddPicker() { _isAddPickerOpen.value = false }
+    fun openAddPicker() {
+        _isAddPickerOpen.value = true
+    }
 
-    fun onEditClick(item: FridgeItem) { _editingItem.value = item }
-    fun closeEditDialog() { _editingItem.value = null }
+    fun closeAddPicker() {
+        _isAddPickerOpen.value = false
+    }
+
+    fun onEditClick(item: FridgeItem) {
+        _editingItem.value = item
+    }
+
+    fun closeEditDialog() {
+        _editingItem.value = null
+    }
 
     suspend fun createProduct(name: String, category: Category, unit: MeasureUnit): Product =
         findOrCreateProduct(name, category, unit)
@@ -80,5 +107,7 @@ class FridgeViewModel @Inject constructor(
         viewModelScope.launch { deleteFridgeItem(item.id) }
     }
 
-    fun clearError() { _errorMessage.value = null }
+    fun clearError() {
+        _errorMessage.value = null
+    }
 }

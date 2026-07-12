@@ -1,19 +1,60 @@
 package com.shvarsman.menuplanner.presentation.fridge
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ListAlt
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Kitchen
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
+import androidx.compose.ui.input.nestedscroll.NestedScrollSource
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -27,48 +68,96 @@ import com.shvarsman.menuplanner.presentation.ui.theme.AppCornerRadius
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FridgeScreen(
-    onOpenCatalog: () -> Unit, viewModel: FridgeViewModel = hiltViewModel()
+    onOpenCatalog: () -> Unit,
+    viewModel: FridgeViewModel = hiltViewModel()
 ) {
     val items by viewModel.items.collectAsState()
     val catalog by viewModel.catalog.collectAsState()
     val isAddPickerOpen by viewModel.isAddPickerOpen.collectAsState()
     val editingItem by viewModel.editingItem.collectAsState()
     val errorMessage by viewModel.errorMessage.collectAsState()
+    val searchQuery by viewModel.searchQuery.collectAsState()
 
     val grouped = remember(items) {
         items.groupBy { it.product.category }.toSortedMap(compareBy { it.ordinal })
     }
 
+    val listState = rememberLazyListState()
+    var searchBarVisible by remember { mutableStateOf(true) }
+    val nestedScrollConnection = remember {
+        object : NestedScrollConnection {
+            override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
+                if (available.y < -2) searchBarVisible = false
+                if (available.y > 2) searchBarVisible = true
+                return Offset.Zero
+            }
+        }
+    }
+
     Scaffold(
-        contentWindowInsets = WindowInsets(0),
         topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = "Холодильник",
-                        fontSize = 24.sp,
-                        fontWeight = FontWeight.Medium
+            Surface(color = MaterialTheme.colorScheme.background, tonalElevation = 0.dp) {
+                Column {
+                    TopAppBar(
+                        title = {
+                            Text(
+                                "Холодильник",
+                                fontSize = 24.sp,
+                                fontWeight = FontWeight.Medium
+                            )
+                        },
+                        colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background),
+                        actions = {
+                            IconButton(onClick = onOpenCatalog) {
+                                Icon(
+                                    Icons.AutoMirrored.Filled.ListAlt,
+                                    contentDescription = "Все продукты"
+                                )
+                            }
+                        }
                     )
-                },
-                actions = {
-                    IconButton(onClick = onOpenCatalog) {
-                        Icon(Icons.AutoMirrored.Filled.ListAlt, contentDescription = "Все продукты")
+                    AnimatedVisibility(
+                        visible = searchBarVisible,
+                        enter = expandVertically() + fadeIn(),
+                        exit = shrinkVertically() + fadeOut()
+                    ) {
+                        OutlinedTextField(
+                            value = searchQuery,
+                            onValueChange = { viewModel.onSearchQueryChange(it) },
+                            placeholder = { Text("Поиск в холодильнике") },
+                            leadingIcon = { Icon(Icons.Filled.Search, contentDescription = null) },
+                            trailingIcon = {
+                                if (searchQuery.isNotEmpty()) {
+                                    IconButton(onClick = { viewModel.onSearchQueryChange("") }) {
+                                        Icon(Icons.Filled.Close, contentDescription = "Очистить")
+                                    }
+                                }
+                            },
+                            singleLine = true,
+                            shape = RoundedCornerShape(AppCornerRadius),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 8.dp)
+                        )
                     }
-                })
-        }, floatingActionButton = {
+                }
+            }
+        },
+        floatingActionButton = {
             FloatingActionButton(onClick = { viewModel.openAddPicker() }) {
                 Icon(Icons.Filled.Add, contentDescription = "Добавить продукт")
             }
-        }) { padding ->
+        }
+    ) { padding ->
         if (items.isEmpty()) {
-            EmptyFridgeState(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(padding)
-            )
+            EmptyFridgeState(modifier = Modifier
+                .fillMaxSize()
+                .padding(padding))
         } else {
             LazyColumn(
-                modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(
+                state = listState,
+                modifier = Modifier.fillMaxSize().nestedScroll(nestedScrollConnection),
+                contentPadding = PaddingValues(
                     top = padding.calculateTopPadding(),
                     bottom = padding.calculateBottomPadding() + 88.dp
                 )
@@ -79,7 +168,8 @@ fun FridgeScreen(
                         FridgeItemCard(
                             item = item,
                             onEdit = { viewModel.onEditClick(item) },
-                            onDelete = { viewModel.onDeleteClick(item) })
+                            onDelete = { viewModel.onDeleteClick(item) }
+                        )
                     }
                 }
             }
@@ -93,24 +183,27 @@ fun FridgeScreen(
             onConfirm = { product, unit, qty -> viewModel.addItem(product, unit, qty) },
             onCreateProduct = { name, category, unit ->
                 viewModel.createProduct(
-                    name, category, unit
+                    name,
+                    category,
+                    unit
                 )
-            })
+            }
+        )
     }
-
     editingItem?.let { item ->
         FridgeItemQuantityDialog(
             item = item,
             onDismiss = { viewModel.closeEditDialog() },
-            onConfirm = { unit, qty -> viewModel.updateItemQuantity(item, unit, qty) })
+            onConfirm = { unit, qty -> viewModel.updateItemQuantity(item, unit, qty) }
+        )
     }
-
     errorMessage?.let { message ->
         AlertDialog(
             onDismissRequest = { viewModel.clearError() },
             confirmButton = { TextButton(onClick = { viewModel.clearError() }) { Text("Ок") } },
             title = { Text("Ошибка") },
-            text = { Text(message) })
+            text = { Text(message) }
+        )
     }
 }
 
