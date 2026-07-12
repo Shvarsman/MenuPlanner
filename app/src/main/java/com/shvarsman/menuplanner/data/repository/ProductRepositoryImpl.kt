@@ -27,10 +27,18 @@ class ProductRepositoryImpl @Inject constructor(
 
     override suspend fun findOrCreate(name: String, category: Category, defaultUnit: MeasureUnit): Product {
         dao.findByName(name)?.let { return it.toDomain() }
+        // Продукты, созданные пользователем "на лету", никогда не isDefault — их можно удалять
         val newId = dao.insert(ProductEntity(name = name, category = category, defaultUnit = defaultUnit))
         return Product(id = newId, name = name, category = category, defaultUnit = defaultUnit)
     }
 }
 
-private fun ProductEntity.toDomain() = Product(id = id, name = name, category = category, defaultUnit = defaultUnit)
-private fun Product.toEntity() = ProductEntity(id = id, name = name, category = category, defaultUnit = defaultUnit)
+private fun ProductEntity.toDomain() = Product(
+    id = id, name = name, category = category, defaultUnit = defaultUnit,
+    iconKey = iconKey, isDefault = isDefault
+)
+
+private fun Product.toEntity() = ProductEntity(
+    id = id, name = name, category = category, defaultUnit = defaultUnit,
+    iconKey = iconKey, isDefault = isDefault
+)

@@ -1,12 +1,17 @@
 package com.shvarsman.menuplanner.domain.model
 
-/** Продукт/ингредиент, хранящийся в "холодильнике" пользователя. */
 data class Product(
     val id: Long = 0,
     val name: String,
     val category: Category,
-    val defaultUnit: MeasureUnit
-)
+    val defaultUnit: MeasureUnit,
+    val iconKey: String = DEFAULT_ICON_KEY,
+    val isDefault: Boolean = false
+) {
+    companion object {
+        const val DEFAULT_ICON_KEY = "default"
+    }
+}
 
 enum class MeasureUnit(val displayName: String) {
     GRAM("г"),

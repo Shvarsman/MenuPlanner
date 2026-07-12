@@ -2,20 +2,42 @@ package com.shvarsman.menuplanner.presentation.backup
 
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.FileDownload
 import androidx.compose.material.icons.filled.FileUpload
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import androidx.compose.foundation.shape.RoundedCornerShape
 import com.shvarsman.menuplanner.presentation.ui.theme.AppCornerRadius
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -63,7 +85,7 @@ fun BackupScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Text(
-                "В резервную копию попадают продукты и рецепты (включая фото, ингредиенты и шаги приготовления). Холодильник, меню на неделю и список покупок не сохраняются.",
+                "В резервную копию попадают рецепты (включая фото, ингредиенты и шаги) и количество продуктов в холодильнике. Каталог продуктов, меню на неделю и список покупок не сохраняются — каталог продуктов встроен в приложение и одинаков у всех пользователей.",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -148,7 +170,7 @@ fun BackupScreen(
                 onDismissRequest = { viewModel.clearState() },
                 confirmButton = { TextButton(onClick = { viewModel.clearState() }) { Text("Ок") } },
                 title = { Text("Готово") },
-                text = { Text("Сохранено продуктов: ${state.productsCount}, рецептов: ${state.recipesCount}") }
+                text = { Text("Сохранено продуктов: ${state.fridgeItemsCount}, рецептов: ${state.recipesCount}") }
             )
         }
 
@@ -157,7 +179,7 @@ fun BackupScreen(
                 onDismissRequest = { viewModel.clearState() },
                 confirmButton = { TextButton(onClick = { viewModel.clearState() }) { Text("Ок") } },
                 title = { Text("Готово") },
-                text = { Text("Восстановлено продуктов: ${state.productsCount}, рецептов: ${state.recipesCount}") }
+                text = { Text("Восстановлено продуктов: ${state.fridgeItemsCount}, рецептов: ${state.recipesCount}") }
             )
         }
 

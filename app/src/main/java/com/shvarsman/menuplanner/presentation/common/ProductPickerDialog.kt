@@ -1,21 +1,49 @@
 package com.shvarsman.menuplanner.presentation.common
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuAnchorType
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.ListItem
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.RadioButton
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.shvarsman.menuplanner.domain.model.Category
 import com.shvarsman.menuplanner.domain.model.MeasureUnit
 import com.shvarsman.menuplanner.domain.model.Product
+import com.shvarsman.menuplanner.presentation.fridge.ProductIcon
 import kotlinx.coroutines.launch
 
 /**
@@ -44,7 +72,12 @@ fun ProductPickerDialog(
     val coroutineScope = rememberCoroutineScope()
 
     val filtered = remember(query, catalog) {
-        if (query.isBlank()) catalog else catalog.filter { it.name.contains(query, ignoreCase = true) }
+        if (query.isBlank()) catalog else catalog.filter {
+            it.name.contains(
+                query,
+                ignoreCase = true
+            )
+        }
     }
 
     AlertDialog(
@@ -74,13 +107,21 @@ fun ProductPickerDialog(
                         onClick = { newName = query; step = PickerStep.CREATE },
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Icon(Icons.Filled.Add, contentDescription = null, modifier = Modifier.size(18.dp))
+                        Icon(
+                            Icons.Filled.Add,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp)
+                        )
                         Spacer(Modifier.width(4.dp))
                         Text("Создать новый продукт")
                     }
                     HorizontalDivider()
                     if (filtered.isEmpty()) {
-                        Text("Ничего не найдено", modifier = Modifier.padding(16.dp), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(
+                            "Ничего не найдено",
+                            modifier = Modifier.padding(16.dp),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     } else {
                         LazyColumn(modifier = Modifier.heightIn(max = 320.dp)) {
                             items(filtered, key = { it.id }) { product ->
@@ -88,7 +129,10 @@ fun ProductPickerDialog(
                                     headlineContent = { Text(product.name) },
                                     supportingContent = { Text(product.category.displayName) },
                                     leadingContent = {
-                                        Icon(product.category.icon, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                                        ProductIcon(
+                                            product = product,
+                                            modifier = Modifier.size(32.dp)
+                                        )
                                     },
                                     modifier = Modifier.clickable {
                                         selectedProduct = product
@@ -112,29 +156,39 @@ fun ProductPickerDialog(
                     )
                     Text("Категория", style = MaterialTheme.typography.labelLarge)
                     LazyColumn(modifier = Modifier.heightIn(max = 220.dp)) {
-                        items(Category.values()) { category ->
+                        items(Category.entries.toTypedArray()) { category ->
                             ListItem(
                                 headlineContent = { Text(category.displayName) },
                                 leadingContent = { Icon(category.icon, contentDescription = null) },
                                 trailingContent = {
-                                    RadioButton(selected = category == newCategory, onClick = { newCategory = category })
+                                    RadioButton(
+                                        selected = category == newCategory,
+                                        onClick = { newCategory = category })
                                 },
                                 modifier = Modifier.clickable { newCategory = category }
                             )
                         }
                     }
-                    ExposedDropdownMenuBox(expanded = unitMenuExpanded, onExpandedChange = { unitMenuExpanded = it }) {
+                    ExposedDropdownMenuBox(
+                        expanded = unitMenuExpanded,
+                        onExpandedChange = { unitMenuExpanded = it }) {
                         OutlinedTextField(
                             readOnly = true,
                             value = selectedUnit.displayName,
                             onValueChange = {},
                             label = { Text("Ед. изм. по умолчанию") },
                             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = unitMenuExpanded) },
-                            modifier = Modifier.fillMaxWidth()
-                                .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable, enabled = true)
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .menuAnchor(
+                                    ExposedDropdownMenuAnchorType.PrimaryNotEditable,
+                                    enabled = true
+                                )
                         )
-                        ExposedDropdownMenu(expanded = unitMenuExpanded, onDismissRequest = { unitMenuExpanded = false }) {
-                            MeasureUnit.values().forEach { unit ->
+                        ExposedDropdownMenu(
+                            expanded = unitMenuExpanded,
+                            onDismissRequest = { unitMenuExpanded = false }) {
+                            MeasureUnit.entries.forEach { unit ->
                                 DropdownMenuItem(
                                     text = { Text(unit.displayName) },
                                     onClick = { selectedUnit = unit; unitMenuExpanded = false }
@@ -149,15 +203,23 @@ fun ProductPickerDialog(
                     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                         if (product != null) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(product.category.icon, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                                ProductIcon(
+                                    product = product,
+                                    modifier = Modifier.size(32.dp)
+                                )
                                 Spacer(Modifier.width(8.dp))
-                                Text(product.name, style = MaterialTheme.typography.titleMedium)
+                                Text(
+                                    text = product.name,
+                                    style = MaterialTheme.typography.titleMedium
+                                )
                             }
                         }
                         Row {
                             OutlinedTextField(
                                 value = quantityText,
-                                onValueChange = { quantityText = it.filter { c -> c.isDigit() || c == '.' } },
+                                onValueChange = {
+                                    quantityText = it.filter { c -> c.isDigit() || c == '.' }
+                                },
                                 label = { Text("Количество") },
                                 singleLine = true,
                                 modifier = Modifier.weight(1f)
@@ -173,14 +235,25 @@ fun ProductPickerDialog(
                                     value = selectedUnit.displayName,
                                     onValueChange = {},
                                     label = { Text("Ед. изм.") },
-                                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = unitMenuExpanded) },
-                                    modifier = Modifier.menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable, enabled = true)
+                                    trailingIcon = {
+                                        ExposedDropdownMenuDefaults.TrailingIcon(
+                                            expanded = unitMenuExpanded
+                                        )
+                                    },
+                                    modifier = Modifier.menuAnchor(
+                                        ExposedDropdownMenuAnchorType.PrimaryNotEditable,
+                                        enabled = true
+                                    )
                                 )
-                                ExposedDropdownMenu(expanded = unitMenuExpanded, onDismissRequest = { unitMenuExpanded = false }) {
-                                    MeasureUnit.values().forEach { unit ->
+                                ExposedDropdownMenu(
+                                    expanded = unitMenuExpanded,
+                                    onDismissRequest = { unitMenuExpanded = false }) {
+                                    MeasureUnit.entries.forEach { unit ->
                                         DropdownMenuItem(
                                             text = { Text(unit.displayName) },
-                                            onClick = { selectedUnit = unit; unitMenuExpanded = false }
+                                            onClick = {
+                                                selectedUnit = unit; unitMenuExpanded = false
+                                            }
                                         )
                                     }
                                 }
@@ -204,6 +277,7 @@ fun ProductPickerDialog(
                         }
                     }
                 ) { Text("Далее") }
+
                 PickerStep.QUANTITY -> TextButton(onClick = {
                     val product = selectedProduct ?: return@TextButton
                     onConfirm(product, selectedUnit, quantityText.toDoubleOrNull() ?: 0.0)
@@ -214,7 +288,11 @@ fun ProductPickerDialog(
             when (step) {
                 PickerStep.SELECT -> TextButton(onClick = onDismiss) { Text("Отмена") }
                 else -> TextButton(onClick = { step = PickerStep.SELECT }) {
-                    Icon(Icons.Filled.ArrowBack, contentDescription = null, modifier = Modifier.size(16.dp))
+                    Icon(
+                        Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = null,
+                        modifier = Modifier.size(16.dp)
+                    )
                     Spacer(Modifier.width(4.dp))
                     Text("Назад")
                 }

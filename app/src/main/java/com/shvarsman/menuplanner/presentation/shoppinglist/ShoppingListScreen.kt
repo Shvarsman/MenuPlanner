@@ -23,6 +23,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.shvarsman.menuplanner.domain.model.Category
 import com.shvarsman.menuplanner.domain.model.ShoppingListItem
 import com.shvarsman.menuplanner.presentation.common.ProductPickerDialog
+import com.shvarsman.menuplanner.presentation.fridge.ProductIcon
 import com.shvarsman.menuplanner.presentation.ui.theme.AppCornerRadius
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -219,12 +220,13 @@ private fun ShoppingItemRow(item: ShoppingListItem, onToggle: () -> Unit, onRemo
                 .clickable { onToggle() },
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Checkbox(checked = item.isChecked, onCheckedChange = { onToggle() })
+            Checkbox(
+                checked = item.isChecked,
+                onCheckedChange = { onToggle() }
+            )
             Spacer(Modifier.width(8.dp))
-            Icon(
-                item.product.category.icon,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
+            ProductIcon(
+                product = item.product,
                 modifier = Modifier.size(24.dp)
             )
             Spacer(Modifier.width(8.dp))

@@ -40,6 +40,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.shvarsman.menuplanner.domain.model.Category
 import com.shvarsman.menuplanner.domain.model.Product
+import com.shvarsman.menuplanner.presentation.fridge.ProductIcon
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -159,20 +160,13 @@ private fun CatalogProductRow(product: Product, onDelete: () -> Unit) {
     ListItem(
         headlineContent = { Text(product.name) },
         supportingContent = { Text("По умолчанию: ${product.defaultUnit.displayName}") },
-        leadingContent = {
-            Icon(
-                product.category.icon,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary
-            )
-        },
+        leadingContent = { ProductIcon(product = product, modifier = Modifier.size(32.dp)) },
         trailingContent = {
-            IconButton(onClick = onDelete) {
-                Icon(
-                    Icons.Filled.Delete,
-                    contentDescription = "Удалить из каталога"
-                )
+            if (!product.isDefault) {
+                IconButton(onClick = onDelete) {
+                    Icon(Icons.Filled.Delete, contentDescription = "Удалить из каталога")
+                }
             }
-        }
+        },
     )
 }

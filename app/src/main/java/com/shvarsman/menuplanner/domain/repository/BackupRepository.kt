@@ -2,7 +2,7 @@ package com.shvarsman.menuplanner.domain.repository
 
 import android.net.Uri
 
-data class BackupResult(val productsCount: Int, val recipesCount: Int)
+data class BackupResult(val fridgeItemsCount: Int, val recipesCount: Int)
 
 interface BackupRepository {
     /** Экспортирует все продукты и рецепты в zip-архив по указанному URI. */

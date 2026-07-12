@@ -14,8 +14,8 @@ import javax.inject.Inject
 sealed interface BackupUiState {
     data object Idle : BackupUiState
     data object InProgress : BackupUiState
-    data class ExportSuccess(val productsCount: Int, val recipesCount: Int) : BackupUiState
-    data class ImportSuccess(val productsCount: Int, val recipesCount: Int) : BackupUiState
+    data class ExportSuccess(val fridgeItemsCount: Int, val recipesCount: Int) : BackupUiState
+    data class ImportSuccess(val fridgeItemsCount: Int, val recipesCount: Int) : BackupUiState
     data class Error(val message: String) : BackupUiState
 }
 
@@ -25,7 +25,8 @@ class BackupViewModel @Inject constructor(
     private val importBackup: ImportBackupUseCase
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow<BackupUiState>(BackupUiState.Idle)
+    private val _uiState =
+        MutableStateFlow<BackupUiState>(BackupUiState.Idle)
     val uiState: StateFlow<BackupUiState> = _uiState
 
     fun onExport(destinationUri: Uri) {
@@ -33,9 +34,11 @@ class BackupViewModel @Inject constructor(
             _uiState.value = BackupUiState.InProgress
             try {
                 val result = exportBackup(destinationUri)
-                _uiState.value = BackupUiState.ExportSuccess(result.productsCount, result.recipesCount)
+                _uiState.value =
+                    BackupUiState.ExportSuccess(result.fridgeItemsCount, result.recipesCount)
             } catch (e: Exception) {
-                _uiState.value = BackupUiState.Error(e.message ?: "Не удалось создать резервную копию")
+                _uiState.value =
+                    BackupUiState.Error(e.message ?: "Не удалось создать резервную копию")
             }
         }
     }
@@ -45,12 +48,16 @@ class BackupViewModel @Inject constructor(
             _uiState.value = BackupUiState.InProgress
             try {
                 val result = importBackup(sourceUri)
-                _uiState.value = BackupUiState.ImportSuccess(result.productsCount, result.recipesCount)
+                _uiState.value =
+                    BackupUiState.ImportSuccess(result.fridgeItemsCount, result.recipesCount)
             } catch (e: Exception) {
-                _uiState.value = BackupUiState.Error(e.message ?: "Не удалось восстановить резервную копию")
+                _uiState.value =
+                    BackupUiState.Error(e.message ?: "Не удалось восстановить резервную копию")
             }
         }
     }
 
-    fun clearState() { _uiState.value = BackupUiState.Idle }
+    fun clearState() {
+        _uiState.value = BackupUiState.Idle
+    }
 }

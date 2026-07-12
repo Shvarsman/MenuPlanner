@@ -152,19 +152,7 @@ private fun FridgeItemCard(item: FridgeItem, onEdit: () -> Unit, onDelete: () ->
                 .padding(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Surface(
-                shape = MaterialTheme.shapes.small,
-                color = MaterialTheme.colorScheme.secondaryContainer,
-                modifier = Modifier.size(40.dp)
-            ) {
-                Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
-                    Icon(
-                        item.product.category.icon,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSecondaryContainer
-                    )
-                }
-            }
+            ProductIcon(product = item.product)
             Spacer(Modifier.width(12.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(item.product.name, style = MaterialTheme.typography.titleMedium)

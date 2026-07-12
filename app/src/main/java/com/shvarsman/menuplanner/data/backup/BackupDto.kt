@@ -3,10 +3,11 @@ package com.shvarsman.menuplanner.data.backup
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class BackupProductDto(
-    val name: String,
+data class BackupFridgeItemDto(
+    val productName: String,
     val category: String,
-    val defaultUnit: String
+    val unit: String,
+    val quantity: Double
 )
 
 @Serializable
@@ -19,9 +20,9 @@ data class BackupIngredientDto(
 
 @Serializable
 data class BackupStepDto(
-    val type: String, // "text" или "image"
+    val type: String,
     val text: String? = null,
-    val imageFileName: String? = null // имя файла внутри архива в папке images/
+    val imageFileName: String? = null
 )
 
 @Serializable
@@ -37,8 +38,8 @@ data class BackupRecipeDto(
 
 @Serializable
 data class BackupPayload(
-    val version: Int = 1,
+    val version: Int = 2,
     val exportedAt: Long,
-    val products: List<BackupProductDto>,
+    val fridgeItems: List<BackupFridgeItemDto>,
     val recipes: List<BackupRecipeDto>
 )

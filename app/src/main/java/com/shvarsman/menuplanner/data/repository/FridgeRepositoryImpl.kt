@@ -32,7 +32,10 @@ class FridgeRepositoryImpl @Inject constructor(
 
 private fun FridgeItemWithProduct.toDomain() = FridgeItem(
     id = item.id,
-    product = Product(id = product.id, name = product.name, category = product.category, defaultUnit = product.defaultUnit),
+    product = Product(
+        id = product.id, name = product.name, category = product.category,
+        defaultUnit = product.defaultUnit, iconKey = product.iconKey, isDefault = product.isDefault
+    ),
     unit = item.unit,
     quantity = item.quantity
 )

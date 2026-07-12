@@ -176,7 +176,7 @@ class RecipeEditorViewModel @Inject constructor(
     fun addTextStep() {
         val current = _state.value.steps
         val lastIsEmptyText = current.lastOrNull()
-            .let { it is StepContentItem.Text && (it as StepContentItem.Text).content.isBlank() }
+            .let { it is StepContentItem.Text && it.content.isBlank() }
 
         if (lastIsEmptyText) {
             _focusRequestIndex.value = current.lastIndex
@@ -193,7 +193,7 @@ class RecipeEditorViewModel @Inject constructor(
 
             val current = _state.value.steps.toMutableList()
             if (current.lastOrNull().let {
-                    it is StepContentItem.Text && (it as StepContentItem.Text).content.isBlank()
+                    it is StepContentItem.Text && it.content.isBlank()
                 }) {
                 current.removeAt(current.lastIndex)
             }

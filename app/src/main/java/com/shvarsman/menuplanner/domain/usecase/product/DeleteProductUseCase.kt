@@ -6,5 +6,9 @@ import javax.inject.Inject
 class DeleteProductUseCase @Inject constructor(
     private val repository: ProductRepository
 ) {
-    suspend operator fun invoke(productId: Long) = repository.deleteProduct(productId)
+    suspend operator fun invoke(productId: Long) {
+        val product = repository.getProduct(productId)
+        require(product == null || !product.isDefault) { "Стандартные продукты нельзя удалить" }
+        repository.deleteProduct(productId)
+    }
 }

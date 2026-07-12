@@ -18,7 +18,9 @@ class RecipeRepositoryImpl @Inject constructor(
 ) : RecipeRepository {
 
     override fun observeRecipes(): Flow<List<Recipe>> =
-        dao.observeAllWithIngredients().map { list -> list.map { it.toDomain() } }
+        dao.observeAllWithIngredients().map { list ->
+            list.map { it.toDomain() }
+        }
 
     override suspend fun getRecipe(id: Long): Recipe? = dao.getByIdWithIngredients(id)?.toDomain()
 
@@ -54,7 +56,9 @@ private fun RecipeIngredientWithProduct.toDomain() = RecipeIngredient(
         id = product.id,
         name = product.name,
         category = product.category,
-        defaultUnit = product.defaultUnit
+        defaultUnit = product.defaultUnit,
+        iconKey = product.iconKey,
+        isDefault = product.isDefault
     ),
     unit = ingredient.unit,
     quantity = ingredient.quantity
@@ -71,5 +75,9 @@ private fun Recipe.toEntity() = RecipeEntity(
 )
 
 private fun RecipeIngredient.toEntity(recipeId: Long) = RecipeIngredientEntity(
-    id = id, recipeId = recipeId, productId = product.id, unit = unit, quantity = quantity
+    id = id,
+    recipeId = recipeId,
+    productId = product.id,
+    unit = unit,
+    quantity = quantity
 )

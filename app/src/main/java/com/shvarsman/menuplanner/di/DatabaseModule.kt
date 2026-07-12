@@ -3,6 +3,7 @@ package com.shvarsman.menuplanner.di
 import android.content.Context
 import androidx.room.Room
 import com.shvarsman.menuplanner.data.local.AppDatabase
+import com.shvarsman.menuplanner.data.local.AppDatabaseCallback
 import com.shvarsman.menuplanner.data.local.dao.FridgeItemDao
 import com.shvarsman.menuplanner.data.local.dao.MenuDao
 import com.shvarsman.menuplanner.data.local.dao.ProductDao
@@ -24,6 +25,7 @@ object DatabaseModule {
     fun provideDatabase(@ApplicationContext context: Context): AppDatabase =
         Room.databaseBuilder(context, AppDatabase::class.java, AppDatabase.DATABASE_NAME)
             .fallbackToDestructiveMigration(false)
+            .addCallback(AppDatabaseCallback(context))
             .build()
 
     @Provides

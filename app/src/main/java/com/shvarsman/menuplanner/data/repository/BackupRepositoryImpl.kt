@@ -3,14 +3,15 @@ package com.shvarsman.menuplanner.data.repository
 import android.content.Context
 import android.net.Uri
 import androidx.core.net.toUri
+import com.shvarsman.menuplanner.data.backup.BackupFridgeItemDto
 import com.shvarsman.menuplanner.data.backup.BackupIngredientDto
 import com.shvarsman.menuplanner.data.backup.BackupPayload
-import com.shvarsman.menuplanner.data.backup.BackupProductDto
 import com.shvarsman.menuplanner.data.backup.BackupRecipeDto
 import com.shvarsman.menuplanner.data.backup.BackupStepDto
 import com.shvarsman.menuplanner.data.local.ImageFileManager
 import com.shvarsman.menuplanner.domain.model.Category
 import com.shvarsman.menuplanner.domain.model.CookingMethod
+import com.shvarsman.menuplanner.domain.model.FridgeItem
 import com.shvarsman.menuplanner.domain.model.MeasureUnit
 import com.shvarsman.menuplanner.domain.model.Recipe
 import com.shvarsman.menuplanner.domain.model.RecipeCategory
@@ -18,6 +19,7 @@ import com.shvarsman.menuplanner.domain.model.RecipeIngredient
 import com.shvarsman.menuplanner.domain.model.StepContentItem
 import com.shvarsman.menuplanner.domain.repository.BackupRepository
 import com.shvarsman.menuplanner.domain.repository.BackupResult
+import com.shvarsman.menuplanner.domain.repository.FridgeRepository
 import com.shvarsman.menuplanner.domain.repository.ProductRepository
 import com.shvarsman.menuplanner.domain.repository.RecipeRepository
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -38,14 +40,14 @@ class BackupRepositoryImpl @Inject constructor(
     @ApplicationContext private val context: Context,
     private val productRepository: ProductRepository,
     private val recipeRepository: RecipeRepository,
+    private val fridgeRepository: FridgeRepository,
     private val imageFileManager: ImageFileManager
 ) : BackupRepository {
 
     override suspend fun exportBackup(destinationUri: Uri): BackupResult {
-        val products = productRepository.observeAllProducts().first()
+        val fridgeItems = fridgeRepository.observeItems().first()
         val recipes = recipeRepository.observeRecipes().first()
 
-        // originalUri -> имя файла внутри архива; так одно и то же фото не пакуется дважды
         val imageFilesToPack = mutableMapOf<String, String>()
         fun registerImage(uriString: String?): String? {
             if (uriString == null) return null
@@ -81,17 +83,18 @@ class BackupRepositoryImpl @Inject constructor(
             )
         }
 
-        val productDtos = products.map {
-            BackupProductDto(
-                name = it.name,
-                category = it.category.name,
-                defaultUnit = it.defaultUnit.name
+        val fridgeItemDtos = fridgeItems.map {
+            BackupFridgeItemDto(
+                productName = it.product.name,
+                category = it.product.category.name,
+                unit = it.unit.name,
+                quantity = it.quantity
             )
         }
 
         val payload = BackupPayload(
             exportedAt = System.currentTimeMillis(),
-            products = productDtos,
+            fridgeItems = fridgeItemDtos,
             recipes = recipeDtos
         )
 
@@ -114,13 +117,12 @@ class BackupRepositoryImpl @Inject constructor(
             }
         } ?: throw IllegalStateException("Не удалось открыть файл для записи")
 
-        return BackupResult(productsCount = productDtos.size, recipesCount = recipeDtos.size)
+        return BackupResult(fridgeItemsCount = fridgeItemDtos.size, recipesCount = recipeDtos.size)
     }
 
     override suspend fun importBackup(sourceUri: Uri): BackupResult {
         var payload: BackupPayload? = null
-        val extractedImages =
-            mutableMapOf<String, String>() // имя файла в архиве -> новый постоянный URI
+        val extractedImages = mutableMapOf<String, String>()
 
         context.contentResolver.openInputStream(sourceUri)?.use { rawIn ->
             ZipInputStream(rawIn).use { zip ->
@@ -147,16 +149,31 @@ class BackupRepositoryImpl @Inject constructor(
 
         val data = payload ?: throw IllegalStateException("Файл резервной копии повреждён")
 
-        // 1. Продукты: находим по имени существующие или создаём новые
-        data.products.forEach { dto ->
-            productRepository.findOrCreate(
-                name = dto.name,
+        // Восстанавливаем количество продуктов в холодильнике, суммируя с уже имеющимся
+        val currentFridgeItems = fridgeRepository.observeItems().first()
+        data.fridgeItems.forEach { dto ->
+            val product = productRepository.findOrCreate(
+                name = dto.productName,
                 category = Category.valueOf(dto.category),
-                defaultUnit = MeasureUnit.valueOf(dto.defaultUnit)
+                defaultUnit = MeasureUnit.valueOf(dto.unit)
             )
+            val unit = MeasureUnit.valueOf(dto.unit)
+            val existing =
+                currentFridgeItems.firstOrNull { it.product.id == product.id && it.unit == unit }
+            if (existing != null) {
+                fridgeRepository.updateItem(existing.copy(quantity = existing.quantity + dto.quantity))
+            } else {
+                fridgeRepository.addItem(
+                    FridgeItem(
+                        product = product,
+                        unit = unit,
+                        quantity = dto.quantity
+                    )
+                )
+            }
         }
 
-        // 2. Рецепты: ингредиенты резолвим через findOrCreate по имени продукта
+        // Рецепты всегда добавляются как новые записи
         data.recipes.forEach { recipeDto ->
             val ingredients = recipeDto.ingredients.map { ingredientDto ->
                 val product = productRepository.findOrCreate(
@@ -191,7 +208,7 @@ class BackupRepositoryImpl @Inject constructor(
                     category = RecipeCategory.valueOf(recipeDto.category),
                     photoUri = photoUri,
                     cookingMethod = recipeDto.cookingMethod?.let { name ->
-                        CookingMethod.values().firstOrNull { it.name == name }
+                        CookingMethod.entries.firstOrNull { it.name == name }
                     },
                     cookingTimeMinutes = recipeDto.cookingTimeMinutes,
                     ingredients = ingredients,
@@ -200,6 +217,9 @@ class BackupRepositoryImpl @Inject constructor(
             )
         }
 
-        return BackupResult(productsCount = data.products.size, recipesCount = data.recipes.size)
+        return BackupResult(
+            fridgeItemsCount = data.fridgeItems.size,
+            recipesCount = data.recipes.size
+        )
     }
 }

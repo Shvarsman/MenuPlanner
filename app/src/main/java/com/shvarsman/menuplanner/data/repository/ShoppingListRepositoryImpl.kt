@@ -16,7 +16,10 @@ class ShoppingListRepositoryImpl @Inject constructor(
 
     override fun observeItems(): Flow<List<ShoppingListItem>> =
         dao.observeAllWithProduct().map { list ->
-            list.map { it.toDomain() }.sortedWith(compareBy({ it.isChecked }, { it.product.name }))
+            list.map { it.toDomain() }
+                .sortedWith(
+                    compareBy({ it.isChecked }, { it.product.name })
+                )
         }
 
     override suspend fun addItem(item: ShoppingListItem): Long = dao.insert(item.toEntity())
@@ -32,10 +35,22 @@ class ShoppingListRepositoryImpl @Inject constructor(
 
 private fun ShoppingListItemWithProduct.toDomain() = ShoppingListItem(
     id = item.id,
-    product = Product(id = product.id, name = product.name, category = product.category, defaultUnit = product.defaultUnit),
-    unit = item.unit, quantity = item.quantity, isChecked = item.isChecked
+    product = Product(
+        id = product.id,
+        name = product.name,
+        category = product.category,
+        defaultUnit = product.defaultUnit,
+        iconKey = product.iconKey,
+        isDefault = product.isDefault
+    ),
+    unit = item.unit,
+    quantity = item.quantity,
+    isChecked = item.isChecked
 )
-
 private fun ShoppingListItem.toEntity() = ShoppingListItemEntity(
-    id = id, productId = product.id, unit = unit, quantity = quantity, isChecked = isChecked
+    id = id,
+    productId = product.id,
+    unit = unit,
+    quantity = quantity,
+    isChecked = isChecked
 )

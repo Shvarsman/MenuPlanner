@@ -22,6 +22,6 @@ class ProductCatalogViewModel @Inject constructor(
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     fun delete(product: Product) {
-        viewModelScope.launch { deleteProduct(product.id) }
+        viewModelScope.launch { runCatching { deleteProduct(product.id) } }
     }
 }
