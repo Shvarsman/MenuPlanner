@@ -135,10 +135,15 @@ fun ProductPickerDialog(
                                         )
                                     },
                                     modifier = Modifier.clickable {
-                                        selectedProduct = product
-                                        selectedUnit = product.defaultUnit
-                                        quantityText = "1"
-                                        step = PickerStep.QUANTITY
+                                        if (product.isToTaste) {
+                                            // Специи/соль/сахар и т.п. — без указания количества
+                                            onConfirm(product, product.defaultUnit, 0.0)
+                                        } else {
+                                            selectedProduct = product
+                                            selectedUnit = product.defaultUnit
+                                            quantityText = "1"
+                                            step = PickerStep.QUANTITY
+                                        }
                                     }
                                 )
                             }

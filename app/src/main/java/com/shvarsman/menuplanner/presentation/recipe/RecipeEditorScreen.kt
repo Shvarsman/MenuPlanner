@@ -399,9 +399,14 @@ private fun IngredientRow(
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Text(
-            "${ingredient.product.name} — ${formatQty(ingredient.quantity)} ${ingredient.unit.displayName}",
+            if (ingredient.product.isToTaste) {
+                "${ingredient.product.name} — по вкусу"
+            } else {
+                "${ingredient.product.name} — ${formatQty(ingredient.quantity)} ${ingredient.unit.displayName}"
+            },
             style = MaterialTheme.typography.bodyMedium,
-            color = textColor
+            // "по вкусу" не участвует в проверке наличия — всегда нейтральный цвет
+            color = if (ingredient.product.isToTaste) MaterialTheme.colorScheme.onSurfaceVariant else textColor
         )
         IconButton(onClick = onRemove) {
             Icon(Icons.Filled.Close, contentDescription = "Удалить ингредиент")

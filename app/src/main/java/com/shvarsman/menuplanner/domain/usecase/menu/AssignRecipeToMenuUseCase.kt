@@ -26,8 +26,9 @@ class AssignRecipeToMenuUseCase @Inject constructor(
         )
 
         recipe.ingredients.forEach { ingredient ->
+            if (ingredient.product.isToTaste) return@forEach // специи/соль и т.п. никогда не докупаются автоматически
+
             val fridgeItem = fridgeSnapshot.firstOrNull { it.product.id == ingredient.product.id }
-            // Количество в холодильнике конвертируется в единицу ингредиента
             val fridgeQty = fridgeItem
                 ?.let { UnitConversion.convert(it.quantity, it.unit, ingredient.unit) } ?: 0.0
 

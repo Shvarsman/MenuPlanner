@@ -35,6 +35,7 @@ class AppDatabaseCallback(private val context: Context) : RoomDatabase.Callback(
                     put("defaultUnit", row.unit.name)
                     put("iconKey", Product.DEFAULT_ICON_KEY)
                     put("isDefault", 1)
+                    put("isToTaste", if (row.isToTaste) 1 else 0)
                 }
                 db.insert("products", SQLiteDatabase.CONFLICT_IGNORE, values)
             }

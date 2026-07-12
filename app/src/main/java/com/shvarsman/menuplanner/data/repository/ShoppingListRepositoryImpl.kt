@@ -41,12 +41,12 @@ private fun ShoppingListItemWithProduct.toDomain() = ShoppingListItem(
         category = product.category,
         defaultUnit = product.defaultUnit,
         iconKey = product.iconKey,
-        isDefault = product.isDefault
+        isDefault = product.isDefault,
+        isToTaste = product.isToTaste
     ),
-    unit = item.unit,
-    quantity = item.quantity,
-    isChecked = item.isChecked
+    unit = item.unit, quantity = item.quantity, isChecked = item.isChecked
 )
+
 private fun ShoppingListItem.toEntity() = ShoppingListItemEntity(
     id = id,
     productId = product.id,

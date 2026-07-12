@@ -13,5 +13,6 @@ data class ProductEntity(
     val category: Category,
     val defaultUnit: MeasureUnit,
     val iconKey: String = Product.DEFAULT_ICON_KEY,
-    val isDefault: Boolean = false
+    val isDefault: Boolean = false,
+    val isToTaste: Boolean = false
 )

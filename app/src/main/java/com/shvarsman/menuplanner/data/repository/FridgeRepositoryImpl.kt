@@ -34,7 +34,8 @@ private fun FridgeItemWithProduct.toDomain() = FridgeItem(
     id = item.id,
     product = Product(
         id = product.id, name = product.name, category = product.category,
-        defaultUnit = product.defaultUnit, iconKey = product.iconKey, isDefault = product.isDefault
+        defaultUnit = product.defaultUnit, iconKey = product.iconKey,
+        isDefault = product.isDefault, isToTaste = product.isToTaste
     ),
     unit = item.unit,
     quantity = item.quantity

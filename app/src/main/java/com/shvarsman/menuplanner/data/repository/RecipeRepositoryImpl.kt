@@ -58,7 +58,8 @@ private fun RecipeIngredientWithProduct.toDomain() = RecipeIngredient(
         category = product.category,
         defaultUnit = product.defaultUnit,
         iconKey = product.iconKey,
-        isDefault = product.isDefault
+        isDefault = product.isDefault,
+        isToTaste = product.isToTaste
     ),
     unit = ingredient.unit,
     quantity = ingredient.quantity

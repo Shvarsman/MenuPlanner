@@ -125,7 +125,10 @@ fun CookingScreen(
             }
             items(recipe.ingredients) { ingredient ->
                 Text(
-                    "${ingredient.product.name} — ${formatQty(ingredient.quantity)} ${ingredient.unit.displayName}",
+                    if (ingredient.product.isToTaste)
+                        "${ingredient.product.name} — по вкусу"
+                    else
+                        "${ingredient.product.name} — ${formatQty(ingredient.quantity)} ${ingredient.unit.displayName}",
                     style = MaterialTheme.typography.bodyMedium,
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 2.dp)
                 )

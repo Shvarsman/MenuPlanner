@@ -34,11 +34,21 @@ class ProductRepositoryImpl @Inject constructor(
 }
 
 private fun ProductEntity.toDomain() = Product(
-    id = id, name = name, category = category, defaultUnit = defaultUnit,
-    iconKey = iconKey, isDefault = isDefault
+    id = id,
+    name = name,
+    category = category,
+    defaultUnit = defaultUnit,
+    iconKey = iconKey,
+    isDefault = isDefault,
+    isToTaste = isToTaste
 )
 
 private fun Product.toEntity() = ProductEntity(
-    id = id, name = name, category = category, defaultUnit = defaultUnit,
-    iconKey = iconKey, isDefault = isDefault
+    id = id,
+    name = name,
+    category = category,
+    defaultUnit = defaultUnit,
+    iconKey = iconKey,
+    isDefault = isDefault,
+    isToTaste = isToTaste
 )

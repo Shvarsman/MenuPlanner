@@ -16,6 +16,9 @@ fun RecipeIngredient.availability(
     fridgeItems: List<FridgeItem>,
     reserved: ReservedAmount? = null
 ): IngredientAvailability {
+    // "По вкусу" — количество не имеет значения, всегда считается доступным
+    if (product.isToTaste) return IngredientAvailability.AVAILABLE
+
     val fridgeItem = fridgeItems.firstOrNull { it.product.id == product.id }
     val fridgeQtyInIngredientUnit = fridgeItem
         ?.let { UnitConversion.convert(it.quantity, it.unit, unit) }

@@ -15,13 +15,13 @@ class CompleteCookingUseCase @Inject constructor(
         val fridgeSnapshot = fridgeRepository.observeItems().first()
 
         recipe.ingredients.forEach { ingredient ->
+            if (ingredient.product.isToTaste) return@forEach // специи и т.п. не списываются поштучно
+
             val fridgeItem = fridgeSnapshot.firstOrNull { it.product.id == ingredient.product.id }
                 ?: return@forEach
 
-            // Переводим нужное количество в единицу измерения, в которой хранится продукт в холодильнике
-            val neededInFridgeUnit =
-                UnitConversion.convert(ingredient.quantity, ingredient.unit, fridgeItem.unit)
-                    ?: return@forEach // единицы несовместимы — пропускаем списание этого ингредиента
+            val neededInFridgeUnit = UnitConversion.convert(ingredient.quantity, ingredient.unit, fridgeItem.unit)
+                ?: return@forEach
 
             if (fridgeItem.quantity <= neededInFridgeUnit) {
                 fridgeRepository.deleteItem(fridgeItem.id)
