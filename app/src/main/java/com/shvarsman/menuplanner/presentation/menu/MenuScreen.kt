@@ -34,6 +34,7 @@ import com.shvarsman.menuplanner.domain.model.IngredientAvailability
 import com.shvarsman.menuplanner.domain.model.MealType
 import com.shvarsman.menuplanner.domain.model.MenuEntry
 import com.shvarsman.menuplanner.domain.model.Recipe
+import com.shvarsman.menuplanner.domain.model.ReservedAmount
 import com.shvarsman.menuplanner.domain.model.availability
 import com.shvarsman.menuplanner.presentation.ui.theme.AppCornerRadius
 import java.time.DayOfWeek
@@ -330,7 +331,7 @@ private fun InsufficientIngredientsDialog(
 private fun RecipePickerDialog(
     recipes: List<Recipe>,
     fridgeItems: List<FridgeItem>,
-    reservedQuantities: Map<Long, Double>,
+    reservedQuantities: Map<Long, ReservedAmount>,
     searchQuery: String,
     onSearchQueryChange: (String) -> Unit,
     onDismiss: () -> Unit,
@@ -452,7 +453,7 @@ private fun RecipePickerCard(
     onToggleExpand: () -> Unit,
     onSelect: () -> Unit,
     fridgeItems: List<FridgeItem>,
-    reservedQuantities: Map<Long, Double>
+    reservedQuantities: Map<Long, ReservedAmount>
 ) {
     ElevatedCard(
         modifier = Modifier.fillMaxWidth(),
@@ -536,7 +537,7 @@ private fun RecipePickerCard(
                 Column(modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 12.dp)) {
                     HorizontalDivider(modifier = Modifier.padding(bottom = 8.dp))
                     recipe.ingredients.forEach { ingredient ->
-                        val reserved = reservedQuantities[ingredient.product.id] ?: 0.0
+                        val reserved = reservedQuantities[ingredient.product.id]
                         val status = ingredient.availability(fridgeItems, reserved)
                         val color = when (status) {
                             IngredientAvailability.AVAILABLE -> MaterialTheme.colorScheme.primary

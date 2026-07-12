@@ -1,19 +1,12 @@
 package com.shvarsman.menuplanner.domain.usecase.menu
 
 import com.shvarsman.menuplanner.domain.model.Recipe
+import com.shvarsman.menuplanner.domain.model.UnitConversion
 import com.shvarsman.menuplanner.domain.repository.FridgeRepository
 import com.shvarsman.menuplanner.domain.repository.MenuRepository
 import kotlinx.coroutines.flow.first
 import javax.inject.Inject
 
-/**
- * Завершает готовку: списывает ингредиенты рецепта из холодильника и убирает
- * рецепт из меню. Вызывается на экране "Готовка" по кнопке "Готово".
- *
- * Если в холодильнике продукта меньше или ровно столько, сколько нужно для
- * рецепта — позиция удаляется из холодильника полностью. Если больше —
- * количество уменьшается на нужную величину.
- */
 class CompleteCookingUseCase @Inject constructor(
     private val fridgeRepository: FridgeRepository,
     private val menuRepository: MenuRepository
@@ -25,10 +18,15 @@ class CompleteCookingUseCase @Inject constructor(
             val fridgeItem = fridgeSnapshot.firstOrNull { it.product.id == ingredient.product.id }
                 ?: return@forEach
 
-            if (fridgeItem.quantity <= ingredient.quantity) {
+            // Переводим нужное количество в единицу измерения, в которой хранится продукт в холодильнике
+            val neededInFridgeUnit =
+                UnitConversion.convert(ingredient.quantity, ingredient.unit, fridgeItem.unit)
+                    ?: return@forEach // единицы несовместимы — пропускаем списание этого ингредиента
+
+            if (fridgeItem.quantity <= neededInFridgeUnit) {
                 fridgeRepository.deleteItem(fridgeItem.id)
             } else {
-                fridgeRepository.decreaseQuantity(fridgeItem.id, ingredient.quantity)
+                fridgeRepository.decreaseQuantity(fridgeItem.id, neededInFridgeUnit)
             }
         }
 

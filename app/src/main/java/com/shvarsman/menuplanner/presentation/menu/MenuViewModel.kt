@@ -7,7 +7,9 @@ import com.shvarsman.menuplanner.domain.model.IngredientAvailability
 import com.shvarsman.menuplanner.domain.model.MealType
 import com.shvarsman.menuplanner.domain.model.MenuEntry
 import com.shvarsman.menuplanner.domain.model.Recipe
+import com.shvarsman.menuplanner.domain.model.ReservedAmount
 import com.shvarsman.menuplanner.domain.model.availability
+import com.shvarsman.menuplanner.domain.model.computeReservedAmounts
 import com.shvarsman.menuplanner.domain.usecase.fridge.GetFridgeItemsUseCase
 import com.shvarsman.menuplanner.domain.usecase.menu.AssignRecipeToMenuUseCase
 import com.shvarsman.menuplanner.domain.usecase.menu.GetWeekMenuUseCase
@@ -47,16 +49,9 @@ class MenuViewModel @Inject constructor(
     /** Сколько каждого продукта уже "занято" рецептами, добавленными в меню
      * (по productId → суммарное нужное количество). Пересчитывается реактивно
      * при изменении меню или списка рецептов. */
-    val reservedQuantities: StateFlow<Map<Long, Double>> =
+    val reservedQuantities: StateFlow<Map<Long, ReservedAmount>> =
         combine(weekMenu, recipes) { entries, allRecipes ->
-            val reserved = mutableMapOf<Long, Double>()
-            entries.forEach { entry ->
-                val recipe = allRecipes.firstOrNull { it.id == entry.recipeId } ?: return@forEach
-                recipe.ingredients.forEach { ingredient ->
-                    reserved[ingredient.product.id] = (reserved[ingredient.product.id] ?: 0.0) + ingredient.quantity
-                }
-            }
-            reserved
+            computeReservedAmounts(entries, allRecipes)
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyMap())
 
     private val _pickerTarget = MutableStateFlow<Pair<DayOfWeek, MealType>?>(null)
