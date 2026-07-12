@@ -4,6 +4,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Search
@@ -12,6 +13,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.shvarsman.menuplanner.domain.model.CookingMethod
+import com.shvarsman.menuplanner.presentation.ui.theme.AppCornerRadius
 
 @Composable
 fun CookingMethodPickerDialog(
@@ -36,7 +38,8 @@ fun CookingMethodPickerDialog(
                     placeholder = { Text("Поиск") },
                     leadingIcon = { Icon(Icons.Filled.Search, contentDescription = null) },
                     singleLine = true,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(AppCornerRadius)
                 )
                 if (current != null) {
                     TextButton(
@@ -44,7 +47,7 @@ fun CookingMethodPickerDialog(
                         modifier = Modifier.fillMaxWidth()
                     ) { Text("Очистить выбор") }
                 }
-                Spacer(Modifier.height(4.dp))
+                Spacer(Modifier.height(8.dp))
                 LazyColumn(modifier = Modifier.heightIn(max = 400.dp)) {
                     items(filtered, key = { it.name }) { method ->
                         ListItem(

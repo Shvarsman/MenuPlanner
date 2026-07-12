@@ -67,8 +67,13 @@ class RecipeEditorViewModel @Inject constructor(
     val fridgeItems: StateFlow<List<FridgeItem>> = getFridgeItems()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
+    private var loadedForRecipeId: Long? = null
+
     fun load(recipeId: Long) {
+        if (loadedForRecipeId == recipeId) return
+
         viewModelScope.launch {
+            loadedForRecipeId = recipeId
             if (recipeId == 0L) {
                 _state.value = RecipeEditorState(isLoading = false)
             } else {

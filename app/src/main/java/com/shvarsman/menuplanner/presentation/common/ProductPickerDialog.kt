@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
@@ -44,6 +45,7 @@ import com.shvarsman.menuplanner.domain.model.Category
 import com.shvarsman.menuplanner.domain.model.MeasureUnit
 import com.shvarsman.menuplanner.domain.model.Product
 import com.shvarsman.menuplanner.presentation.fridge.ProductIcon
+import com.shvarsman.menuplanner.presentation.ui.theme.AppCornerRadius
 import kotlinx.coroutines.launch
 
 /**
@@ -100,7 +102,8 @@ fun ProductPickerDialog(
                         placeholder = { Text("Поиск продукта") },
                         leadingIcon = { Icon(Icons.Filled.Search, contentDescription = null) },
                         singleLine = true,
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(AppCornerRadius)
                     )
                     Spacer(Modifier.height(8.dp))
                     TextButton(
