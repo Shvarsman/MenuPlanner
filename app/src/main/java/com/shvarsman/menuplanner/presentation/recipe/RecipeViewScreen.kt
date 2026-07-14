@@ -2,41 +2,20 @@ package com.shvarsman.menuplanner.presentation.recipe
 
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Kitchen
+import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Share
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.AssistChip
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -68,6 +47,10 @@ fun RecipeViewScreen(
     val state by viewModel.state.collectAsState()
     val fridgeItems by viewModel.fridgeItems.collectAsState()
     val shareState by viewModel.shareState.collectAsState()
+
+    // Множитель порций — только для отображения на этом экране, в рецепт не сохраняется.
+    // Ингредиенты в БД всегда хранятся из расчёта на 1 порцию.
+    var servings by remember(recipeId) { mutableStateOf(1) }
 
     val shareLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.CreateDocument("application/zip")
@@ -113,11 +96,9 @@ fun RecipeViewScreen(
         }
     ) { padding ->
         if (state.isLoading) {
-            Box(
-                Modifier
-                    .fillMaxSize()
-                    .padding(padding), contentAlignment = Alignment.Center
-            ) {
+            Box(Modifier
+                .fillMaxSize()
+                .padding(padding), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator()
             }
             return@Scaffold
@@ -125,11 +106,9 @@ fun RecipeViewScreen(
 
         val recipe = state.recipe
         if (recipe == null) {
-            Box(
-                Modifier
-                    .fillMaxSize()
-                    .padding(padding), contentAlignment = Alignment.Center
-            ) {
+            Box(Modifier
+                .fillMaxSize()
+                .padding(padding), contentAlignment = Alignment.Center) {
                 Text("Рецепт не найден")
             }
             return@Scaffold
@@ -198,15 +177,29 @@ fun RecipeViewScreen(
                 }
             }
 
+            // ── Ингредиенты + выбор порций ──────────────────────────────
             item {
-                Text(
-                    "Ингредиенты",
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
-                )
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 4.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text("Ингредиенты", style = MaterialTheme.typography.titleMedium)
+                    ServingsStepper(
+                        servings = servings,
+                        onDecrease = { servings = (servings - 1).coerceAtLeast(1) },
+                        onIncrease = { servings = (servings + 1).coerceAtMost(50) }
+                    )
+                }
             }
             items(recipe.ingredients) { ingredient ->
-                IngredientViewRow(ingredient = ingredient, fridgeItems = fridgeItems)
+                IngredientViewRow(
+                    ingredient = ingredient,
+                    fridgeItems = fridgeItems,
+                    servings = servings
+                )
             }
 
             item {
@@ -259,8 +252,57 @@ fun RecipeViewScreen(
     }
 }
 
+/** Компактный степпер +/- количества порций. */
 @Composable
-private fun IngredientViewRow(ingredient: RecipeIngredient, fridgeItems: List<FridgeItem>) {
+private fun ServingsStepper(
+    servings: Int,
+    onDecrease: () -> Unit,
+    onIncrease: () -> Unit
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+        IconButton(onClick = onDecrease, modifier = Modifier.size(32.dp)) {
+            Icon(
+                Icons.Filled.Remove,
+                contentDescription = "Уменьшить количество порций",
+                modifier = Modifier.size(18.dp)
+            )
+        }
+        Text(
+            "$servings ${servingsLabel(servings)}",
+            style = MaterialTheme.typography.bodyMedium,
+            modifier = Modifier.widthIn(min = 56.dp),
+            textAlign = androidx.compose.ui.text.style.TextAlign.Center
+        )
+        IconButton(onClick = onIncrease, modifier = Modifier.size(32.dp)) {
+            Icon(
+                Icons.Filled.Add,
+                contentDescription = "Увеличить количество порций",
+                modifier = Modifier.size(18.dp)
+            )
+        }
+    }
+}
+
+private fun servingsLabel(servings: Int): String {
+    val lastTwoDigits = servings % 100
+    val lastDigit = servings % 10
+    return when {
+        lastTwoDigits in 11..14 -> "порций"
+        lastDigit == 1 -> "порция"
+        lastDigit in 2..4 -> "порции"
+        else -> "порций"
+    }
+}
+
+@Composable
+private fun IngredientViewRow(
+    ingredient: RecipeIngredient,
+    fridgeItems: List<FridgeItem>,
+    servings: Int
+) {
     if (ingredient.product.isToTaste) {
         Text(
             "${ingredient.product.name} — по вкусу",
@@ -271,13 +313,18 @@ private fun IngredientViewRow(ingredient: RecipeIngredient, fridgeItems: List<Fr
         return
     }
 
-    val status = ingredient.availability(fridgeItems)
+    // Ингредиенты в БД хранятся из расчёта на 1 порцию — здесь только
+    // визуальный пересчёт под выбранное количество порций, без изменения данных рецепта.
+    val scaledQuantity = ingredient.quantity * servings
+    val scaledIngredient = ingredient.copy(quantity = scaledQuantity)
+
+    val status = scaledIngredient.availability(fridgeItems)
     val color = when (status) {
         IngredientAvailability.AVAILABLE -> MaterialTheme.colorScheme.primary
         IngredientAvailability.INSUFFICIENT -> MaterialTheme.colorScheme.error
     }
     Text(
-        "${ingredient.product.name} — ${formatQty(ingredient.quantity)} ${ingredient.unit.displayName}",
+        "${ingredient.product.name} — ${formatQty(scaledQuantity)} ${ingredient.unit.displayName}",
         style = MaterialTheme.typography.bodyMedium,
         color = color,
         modifier = Modifier.padding(horizontal = 16.dp, vertical = 2.dp)
