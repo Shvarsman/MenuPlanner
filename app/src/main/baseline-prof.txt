@@ -1,0 +1,7 @@
+# Human-readable ART baseline profile (startup hot path).
+# Expand via Macrobenchmark BaselineProfileGenerator on a device when needed.
+
+HSPLcom/shvarsman/menuplanner/MenuPlannerApp;-><init>()V
+HSPLcom/shvarsman/menuplanner/MenuPlannerApp;->onCreate()V
+HSPLcom/shvarsman/menuplanner/presentation/MainActivity;-><init>()V
+HSPLcom/shvarsman/menuplanner/presentation/MainActivity;->onCreate(Landroid/os/Bundle;)V
