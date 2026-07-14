@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
 import com.shvarsman.menuplanner.domain.model.StepContentItem
+import com.shvarsman.menuplanner.presentation.common.rememberSizedImageRequest
 import com.shvarsman.menuplanner.presentation.ui.theme.AppCornerRadius
 import kotlinx.coroutines.launch
 
@@ -187,7 +188,7 @@ private fun StepImageContent(
 ) {
     Box(modifier = modifier) {
         AsyncImage(
-            model = imageUrl,
+            model = rememberSizedImageRequest(imageUrl, 400.dp, 240.dp),
             contentDescription = null,
             contentScale = ContentScale.FillWidth,
             modifier = Modifier

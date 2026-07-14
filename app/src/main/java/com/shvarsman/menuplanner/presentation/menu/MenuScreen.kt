@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import com.shvarsman.menuplanner.domain.model.FridgeItem
 import com.shvarsman.menuplanner.domain.model.IngredientAvailability
@@ -36,6 +37,7 @@ import com.shvarsman.menuplanner.domain.model.MenuEntry
 import com.shvarsman.menuplanner.domain.model.Recipe
 import com.shvarsman.menuplanner.domain.model.ReservedAmount
 import com.shvarsman.menuplanner.domain.model.availability
+import com.shvarsman.menuplanner.presentation.common.rememberSizedImageRequest
 import com.shvarsman.menuplanner.presentation.ui.theme.AppCornerRadius
 import java.time.DayOfWeek
 import java.time.format.TextStyle
@@ -56,14 +58,15 @@ fun MenuScreen(
     onOpenBackup: () -> Unit,
     viewModel: MenuViewModel = hiltViewModel()
 ) {
-    val weekMenu by viewModel.weekMenu.collectAsState()
-    val recipes by viewModel.recipes.collectAsState()
-    val fridgeItems by viewModel.fridgeItems.collectAsState()
-    val pickerTarget by viewModel.pickerTarget.collectAsState()
-    val insufficientDialogEntry by viewModel.insufficientDialogEntry.collectAsState()
-    val navigateToCooking by viewModel.navigateToCooking.collectAsState()
-    val reservedQuantities by viewModel.reservedQuantities.collectAsState()
-    val recipeSearchQuery by viewModel.recipeSearchQuery.collectAsState()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val weekMenu = uiState.weekMenu
+    val recipes = uiState.recipes
+    val fridgeItems = uiState.fridgeItems
+    val pickerTarget = uiState.pickerTarget
+    val insufficientDialogEntry = uiState.insufficientDialogEntry
+    val navigateToCooking = uiState.navigateToCooking
+    val reservedQuantities = uiState.reservedQuantities
+    val recipeSearchQuery = uiState.recipeSearchQuery
 
     LaunchedEffect(navigateToCooking) {
         navigateToCooking?.let { (recipeId, menuEntryId) ->
@@ -240,7 +243,7 @@ private fun MenuEntryCard(
         ) {
             if (entry.recipePhotoUri != null) {
                 AsyncImage(
-                    model = entry.recipePhotoUri,
+                    model = rememberSizedImageRequest(entry.recipePhotoUri, 88.dp, 88.dp),
                     contentDescription = entry.recipeTitle,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
@@ -469,7 +472,7 @@ private fun RecipePickerCard(
             ) {
                 if (recipe.photoUri != null) {
                     AsyncImage(
-                        model = recipe.photoUri,
+                        model = rememberSizedImageRequest(recipe.photoUri, 88.dp, 88.dp),
                         contentDescription = recipe.title,
                         contentScale = ContentScale.Crop,
                         modifier = Modifier

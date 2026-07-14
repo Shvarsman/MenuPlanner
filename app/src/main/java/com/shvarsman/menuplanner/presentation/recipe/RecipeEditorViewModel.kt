@@ -212,7 +212,7 @@ class RecipeEditorViewModel @Inject constructor(
     fun deleteStepItem(index: Int) {
         val itemToRemove = _state.value.steps.getOrNull(index)
         if (itemToRemove is StepContentItem.Image) {
-            imageFileManager.deleteImage(itemToRemove.url)
+            viewModelScope.launch { imageFileManager.deleteImage(itemToRemove.url) }
         }
         _state.value = _state.value.copy(
             steps = _state.value.steps.toMutableList()

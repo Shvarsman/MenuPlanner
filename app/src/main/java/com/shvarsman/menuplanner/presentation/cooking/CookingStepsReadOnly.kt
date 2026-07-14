@@ -12,8 +12,9 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.shvarsman.menuplanner.domain.model.StepContentItem
+import com.shvarsman.menuplanner.presentation.common.rememberSizedImageRequest
 
-/** Отображает шаги рецепта только для чтения — без TextField, для экрана "Готовка". */
+/** Displays recipe steps read-only — no TextField, for the Cooking screen. */
 fun LazyListScope.CookingStepsReadOnly(steps: List<StepContentItem>) {
     steps.forEachIndexed { index, item ->
         item(key = "cook_step_$index") {
@@ -31,7 +32,7 @@ fun LazyListScope.CookingStepsReadOnly(steps: List<StepContentItem>) {
                         ) {
                             groupUrls.forEach { url ->
                                 AsyncImage(
-                                    model = url,
+                                    model = rememberSizedImageRequest(url, 200.dp, 200.dp),
                                     contentDescription = null,
                                     contentScale = ContentScale.FillWidth,
                                     modifier = Modifier

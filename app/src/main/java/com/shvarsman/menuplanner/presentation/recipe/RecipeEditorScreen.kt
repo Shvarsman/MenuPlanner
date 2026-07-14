@@ -15,6 +15,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -30,6 +31,8 @@ import com.shvarsman.menuplanner.domain.model.IngredientAvailability
 import com.shvarsman.menuplanner.domain.model.RecipeCategory
 import com.shvarsman.menuplanner.domain.model.RecipeIngredient
 import com.shvarsman.menuplanner.domain.model.availability
+import com.shvarsman.menuplanner.presentation.common.rememberSizedImageRequest
+import com.shvarsman.menuplanner.presentation.ui.icons.icon
 import com.shvarsman.menuplanner.presentation.ui.theme.AppCornerRadius
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -41,11 +44,11 @@ fun RecipeEditorScreen(
 ) {
     LaunchedEffect(recipeId) { viewModel.load(recipeId) }
 
-    val state by viewModel.state.collectAsState()
-    val fridgeProducts by viewModel.catalog.collectAsState()
-    val fridgeItems by viewModel.fridgeItems.collectAsState()
-    val focusRequestIndex by viewModel.focusRequestIndex.collectAsState()
-    val isIngredientPickerOpen by viewModel.isIngredientPickerOpen.collectAsState()
+    val state by viewModel.state.collectAsStateWithLifecycle()
+    val fridgeProducts by viewModel.catalog.collectAsStateWithLifecycle()
+    val fridgeItems by viewModel.fridgeItems.collectAsStateWithLifecycle()
+    val focusRequestIndex by viewModel.focusRequestIndex.collectAsStateWithLifecycle()
+    val isIngredientPickerOpen by viewModel.isIngredientPickerOpen.collectAsStateWithLifecycle()
 
     var showExitConfirmation by remember { mutableStateOf(false) }
 
@@ -445,7 +448,7 @@ private fun CoverPhotoPicker(
         Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
             if (photoUri != null) {
                 AsyncImage(
-                    model = photoUri,
+                    model = rememberSizedImageRequest(photoUri, 400.dp, 180.dp),
                     contentDescription = "Фото рецепта",
                     contentScale = ContentScale.Crop,
                     modifier = Modifier.fillMaxSize()

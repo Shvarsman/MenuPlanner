@@ -12,6 +12,7 @@ import androidx.compose.material.icons.filled.Kitchen
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -21,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.shvarsman.menuplanner.domain.model.Category
+import com.shvarsman.menuplanner.presentation.ui.icons.icon
 import com.shvarsman.menuplanner.domain.model.ShoppingListItem
 import com.shvarsman.menuplanner.presentation.common.ProductPickerDialog
 import com.shvarsman.menuplanner.presentation.fridge.ProductIcon
@@ -29,9 +31,9 @@ import com.shvarsman.menuplanner.presentation.ui.theme.AppCornerRadius
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ShoppingListScreen(viewModel: ShoppingListViewModel = hiltViewModel()) {
-    val items by viewModel.items.collectAsState()
-    val catalog by viewModel.catalog.collectAsState()
-    val isPickerOpen by viewModel.isPickerOpen.collectAsState()
+    val items by viewModel.items.collectAsStateWithLifecycle()
+    val catalog by viewModel.catalog.collectAsStateWithLifecycle()
+    val isPickerOpen by viewModel.isPickerOpen.collectAsStateWithLifecycle()
 
     val hasCheckedItems = remember(items) { items.any { it.isChecked } }
     var showMoveConfirmation by remember { mutableStateOf(false) }

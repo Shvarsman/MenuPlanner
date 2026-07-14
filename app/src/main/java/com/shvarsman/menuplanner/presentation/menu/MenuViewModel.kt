@@ -25,6 +25,17 @@ import kotlinx.coroutines.launch
 import java.time.DayOfWeek
 import javax.inject.Inject
 
+data class MenuUiState(
+    val weekMenu: List<MenuEntry> = emptyList(),
+    val recipes: List<Recipe> = emptyList(),
+    val fridgeItems: List<FridgeItem> = emptyList(),
+    val reservedQuantities: Map<Long, ReservedAmount> = emptyMap(),
+    val pickerTarget: Pair<DayOfWeek, MealType>? = null,
+    val insufficientDialogEntry: MenuEntry? = null,
+    val navigateToCooking: Pair<Long, Long>? = null,
+    val recipeSearchQuery: String = ""
+)
+
 @HiltViewModel
 class MenuViewModel @Inject constructor(
     getWeekMenu: GetWeekMenuUseCase,
@@ -34,34 +45,41 @@ class MenuViewModel @Inject constructor(
     private val removeMenuEntry: RemoveMenuEntryUseCase
 ) : ViewModel() {
 
-    val weekMenu: StateFlow<List<MenuEntry>> = getWeekMenu()
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
-
-    val recipes: StateFlow<List<Recipe>> = getRecipes()
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
-
-    val fridgeItems: StateFlow<List<FridgeItem>> = getFridgeItems()
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+    private val weekMenuFlow = getWeekMenu()
+    private val recipesFlow = getRecipes()
+    private val fridgeItemsFlow = getFridgeItems()
 
     private val _recipeSearchQuery = MutableStateFlow("")
-    val recipeSearchQuery: StateFlow<String> = _recipeSearchQuery
-
-    /** Сколько каждого продукта уже "занято" рецептами, добавленными в меню
-     * (по productId → суммарное нужное количество). Пересчитывается реактивно
-     * при изменении меню или списка рецептов. */
-    val reservedQuantities: StateFlow<Map<Long, ReservedAmount>> =
-        combine(weekMenu, recipes) { entries, allRecipes ->
-            computeReservedAmounts(entries, allRecipes)
-        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyMap())
-
     private val _pickerTarget = MutableStateFlow<Pair<DayOfWeek, MealType>?>(null)
-    val pickerTarget: StateFlow<Pair<DayOfWeek, MealType>?> = _pickerTarget
-
     private val _insufficientDialogEntry = MutableStateFlow<MenuEntry?>(null)
-    val insufficientDialogEntry: StateFlow<MenuEntry?> = _insufficientDialogEntry
-
     private val _navigateToCooking = MutableStateFlow<Pair<Long, Long>?>(null)
-    val navigateToCooking: StateFlow<Pair<Long, Long>?> = _navigateToCooking
+
+    private val dialogState = combine(
+        _pickerTarget,
+        _insufficientDialogEntry,
+        _navigateToCooking,
+        _recipeSearchQuery
+    ) { picker, dialog, nav, query ->
+        DialogSlice(picker, dialog, nav, query)
+    }
+
+    val uiState: StateFlow<MenuUiState> = combine(
+        weekMenuFlow,
+        recipesFlow,
+        fridgeItemsFlow,
+        dialogState
+    ) { menu, recipes, fridge, dialog ->
+        MenuUiState(
+            weekMenu = menu,
+            recipes = recipes,
+            fridgeItems = fridge,
+            reservedQuantities = computeReservedAmounts(menu, recipes),
+            pickerTarget = dialog.pickerTarget,
+            insufficientDialogEntry = dialog.insufficientDialogEntry,
+            navigateToCooking = dialog.navigateToCooking,
+            recipeSearchQuery = dialog.recipeSearchQuery
+        )
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), MenuUiState())
 
     fun openRecipePicker(day: DayOfWeek, meal: MealType) {
         _pickerTarget.value = day to meal
@@ -84,16 +102,11 @@ class MenuViewModel @Inject constructor(
         viewModelScope.launch { removeMenuEntry(entry.id) }
     }
 
-    /** Проверяет наличие всех ингредиентов рецепта в холодильнике — только для
-     * этого конкретного рецепта, без учёта резервов других рецептов в меню.
-     * Резервирование учитывается только при добавлении в меню (чтобы корректно
-     * пополнять список покупок), но не при проверке готовности к готовке —
-     * здесь важен только физический остаток на данный момент. */
     fun onCookClick(entry: MenuEntry) {
-        val recipe = recipes.value.firstOrNull { it.id == entry.recipeId } ?: return
+        val recipe = uiState.value.recipes.firstOrNull { it.id == entry.recipeId } ?: return
 
         val allAvailable = recipe.ingredients.all { ingredient ->
-            ingredient.availability(fridgeItems.value) == IngredientAvailability.AVAILABLE
+            ingredient.availability(uiState.value.fridgeItems) == IngredientAvailability.AVAILABLE
         }
 
         if (allAvailable) {
@@ -120,4 +133,11 @@ class MenuViewModel @Inject constructor(
     fun onRecipeSearchQueryChange(query: String) {
         _recipeSearchQuery.value = query
     }
+
+    private data class DialogSlice(
+        val pickerTarget: Pair<DayOfWeek, MealType>?,
+        val insufficientDialogEntry: MenuEntry?,
+        val navigateToCooking: Pair<Long, Long>?,
+        val recipeSearchQuery: String
+    )
 }

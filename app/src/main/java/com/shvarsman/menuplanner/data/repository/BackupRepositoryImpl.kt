@@ -32,7 +32,9 @@ import com.shvarsman.menuplanner.domain.repository.ProductRepository
 import com.shvarsman.menuplanner.domain.repository.RecipeRepository
 import com.shvarsman.menuplanner.domain.repository.ShoppingListRepository
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -44,7 +46,7 @@ import java.util.zip.ZipInputStream
 import java.util.zip.ZipOutputStream
 import javax.inject.Inject
 
-private val backupJson = Json { prettyPrint = true; ignoreUnknownKeys = true }
+private val backupJson = Json { prettyPrint = false; ignoreUnknownKeys = true }
 
 class BackupRepositoryImpl @Inject constructor(
     @ApplicationContext private val context: Context,
@@ -56,7 +58,17 @@ class BackupRepositoryImpl @Inject constructor(
     private val imageFileManager: ImageFileManager
 ) : BackupRepository {
 
-    override suspend fun exportBackup(destinationUri: Uri, type: BackupType, singleRecipeId: Long?): BackupResult {
+    override suspend fun exportBackup(destinationUri: Uri, type: BackupType, singleRecipeId: Long?): BackupResult =
+        withContext(Dispatchers.IO) {
+            exportBackupInternal(destinationUri, type, singleRecipeId)
+        }
+
+    override suspend fun importBackup(sourceUri: Uri): BackupResult =
+        withContext(Dispatchers.IO) {
+            importBackupInternal(sourceUri)
+        }
+
+    private suspend fun exportBackupInternal(destinationUri: Uri, type: BackupType, singleRecipeId: Long?): BackupResult {
         val imageFilesToPack = mutableMapOf<String, String>()
         fun registerImage(uriString: String?): String? {
             if (uriString == null) return null
@@ -181,7 +193,7 @@ class BackupRepositoryImpl @Inject constructor(
         )
     }
 
-    override suspend fun importBackup(sourceUri: Uri): BackupResult {
+    private suspend fun importBackupInternal(sourceUri: Uri): BackupResult {
         var payload: BackupPayload? = null
         val extractedImages = mutableMapOf<String, String>()
 

@@ -16,6 +16,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.shvarsman.menuplanner.domain.model.RecipeCategory
+import com.shvarsman.menuplanner.presentation.ui.icons.icon
 import com.shvarsman.menuplanner.presentation.ui.theme.AppCornerRadius
 
 /**

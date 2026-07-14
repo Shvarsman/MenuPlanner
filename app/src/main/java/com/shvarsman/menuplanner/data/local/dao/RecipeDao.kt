@@ -1,6 +1,13 @@
 package com.shvarsman.menuplanner.data.local.dao
 
-import androidx.room.*
+import androidx.room.Dao
+import androidx.room.Embedded
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
+import androidx.room.Query
+import androidx.room.Relation
+import androidx.room.Transaction
+import androidx.room.Update
 import com.shvarsman.menuplanner.data.local.entity.ProductEntity
 import com.shvarsman.menuplanner.data.local.entity.RecipeEntity
 import com.shvarsman.menuplanner.data.local.entity.RecipeIngredientEntity
@@ -22,8 +29,23 @@ data class RecipeWithIngredients(
     val ingredients: List<RecipeIngredientWithProduct>
 )
 
+data class RecipeSummaryRow(
+    @Embedded val recipe: RecipeEntity,
+    val ingredientCount: Int
+)
+
 @Dao
 interface RecipeDao {
+    @Query(
+        """
+        SELECT recipes.*,
+            (SELECT COUNT(*) FROM recipe_ingredients WHERE recipeId = recipes.id) AS ingredientCount
+        FROM recipes
+        ORDER BY title ASC
+        """
+    )
+    fun observeSummaries(): Flow<List<RecipeSummaryRow>>
+
     @Transaction
     @Query("SELECT * FROM recipes ORDER BY title ASC")
     fun observeAllWithIngredients(): Flow<List<RecipeWithIngredients>>

@@ -1,28 +1,47 @@
 package com.shvarsman.menuplanner.presentation.recipe
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.MenuBook
-import androidx.compose.material3.*
+import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
-import com.shvarsman.menuplanner.domain.model.Recipe
+import com.shvarsman.menuplanner.domain.model.RecipeSummary
+import com.shvarsman.menuplanner.presentation.common.rememberSizedImageRequest
 import com.shvarsman.menuplanner.presentation.ui.theme.AppCornerRadius
 
+private val CardImageHeight = 160.dp
+
 @Composable
-fun RecipeCard(recipe: Recipe, onClick: () -> Unit, onEdit: () -> Unit, onDelete: () -> Unit) {
+fun RecipeCard(
+    recipe: RecipeSummary,
+    onClick: () -> Unit,
+    onEdit: () -> Unit,
+    onDelete: () -> Unit
+) {
     ElevatedCard(
         onClick = onClick,
         modifier = Modifier
@@ -33,12 +52,11 @@ fun RecipeCard(recipe: Recipe, onClick: () -> Unit, onEdit: () -> Unit, onDelete
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(160.dp)
+                .height(CardImageHeight)
         ) {
-            // Фото на всю площадь карточки
             if (recipe.photoUri != null) {
                 AsyncImage(
-                    model = recipe.photoUri,
+                    model = rememberSizedImageRequest(recipe.photoUri, 400.dp, CardImageHeight),
                     contentDescription = recipe.title,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier.fillMaxSize()
@@ -61,7 +79,6 @@ fun RecipeCard(recipe: Recipe, onClick: () -> Unit, onEdit: () -> Unit, onDelete
                 }
             }
 
-            // Затемнение снизу для читаемости текста
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -74,7 +91,6 @@ fun RecipeCard(recipe: Recipe, onClick: () -> Unit, onEdit: () -> Unit, onDelete
                     )
             )
 
-            // Название и метаданные поверх затемнения
             Column(
                 modifier = Modifier
                     .align(Alignment.BottomStart)
@@ -88,13 +104,12 @@ fun RecipeCard(recipe: Recipe, onClick: () -> Unit, onEdit: () -> Unit, onDelete
                     maxLines = 1
                 )
                 Text(
-                    "${recipe.ingredients.size} ингредиентов · ${recipe.steps.size} шагов",
+                    "${recipe.ingredientCount} ингредиентов · ${recipe.stepCount} шагов",
                     style = MaterialTheme.typography.bodySmall,
                     color = Color.White.copy(alpha = 0.85f)
                 )
             }
 
-            // Кнопки редактирования/удаления — поверх изображения, сверху справа
             Row(
                 modifier = Modifier
                     .align(Alignment.TopEnd)

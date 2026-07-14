@@ -3,10 +3,10 @@ package com.shvarsman.menuplanner.presentation.recipe
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.shvarsman.menuplanner.domain.model.Recipe
 import com.shvarsman.menuplanner.domain.model.RecipeCategory
+import com.shvarsman.menuplanner.domain.model.RecipeSummary
 import com.shvarsman.menuplanner.domain.usecase.recipe.DeleteRecipeUseCase
-import com.shvarsman.menuplanner.domain.usecase.recipe.GetRecipesUseCase
+import com.shvarsman.menuplanner.domain.usecase.recipe.GetRecipeSummariesUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -18,7 +18,7 @@ import javax.inject.Inject
 @HiltViewModel
 class RecipeCategoryViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
-    getRecipes: GetRecipesUseCase,
+    getRecipeSummaries: GetRecipeSummariesUseCase,
     private val deleteRecipe: DeleteRecipeUseCase
 ) : ViewModel() {
 
@@ -26,11 +26,11 @@ class RecipeCategoryViewModel @Inject constructor(
         savedStateHandle.get<String>("category") ?: RecipeCategory.OTHER.name
     )
 
-    val recipes: StateFlow<List<Recipe>> = getRecipes()
+    val recipes: StateFlow<List<RecipeSummary>> = getRecipeSummaries()
         .map { list -> list.filter { it.category == category } }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    fun onDelete(recipe: Recipe) {
+    fun onDelete(recipe: RecipeSummary) {
         viewModelScope.launch { deleteRecipe(recipe.id) }
     }
 }

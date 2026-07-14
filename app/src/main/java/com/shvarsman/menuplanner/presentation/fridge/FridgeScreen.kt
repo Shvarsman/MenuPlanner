@@ -45,7 +45,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -62,6 +62,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.shvarsman.menuplanner.domain.model.Category
+import com.shvarsman.menuplanner.presentation.ui.icons.icon
 import com.shvarsman.menuplanner.domain.model.FridgeItem
 import com.shvarsman.menuplanner.presentation.common.ProductPickerDialog
 import com.shvarsman.menuplanner.presentation.ui.theme.AppCornerRadius
@@ -72,12 +73,12 @@ fun FridgeScreen(
     onOpenCatalog: () -> Unit,
     viewModel: FridgeViewModel = hiltViewModel()
 ) {
-    val items by viewModel.items.collectAsState()
-    val catalog by viewModel.catalog.collectAsState()
-    val isAddPickerOpen by viewModel.isAddPickerOpen.collectAsState()
-    val editingItem by viewModel.editingItem.collectAsState()
-    val errorMessage by viewModel.errorMessage.collectAsState()
-    val searchQuery by viewModel.searchQuery.collectAsState()
+    val items by viewModel.items.collectAsStateWithLifecycle()
+    val catalog by viewModel.catalog.collectAsStateWithLifecycle()
+    val isAddPickerOpen by viewModel.isAddPickerOpen.collectAsStateWithLifecycle()
+    val editingItem by viewModel.editingItem.collectAsStateWithLifecycle()
+    val errorMessage by viewModel.errorMessage.collectAsStateWithLifecycle()
+    val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
 
     val grouped = remember(items) {
         items.groupBy { it.product.category }.toSortedMap(compareBy { it.ordinal })

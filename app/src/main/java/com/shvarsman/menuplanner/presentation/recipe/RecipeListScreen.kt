@@ -17,6 +17,7 @@ import androidx.compose.material.icons.filled.MenuBook
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -29,6 +30,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.shvarsman.menuplanner.domain.model.RecipeCategory
+import com.shvarsman.menuplanner.presentation.ui.icons.icon
 import com.shvarsman.menuplanner.presentation.ui.theme.AppCornerRadius
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -40,8 +42,8 @@ fun RecipeListScreen(
     onCategoryClick: (RecipeCategory) -> Unit,
     viewModel: RecipeListViewModel = hiltViewModel()
 ) {
-    val recipes by viewModel.filteredRecipes.collectAsState()
-    val searchQuery by viewModel.searchQuery.collectAsState()
+    val recipes by viewModel.filteredRecipes.collectAsStateWithLifecycle()
+    val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
     val isSearching = searchQuery.isNotBlank()
 
     val grouped = remember(recipes) {

@@ -16,6 +16,7 @@ import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -29,6 +30,7 @@ import com.shvarsman.menuplanner.domain.model.FridgeItem
 import com.shvarsman.menuplanner.domain.model.IngredientAvailability
 import com.shvarsman.menuplanner.domain.model.RecipeIngredient
 import com.shvarsman.menuplanner.domain.model.availability
+import com.shvarsman.menuplanner.presentation.common.rememberSizedImageRequest
 import com.shvarsman.menuplanner.presentation.cooking.CookingStepsReadOnly
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -44,9 +46,9 @@ fun RecipeViewScreen(
 ) {
     LaunchedEffect(recipeId) { viewModel.load(recipeId) }
 
-    val state by viewModel.state.collectAsState()
-    val fridgeItems by viewModel.fridgeItems.collectAsState()
-    val shareState by viewModel.shareState.collectAsState()
+    val state by viewModel.state.collectAsStateWithLifecycle()
+    val fridgeItems by viewModel.fridgeItems.collectAsStateWithLifecycle()
+    val shareState by viewModel.shareState.collectAsStateWithLifecycle()
 
     // Множитель порций — только для отображения на этом экране, в рецепт не сохраняется.
     // Ингредиенты в БД всегда хранятся из расчёта на 1 порцию.
@@ -124,7 +126,7 @@ fun RecipeViewScreen(
             item {
                 if (recipe.photoUri != null) {
                     AsyncImage(
-                        model = recipe.photoUri,
+                        model = rememberSizedImageRequest(recipe.photoUri, 400.dp, 200.dp),
                         contentDescription = recipe.title,
                         contentScale = ContentScale.Crop,
                         modifier = Modifier

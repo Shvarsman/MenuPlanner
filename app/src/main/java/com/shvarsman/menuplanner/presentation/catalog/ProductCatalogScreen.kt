@@ -37,7 +37,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -54,6 +54,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.shvarsman.menuplanner.domain.model.Category
+import com.shvarsman.menuplanner.presentation.ui.icons.icon
 import com.shvarsman.menuplanner.domain.model.Product
 import com.shvarsman.menuplanner.presentation.fridge.ProductIcon
 import com.shvarsman.menuplanner.presentation.ui.theme.AppCornerRadius
@@ -64,8 +65,8 @@ fun ProductCatalogScreen(
     onBack: () -> Unit,
     viewModel: ProductCatalogViewModel = hiltViewModel()
 ) {
-    val products by viewModel.products.collectAsState()
-    val searchQuery by viewModel.searchQuery.collectAsState()
+    val products by viewModel.products.collectAsStateWithLifecycle()
+    val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
     var productPendingDelete by remember { mutableStateOf<Product?>(null) }
 
     val grouped = remember(products) {

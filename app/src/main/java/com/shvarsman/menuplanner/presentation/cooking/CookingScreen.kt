@@ -9,6 +9,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -18,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import coil3.compose.AsyncImage
+import com.shvarsman.menuplanner.presentation.common.rememberSizedImageRequest
 import com.shvarsman.menuplanner.presentation.ui.theme.AppCornerRadius
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -31,7 +33,7 @@ fun CookingScreen(
 ) {
     LaunchedEffect(recipeId) { viewModel.load(recipeId) }
 
-    val state by viewModel.state.collectAsState()
+    val state by viewModel.state.collectAsStateWithLifecycle()
 
     LaunchedEffect(state.isCompleted) {
         if (state.isCompleted) onFinished()
@@ -103,7 +105,7 @@ fun CookingScreen(
             item {
                 if (recipe.photoUri != null) {
                     AsyncImage(
-                        model = recipe.photoUri,
+                        model = rememberSizedImageRequest(recipe.photoUri, 400.dp, 200.dp),
                         contentDescription = recipe.title,
                         contentScale = ContentScale.Crop,
                         modifier = Modifier

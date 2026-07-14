@@ -2,12 +2,14 @@ package com.shvarsman.menuplanner.data.repository
 
 import com.shvarsman.menuplanner.data.local.dao.RecipeDao
 import com.shvarsman.menuplanner.data.local.dao.RecipeIngredientWithProduct
+import com.shvarsman.menuplanner.data.local.dao.RecipeSummaryRow
 import com.shvarsman.menuplanner.data.local.dao.RecipeWithIngredients
 import com.shvarsman.menuplanner.data.local.entity.RecipeEntity
 import com.shvarsman.menuplanner.data.local.entity.RecipeIngredientEntity
 import com.shvarsman.menuplanner.domain.model.Product
 import com.shvarsman.menuplanner.domain.model.Recipe
 import com.shvarsman.menuplanner.domain.model.RecipeIngredient
+import com.shvarsman.menuplanner.domain.model.RecipeSummary
 import com.shvarsman.menuplanner.domain.repository.RecipeRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -16,6 +18,9 @@ import javax.inject.Inject
 class RecipeRepositoryImpl @Inject constructor(
     private val dao: RecipeDao
 ) : RecipeRepository {
+
+    override fun observeRecipeSummaries(): Flow<List<RecipeSummary>> =
+        dao.observeSummaries().map { list -> list.map { it.toSummary() } }
 
     override fun observeRecipes(): Flow<List<Recipe>> =
         dao.observeAllWithIngredients().map { list ->
@@ -38,6 +43,15 @@ class RecipeRepositoryImpl @Inject constructor(
 
     override suspend fun deleteRecipe(id: Long) = dao.deleteRecipe(id)
 }
+
+private fun RecipeSummaryRow.toSummary() = RecipeSummary(
+    id = recipe.id,
+    title = recipe.title,
+    category = recipe.category,
+    photoUri = recipe.photoUri,
+    ingredientCount = ingredientCount,
+    stepCount = recipe.steps.size
+)
 
 private fun RecipeWithIngredients.toDomain() = Recipe(
     id = recipe.id,

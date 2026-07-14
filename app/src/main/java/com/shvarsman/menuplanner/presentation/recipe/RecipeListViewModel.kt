@@ -2,9 +2,9 @@ package com.shvarsman.menuplanner.presentation.recipe
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.shvarsman.menuplanner.domain.model.Recipe
+import com.shvarsman.menuplanner.domain.model.RecipeSummary
 import com.shvarsman.menuplanner.domain.usecase.recipe.DeleteRecipeUseCase
-import com.shvarsman.menuplanner.domain.usecase.recipe.GetRecipesUseCase
+import com.shvarsman.menuplanner.domain.usecase.recipe.GetRecipeSummariesUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -16,17 +16,17 @@ import javax.inject.Inject
 
 @HiltViewModel
 class RecipeListViewModel @Inject constructor(
-    getRecipes: GetRecipesUseCase,
+    getRecipeSummaries: GetRecipeSummariesUseCase,
     private val deleteRecipe: DeleteRecipeUseCase
 ) : ViewModel() {
 
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery
 
-    private val allRecipes: StateFlow<List<Recipe>> = getRecipes()
+    private val allRecipes: StateFlow<List<RecipeSummary>> = getRecipeSummaries()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    val filteredRecipes: StateFlow<List<Recipe>> = combine(allRecipes, _searchQuery) { recipes, query ->
+    val filteredRecipes: StateFlow<List<RecipeSummary>> = combine(allRecipes, _searchQuery) { recipes, query ->
         if (query.isBlank()) recipes
         else recipes.filter { it.title.contains(query, ignoreCase = true) }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
@@ -35,7 +35,7 @@ class RecipeListViewModel @Inject constructor(
         _searchQuery.value = query
     }
 
-    fun onDelete(recipe: Recipe) {
+    fun onDelete(recipe: RecipeSummary) {
         viewModelScope.launch { deleteRecipe(recipe.id) }
     }
 }
