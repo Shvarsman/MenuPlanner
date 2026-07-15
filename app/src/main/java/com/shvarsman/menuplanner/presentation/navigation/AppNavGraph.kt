@@ -1,5 +1,8 @@
 package com.shvarsman.menuplanner.presentation.navigation
 
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.consumeWindowInsets
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.MenuBook
@@ -23,16 +26,16 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.shvarsman.menuplanner.presentation.backup.BackupScreen
-import com.shvarsman.menuplanner.presentation.catalog.ProductCatalogScreen
-import com.shvarsman.menuplanner.presentation.cooking.CookingScreen
-import com.shvarsman.menuplanner.presentation.fridge.FridgeScreen
-import com.shvarsman.menuplanner.presentation.menu.MenuScreen
-import com.shvarsman.menuplanner.presentation.recipe.RecipeCategoryScreen
-import com.shvarsman.menuplanner.presentation.recipe.RecipeEditorScreen
-import com.shvarsman.menuplanner.presentation.recipe.RecipeListScreen
-import com.shvarsman.menuplanner.presentation.recipe.RecipeViewScreen
-import com.shvarsman.menuplanner.presentation.shoppinglist.ShoppingListScreen
+import com.shvarsman.menuplanner.presentation.screens.backup.BackupScreen
+import com.shvarsman.menuplanner.presentation.screens.catalog.ProductCatalogScreen
+import com.shvarsman.menuplanner.presentation.screens.cooking.CookingScreen
+import com.shvarsman.menuplanner.presentation.screens.fridge.FridgeScreen
+import com.shvarsman.menuplanner.presentation.screens.menu.MenuScreen
+import com.shvarsman.menuplanner.presentation.screens.recipe.RecipeCategoryScreen
+import com.shvarsman.menuplanner.presentation.screens.recipe.RecipeEditorScreen
+import com.shvarsman.menuplanner.presentation.screens.recipe.RecipeListScreen
+import com.shvarsman.menuplanner.presentation.screens.recipe.RecipeViewScreen
+import com.shvarsman.menuplanner.presentation.screens.shoppinglist.ShoppingListScreen
 
 private data class BottomItem(
     val destination: Destination,
@@ -50,30 +53,44 @@ private val bottomItems = listOf(
 @Composable
 fun AppNavGraph() {
     val navController = rememberNavController()
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentDestination = navBackStackEntry?.destination
+
+    // Проверяем, относится ли текущий экран к главным вкладкам нижней панели
+    val isBottomBarVisible = currentDestination?.hierarchy?.any { navDest ->
+        bottomItems.any { item -> item.destination.route == navDest.route }
+    } == true
 
     Scaffold(
+        contentWindowInsets = WindowInsets.navigationBars,
         bottomBar = {
-            NavigationBar {
-                val navBackStackEntry by navController.currentBackStackEntryAsState()
-                val currentDestination = navBackStackEntry?.destination
+            if (isBottomBarVisible) {
+                NavigationBar {
+                    bottomItems.forEach { item ->
+                        val selected = currentDestination.hierarchy.any {
+                            it.route == item.destination.route
+                        }
 
-                bottomItems.forEach { item ->
-                    val selected =
-                        currentDestination?.hierarchy?.any { it.route == item.destination.route } == true
-                    NavigationBarItem(
-                        selected = selected,
-                        onClick = {
-                            navController.navigate(item.destination.route) {
-                                popUpTo(navController.graph.findStartDestination().id) {
-                                    saveState = true
+                        NavigationBarItem(
+                            selected = selected,
+                            onClick = {
+                                navController.navigate(item.destination.route) {
+                                    popUpTo(navController.graph.findStartDestination().id) {
+                                        saveState = true
+                                    }
+                                    launchSingleTop = true
+                                    restoreState = true
                                 }
-                                launchSingleTop = true
-                                restoreState = true
-                            }
-                        },
-                        icon = { Icon(item.icon, contentDescription = item.label) },
-                        label = { Text(item.label) }
-                    )
+                            },
+                            icon = {
+                                Icon(
+                                    imageVector = item.icon,
+                                    contentDescription = item.label
+                                )
+                            },
+                            label = { Text(item.label) }
+                        )
+                    }
                 }
             }
         }
@@ -81,16 +98,26 @@ fun AppNavGraph() {
         NavHost(
             navController = navController,
             startDestination = Destination.Menu.route,
-            modifier = Modifier.padding(bottom = innerPadding.calculateBottomPadding())
+
+            modifier = Modifier
+                .padding(innerPadding)
+                .consumeWindowInsets(innerPadding)
         ) {
             composable(Destination.Menu.route) {
                 MenuScreen(
                     onNavigateToRecipes = { navController.navigate(Destination.Recipes.route) },
                     onNavigateToCooking = { recipeId, menuEntryId ->
-                        navController.navigate(Destination.Cooking.createRoute(recipeId, menuEntryId))
+                        navController.navigate(
+                            route = Destination.Cooking.createRoute(
+                                recipeId = recipeId,
+                                menuEntryId = menuEntryId
+                            )
+                        )
                     },
                     onViewRecipe = { recipeId ->
-                        navController.navigate(Destination.RecipeView.createRoute(recipeId))
+                        navController.navigate(
+                            route = Destination.RecipeView.createRoute(recipeId = recipeId)
+                        )
                     },
                     onOpenBackup = { navController.navigate(Destination.Backup.route) }
                 )
@@ -123,8 +150,20 @@ fun AppNavGraph() {
             ) {
                 RecipeCategoryScreen(
                     onBack = { navController.popBackStack() },
-                    onViewRecipe = { id -> navController.navigate(Destination.RecipeView.createRoute(id)) },
-                    onEditRecipe = { id -> navController.navigate(Destination.RecipeEditor.createRoute(id)) }
+                    onViewRecipe = { id ->
+                        navController.navigate(
+                            Destination.RecipeView.createRoute(
+                                id
+                            )
+                        )
+                    },
+                    onEditRecipe = { id ->
+                        navController.navigate(
+                            Destination.RecipeEditor.createRoute(
+                                id
+                            )
+                        )
+                    }
                 )
             }
             composable(

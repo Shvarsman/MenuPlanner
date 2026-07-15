@@ -51,6 +51,7 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.lifecycle.runtime.compose)
+    implementation(libs.androidx.material3)
     implementation(libs.androidx.profileinstaller)
     implementation(libs.hilt.android)
     ksp(libs.hilt.android.compiler)
