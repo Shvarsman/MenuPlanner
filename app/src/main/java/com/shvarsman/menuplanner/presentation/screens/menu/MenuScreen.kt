@@ -29,6 +29,7 @@ import androidx.compose.material.icons.filled.SettingsBackupRestore
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -114,14 +115,14 @@ fun MenuScreen(
         weekMenu.groupBy { it.dayOfWeek to it.mealType }
     }
 
-    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(
-        state = rememberTopAppBarState()
-    )
+//    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(
+//        state = rememberTopAppBarState()
+//    )
 
     Scaffold(
-        modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+        modifier = modifier,
         topBar = {
-            TopAppBar(
+            CenterAlignedTopAppBar(
                 title = {
                     Text(
                         text = "Меню на неделю",
@@ -129,6 +130,8 @@ fun MenuScreen(
                         fontWeight = FontWeight.Medium
                     )
                 },
+                modifier = modifier,
+                navigationIcon = {},
                 actions = {
                     IconButton(onClick = onOpenBackup) {
                         Icon(
@@ -137,7 +140,7 @@ fun MenuScreen(
                         )
                     }
                 },
-                scrollBehavior = scrollBehavior
+                expandedHeight = TopAppBarDefaults.TopAppBarExpandedHeight
             )
         }
     ) { padding ->
