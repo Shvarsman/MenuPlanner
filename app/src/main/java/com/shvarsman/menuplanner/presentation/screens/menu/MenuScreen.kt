@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -20,9 +19,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.MenuBook
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Restaurant
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.SettingsBackupRestore
@@ -30,30 +30,32 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CenterAlignedTopAppBar
-import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalDrawerSheet
+import androidx.compose.material3.ModalNavigationDrawer
+import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.rememberTopAppBarState
+import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -72,8 +74,11 @@ import com.shvarsman.menuplanner.domain.model.ReservedAmount
 import com.shvarsman.menuplanner.domain.model.availability
 import com.shvarsman.menuplanner.presentation.screens.common.rememberSizedImageRequest
 import com.shvarsman.menuplanner.presentation.ui.theme.AppCornerRadius
+import com.shvarsman.menuplanner.presentation.ui.theme.molleFont
 import com.shvarsman.menuplanner.presentation.utils.rememberDebouncedSearch
+import kotlinx.coroutines.launch
 import java.time.DayOfWeek
+import java.time.LocalDate
 import java.time.format.TextStyle
 import java.util.Locale
 
@@ -103,6 +108,11 @@ fun MenuScreen(
     val reservedQuantities = uiState.reservedQuantities
     val recipeSearchQuery = uiState.recipeSearchQuery
     val filteredPickerRecipes = uiState.filteredPickerRecipes
+    val selectedDay = uiState.selectedDay
+
+    // Стейты управления боковой панелью
+    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+    val scope = rememberCoroutineScope()
 
     LaunchedEffect(navigateToCooking) {
         navigateToCooking?.let { (recipeId, menuEntryId) ->
@@ -115,53 +125,92 @@ fun MenuScreen(
         weekMenu.groupBy { it.dayOfWeek to it.mealType }
     }
 
-//    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(
-//        state = rememberTopAppBarState()
-//    )
-
-    Scaffold(
-        modifier = modifier,
-        topBar = {
-            CenterAlignedTopAppBar(
-                title = {
-                    Text(
-                        text = "Меню на неделю",
-                        fontSize = 24.sp,
-                        fontWeight = FontWeight.Medium
-                    )
-                },
-                modifier = modifier,
-                navigationIcon = {},
-                actions = {
-                    IconButton(onClick = onOpenBackup) {
-                        Icon(
-                            imageVector = Icons.Filled.SettingsBackupRestore,
-                            contentDescription = "Резервное копирование"
-                        )
-                    }
-                },
-                expandedHeight = TopAppBarDefaults.TopAppBarExpandedHeight
-            )
-        }
-    ) { padding ->
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(
-                top = padding.calculateTopPadding(),
-                bottom = padding.calculateBottomPadding(),
-                start = 16.dp, end = 16.dp
-            ),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            items(weekDays) { day ->
-                DayCard(
-                    day = day,
-                    entriesByMeal = mealTypes.associateWith { meal -> entriesByKey[day to meal].orEmpty() },
-                    onAddMeal = { meal -> viewModel.openRecipePicker(day, meal) },
-                    onRemoveEntry = { viewModel.removeEntry(it) },
-                    onCookEntry = { viewModel.onCookClick(it) },
-                    onViewEntry = { entry -> onViewRecipe(entry.recipeId) }
+    ModalNavigationDrawer(
+        drawerState = drawerState,
+        drawerContent = {
+            ModalDrawerSheet {
+                Spacer(Modifier.height(12.dp))
+                Text(
+                    text = "Выбор дня недели",
+                    modifier = Modifier.padding(16.dp),
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold
                 )
+                HorizontalDivider()
+                Spacer(Modifier.height(8.dp))
+
+                weekDays.forEach { day ->
+                    val isToday = day == LocalDate.now().dayOfWeek
+                    val dayName = day.getDisplayName(TextStyle.FULL, Locale.forLanguageTag("ru"))
+                        .replaceFirstChar { it.uppercase() }
+                    val label = if (isToday) "$dayName (Сегодня)" else dayName
+
+                    NavigationDrawerItem(
+                        label = { Text(label) },
+                        selected = day == selectedDay,
+                        onClick = {
+                            viewModel.selectDay(day)
+                            scope.launch { drawerState.close() }
+                        },
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp)
+                    )
+                }
+            }
+        }
+    ) {
+        Scaffold(
+            modifier = modifier,
+            topBar = {
+                CenterAlignedTopAppBar(
+                    title = {
+                        Text(
+                            text = "Coolinar",
+                            fontSize = 24.sp,
+                            fontFamily = molleFont
+                        )
+                    },
+                    navigationIcon = {
+                        IconButton(onClick = { scope.launch { drawerState.open() } }) {
+                            Icon(
+                                imageVector = Icons.Default.Menu,
+                                contentDescription = "Открыть выбор дней"
+                            )
+                        }
+                    },
+                    actions = {
+                        IconButton(onClick = onOpenBackup) {
+                            Icon(
+                                imageVector = Icons.Filled.SettingsBackupRestore,
+                                contentDescription = "Резервное копирование"
+                            )
+                        }
+                    },
+                    expandedHeight = TopAppBarDefaults.TopAppBarExpandedHeight
+                )
+            }
+        ) { padding ->
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(
+                    top = padding.calculateTopPadding(),
+                    bottom = padding.calculateBottomPadding(),
+                    start = 16.dp, end = 16.dp
+                ),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                // Отображаем только выбранный день
+                item(key = selectedDay.name) {
+                    DayCard(
+                        day = selectedDay,
+                        entriesByMeal = mealTypes.associateWith { meal ->
+                            entriesByKey[selectedDay to meal].orEmpty()
+                        },
+                        onAddMeal = { meal -> viewModel.openRecipePicker(selectedDay, meal) },
+                        onRemoveEntry = { viewModel.removeEntry(it) },
+                        onCookEntry = { viewModel.onCookClick(it) },
+                        onViewEntry = { entry -> onViewRecipe(entry.recipeId) }
+                    )
+                }
             }
         }
     }
@@ -201,14 +250,18 @@ private fun DayCard(
     onCookEntry: (MenuEntry) -> Unit,
     onViewEntry: (MenuEntry) -> Unit
 ) {
+    val isToday = day == LocalDate.now().dayOfWeek
+    val dayName = day.getDisplayName(TextStyle.FULL, Locale.forLanguageTag("ru"))
+        .replaceFirstChar { it.uppercase() }
+    val titleText = if (isToday) "$dayName (Сегодня)" else dayName
+
     Card(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(AppCornerRadius)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(
-                day.getDisplayName(TextStyle.FULL, Locale.forLanguageTag("ru"))
-                    .replaceFirstChar { it.uppercase() },
+                text = titleText,
                 style = MaterialTheme.typography.titleLarge
             )
             Spacer(Modifier.height(8.dp))
@@ -552,7 +605,7 @@ private fun RecipePickerCard(
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(
-                                    imageVector = Icons.Filled.MenuBook,
+                                    imageVector = Icons.AutoMirrored.Filled.MenuBook,
                                     contentDescription = null,
                                     modifier = Modifier.size(32.dp),
                                     tint = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.6f)
@@ -580,7 +633,6 @@ private fun RecipePickerCard(
                 }
             }
 
-            // Превью ингредиентов с цветовой индикацией наличия в холодильнике
             if (isExpanded) {
                 Column(modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 12.dp)) {
                     HorizontalDivider(modifier = Modifier.padding(bottom = 8.dp))

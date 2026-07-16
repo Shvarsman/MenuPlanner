@@ -1,0 +1,8 @@
+com.shvarsman.menuplanner.baselineprofile-pngs-0 D:\Projects\MenuPlanner\baselineprofile\build\generated\res\pngs\debug
+com.shvarsman.menuplanner.baselineprofile-updated_navigation_xml-1 D:\Projects\MenuPlanner\baselineprofile\build\generated\updated_navigation_xml\debug
+com.shvarsman.menuplanner.baselineprofile-packageDebugResources-2 D:\Projects\MenuPlanner\baselineprofile\build\intermediates\incremental\debug\packageDebugResources\merged.dir
+com.shvarsman.menuplanner.baselineprofile-packageDebugResources-3 D:\Projects\MenuPlanner\baselineprofile\build\intermediates\incremental\debug\packageDebugResources\stripped.dir
+com.shvarsman.menuplanner.baselineprofile-debug-4 D:\Projects\MenuPlanner\baselineprofile\build\intermediates\merged_res\debug\mergeDebugResources
+com.shvarsman.menuplanner.baselineprofile-debug-5 D:\Projects\MenuPlanner\baselineprofile\src\debug\res
+com.shvarsman.menuplanner.baselineprofile-main-6 D:\Projects\MenuPlanner\baselineprofile\src\main\res
+gradleHome-0 C:\Users\Shvarsman\.gradle

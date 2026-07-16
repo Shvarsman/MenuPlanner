@@ -25,6 +25,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.time.DayOfWeek
+import java.time.LocalDate
 import javax.inject.Inject
 
 data class MenuUiState(
@@ -36,7 +37,8 @@ data class MenuUiState(
     val insufficientDialogEntry: MenuEntry? = null,
     val navigateToCooking: Pair<Long, Long>? = null,
     val recipeSearchQuery: String = "",
-    val filteredPickerRecipes: List<Recipe> = emptyList()
+    val filteredPickerRecipes: List<Recipe> = emptyList(),
+    val selectedDay: DayOfWeek = LocalDate.now().dayOfWeek
 )
 
 @HiltViewModel
@@ -56,6 +58,7 @@ class MenuViewModel @Inject constructor(
     private val _pickerTarget = MutableStateFlow<Pair<DayOfWeek, MealType>?>(null)
     private val _insufficientDialogEntry = MutableStateFlow<MenuEntry?>(null)
     private val _navigateToCooking = MutableStateFlow<Pair<Long, Long>?>(null)
+    private val _selectedDay = MutableStateFlow<DayOfWeek>(LocalDate.now().dayOfWeek)
 
     private val coreMenuData = combine(weekMenuFlow, recipesFlow, fridgeItemsFlow) { menu, recipes, fridge ->
         CoreMenuData(
@@ -71,10 +74,12 @@ class MenuViewModel @Inject constructor(
         _pickerTarget,
         _insufficientDialogEntry,
         _navigateToCooking,
-        _recipeSearchQuery.debounceSearch()
-    ) { core, picker, dialog, nav, query ->
+        combine(_recipeSearchQuery.debounceSearch(), _selectedDay) { query, day -> query to day }
+    ) { core, picker, dialog, nav, queryAndDay ->
+        val (query, selectedDay) = queryAndDay
         val filtered = if (query.isBlank()) core.recipes
         else core.recipes.filter { it.title.contains(query, ignoreCase = true) }
+
         MenuUiState(
             weekMenu = core.weekMenu,
             recipes = core.recipes,
@@ -84,11 +89,16 @@ class MenuViewModel @Inject constructor(
             insufficientDialogEntry = dialog,
             navigateToCooking = nav,
             recipeSearchQuery = query,
-            filteredPickerRecipes = filtered
+            filteredPickerRecipes = filtered,
+            selectedDay = selectedDay
         )
     }
         .mapOnDefault { it }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), MenuUiState())
+
+    fun selectDay(day: DayOfWeek) {
+        _selectedDay.value = day
+    }
 
     fun openRecipePicker(day: DayOfWeek, meal: MealType) {
         _pickerTarget.value = day to meal
