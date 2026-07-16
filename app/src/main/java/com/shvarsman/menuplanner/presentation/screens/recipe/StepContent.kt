@@ -30,50 +30,77 @@ import com.shvarsman.menuplanner.presentation.screens.common.rememberSizedImageR
 import com.shvarsman.menuplanner.presentation.ui.theme.AppCornerRadius
 import kotlinx.coroutines.launch
 
+sealed interface RenderedStep {
+    data class Text(
+        val originalIndex: Int,
+        val stepNumber: Int,
+        val item: StepContentItem.Text
+    ) : RenderedStep
+
+    data class ImageGroup(
+        val startIndex: Int,
+        val urls: List<String>
+    ) : RenderedStep
+}
+
+fun buildRenderedSteps(steps: List<StepContentItem>): List<RenderedStep> {
+    val result = mutableListOf<RenderedStep>()
+    var stepNum = 0
+    var i = 0
+    while (i < steps.size) {
+        when (val item = steps[i]) {
+            is StepContentItem.Text -> {
+                stepNum++
+                result.add(RenderedStep.Text(i, stepNum, item))
+                i++
+            }
+            is StepContentItem.Image -> {
+                val imageUrls = mutableListOf<String>()
+                val startIndex = i
+                while (i < steps.size && steps[i] is StepContentItem.Image) {
+                    imageUrls.add((steps[i] as StepContentItem.Image).url)
+                    i++
+                }
+                result.add(RenderedStep.ImageGroup(startIndex, imageUrls))
+            }
+        }
+    }
+    return result
+}
+
 @OptIn(ExperimentalFoundationApi::class)
 fun LazyListScope.StepContent(
-    steps: List<StepContentItem>,
+    renderedSteps: List<RenderedStep>, // ИСПРАВЛЕНО: Принимаем уже готовый и кэшированный список
     focusRequestIndex: Int?,
     onDeleteImageClick: (index: Int) -> Unit,
     onTextChange: (index: Int, text: String) -> Unit,
     onNext: (currentIndex: Int) -> Unit,
     onFocusConsumed: () -> Unit
 ) {
-    var stepNum = 0
-    val stepNumbers = steps.map { item ->
-        if (item is StepContentItem.Text) ++stepNum else 0
-    }
-
-    steps.forEachIndexed { index, item ->
-        item(key = "step_$index") {
-            when (item) {
-                is StepContentItem.Image -> {
-                    val isAlreadyRendered = index > 0 && steps[index - 1] is StepContentItem.Image
-                    if (!isAlreadyRendered) {
-                        val groupUrls = steps
-                            .drop(index)
-                            .takeWhile { it is StepContentItem.Image }
-                            .map { (it as StepContentItem.Image).url }
-
-                        StepImageGroup(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 16.dp, vertical = 4.dp),
-                            imageUrls = groupUrls,
-                            onDeleteImageClick = { imageIndex ->
-                                onDeleteImageClick(index + imageIndex)
-                            }
-                        )
-                    }
+    renderedSteps.forEach { step ->
+        when (step) {
+            is RenderedStep.ImageGroup -> {
+                item(key = "images_${step.startIndex}") {
+                    StepImageGroup(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 4.dp),
+                        imageUrls = step.urls,
+                        onDeleteImageClick = { imageIndex ->
+                            onDeleteImageClick(step.startIndex + imageIndex)
+                        }
+                    )
                 }
+            }
 
-                is StepContentItem.Text -> {
+            is RenderedStep.Text -> {
+                item(key = "text_${step.originalIndex}") {
                     StepTextBlock(
-                        stepNumber = stepNumbers[index],
-                        text = item.content,
-                        shouldRequestFocus = focusRequestIndex == index,
-                        onTextChange = { onTextChange(index, it) },
-                        onNext = { onNext(index) },
+                        stepNumber = step.stepNumber,
+                        text = step.item.content,
+                        shouldRequestFocus = focusRequestIndex == step.originalIndex,
+                        onTextChange = { onTextChange(step.originalIndex, it) },
+                        onNext = { onNext(step.originalIndex) },
                         onFocusConsumed = onFocusConsumed
                     )
                 }
@@ -96,7 +123,6 @@ private fun StepTextBlock(
     val bringIntoViewRequester = remember { BringIntoViewRequester() }
     val coroutineScope = rememberCoroutineScope()
 
-    // Запрашиваем фокус когда ViewModel говорит "сюда"
     LaunchedEffect(shouldRequestFocus) {
         if (shouldRequestFocus) {
             bringIntoViewRequester.bringIntoView()
@@ -133,7 +159,6 @@ private fun StepTextBlock(
                 .weight(1f)
                 .focusRequester(focusRequester)
                 .onFocusChanged { state ->
-                    // При получении фокуса через тап — тоже скроллим к полю
                     if (state.isFocused) {
                         coroutineScope.launch { bringIntoViewRequester.bringIntoView() }
                     }

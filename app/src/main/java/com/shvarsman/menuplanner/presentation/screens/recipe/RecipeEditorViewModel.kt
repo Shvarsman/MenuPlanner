@@ -19,11 +19,13 @@ import com.shvarsman.menuplanner.domain.usecase.product.FindOrCreateProductUseCa
 import com.shvarsman.menuplanner.domain.usecase.product.GetAllProductsUseCase
 import com.shvarsman.menuplanner.domain.usecase.recipe.SaveRecipeUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 data class RecipeEditorState(
@@ -63,7 +65,6 @@ class RecipeEditorViewModel @Inject constructor(
     val catalog: StateFlow<List<Product>> = getAllProducts()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    // Нужен для покраски ингредиентов в зависимости от наличия в холодильнике
     val fridgeItems: StateFlow<List<FridgeItem>> = getFridgeItems()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
@@ -122,12 +123,12 @@ class RecipeEditorViewModel @Inject constructor(
 
     fun onCoverPhotoSelected(uri: Uri) {
         viewModelScope.launch {
-            val persistedUri = imageFileManager.persistImage(uri)
+            val persistedUri = withContext(Dispatchers.IO) {
+                imageFileManager.persistImage(uri)
+            }
             _state.value = _state.value.copy(photoUri = persistedUri)
         }
     }
-
-    // ── Ингредиенты ────────────────────────────────────────────────────────────
 
     fun openIngredientPicker() {
         _isIngredientPickerOpen.value = true
@@ -154,8 +155,6 @@ class RecipeEditorViewModel @Inject constructor(
     fun removeIngredient(ingredient: RecipeIngredient) {
         _state.value = _state.value.copy(ingredients = _state.value.ingredients - ingredient)
     }
-
-    // ── Шаги ──────────────────────────────────────────────────────────────────
 
     fun onStepTextChange(index: Int, text: String) {
         _state.value = _state.value.copy(
@@ -194,7 +193,9 @@ class RecipeEditorViewModel @Inject constructor(
 
     fun addStepImage(uri: Uri) {
         viewModelScope.launch {
-            val persistedUri = imageFileManager.persistImage(uri)
+            val persistedUri = withContext(Dispatchers.IO) {
+                imageFileManager.persistImage(uri)
+            }
 
             val current = _state.value.steps.toMutableList()
             if (current.lastOrNull().let {
@@ -212,7 +213,9 @@ class RecipeEditorViewModel @Inject constructor(
     fun deleteStepItem(index: Int) {
         val itemToRemove = _state.value.steps.getOrNull(index)
         if (itemToRemove is StepContentItem.Image) {
-            viewModelScope.launch { imageFileManager.deleteImage(itemToRemove.url) }
+            viewModelScope.launch(Dispatchers.IO) {
+                imageFileManager.deleteImage(itemToRemove.url)
+            }
         }
         _state.value = _state.value.copy(
             steps = _state.value.steps.toMutableList()
@@ -229,12 +232,12 @@ class RecipeEditorViewModel @Inject constructor(
         _focusRequestIndex.value = null
     }
 
-    // ── Сохранение ─────────────────────────────────────────────────────────────
-
     fun save() {
         val current = _state.value
         viewModelScope.launch {
             try {
+                require(current.title.isNotBlank()) { "Название рецепта не может быть пустым" }
+
                 val stepsToSave = current.steps.filter {
                     it !is StepContentItem.Text || it.content.isNotBlank()
                 }
@@ -257,6 +260,9 @@ class RecipeEditorViewModel @Inject constructor(
                 _state.value = current.copy(isSaved = true)
             } catch (e: IllegalArgumentException) {
                 _state.value = current.copy(errorMessage = e.message)
+            } catch (e: Exception) {
+                _state.value =
+                    current.copy(errorMessage = "Не удалось сохранить рецепт: ${e.localizedMessage}")
             }
         }
     }

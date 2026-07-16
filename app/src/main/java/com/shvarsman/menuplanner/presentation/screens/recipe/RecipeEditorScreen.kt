@@ -4,27 +4,76 @@ import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.AddAPhoto
+import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Kitchen
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuAnchorType
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import com.shvarsman.menuplanner.domain.model.FridgeItem
 import com.shvarsman.menuplanner.domain.model.IngredientAvailability
@@ -35,6 +84,7 @@ import com.shvarsman.menuplanner.presentation.screens.common.ProductPickerDialog
 import com.shvarsman.menuplanner.presentation.screens.common.rememberSizedImageRequest
 import com.shvarsman.menuplanner.presentation.ui.icons.icon
 import com.shvarsman.menuplanner.presentation.ui.theme.AppCornerRadius
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -50,6 +100,12 @@ fun RecipeEditorScreen(
     val fridgeItems by viewModel.fridgeItems.collectAsStateWithLifecycle()
     val focusRequestIndex by viewModel.focusRequestIndex.collectAsStateWithLifecycle()
     val isIngredientPickerOpen by viewModel.isIngredientPickerOpen.collectAsStateWithLifecycle()
+
+    var openBottomSheet by rememberSaveable { mutableStateOf(false) }
+    var skipPartiallyExpanded by rememberSaveable { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
+    val bottomSheetState =
+        rememberModalBottomSheetState(skipPartiallyExpanded = skipPartiallyExpanded)
 
     var showExitConfirmation by remember { mutableStateOf(false) }
 
@@ -69,12 +125,13 @@ fun RecipeEditorScreen(
 
     val listState = rememberLazyListState()
 
-    // Индекс элемента-заголовка "Шаги приготовления" в LazyColumn.
-    // Порядок фиксированный: обложка(1) + название(1) + категория(1) +
-    // метод/время(1) + заголовок ингредиентов(1) + сами ингредиенты(N) = индекс заголовка шагов
-    val stepsHeaderIndex by remember(state.ingredients.size) {
-        derivedStateOf { 5 + state.ingredients.size }
+    // Оптимизировано: убран лишний derivedStateOf, так как размер меняется редко
+    val stepsHeaderIndex = remember(state.ingredients.size) {
+        5 + state.ingredients.size
     }
+
+    // ИСПРАВЛЕНО: Вычисляем сгруппированные шаги в Composable-контексте экрана
+    val renderedSteps = remember(state.steps) { buildRenderedSteps(state.steps) }
 
     // true, когда пользователь проскроллил мимо оригинального заголовка "Шаги приготовления"
     val showPinnedStepsHeader by remember {
@@ -86,7 +143,7 @@ fun RecipeEditorScreen(
     }
 
     Scaffold(
-        contentWindowInsets = WindowInsets(0),
+        contentWindowInsets = WindowInsets(0.dp), // Исправлено на dp
         topBar = {
             TopAppBar(
                 title = {
@@ -158,56 +215,35 @@ fun RecipeEditorScreen(
                     )
                 }
 
-                // ── Категория ─────────────────────────────────────────────
                 item {
-                    var categoryMenuExpanded by remember { mutableStateOf(false) }
                     Box(modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)) {
-                        ExposedDropdownMenuBox(
-                            expanded = categoryMenuExpanded,
-                            onExpandedChange = { categoryMenuExpanded = it }
-                        ) {
-                            OutlinedTextField(
-                                readOnly = true,
-                                value = state.category.displayName,
-                                onValueChange = {},
-                                label = { Text("Категория рецепта") },
-                                leadingIcon = {
-                                    Icon(
-                                        state.category.icon,
-                                        contentDescription = null
-                                    )
-                                },
-                                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = categoryMenuExpanded) },
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .menuAnchor(
-                                        ExposedDropdownMenuAnchorType.PrimaryNotEditable,
-                                        enabled = true
-                                    ),
-                                shape = RoundedCornerShape(AppCornerRadius)
-                            )
-                            ExposedDropdownMenu(
-                                expanded = categoryMenuExpanded,
-                                onDismissRequest = { categoryMenuExpanded = false },
-                                shape = RoundedCornerShape(AppCornerRadius)
-                            ) {
-                                RecipeCategory.entries.forEach { category ->
-                                    DropdownMenuItem(
-                                        text = { Text(category.displayName) },
-                                        leadingIcon = {
-                                            Icon(
-                                                category.icon,
-                                                contentDescription = null
-                                            )
-                                        },
-                                        onClick = {
-                                            viewModel.onCategoryChange(category)
-                                            categoryMenuExpanded = false
-                                        }
-                                    )
-                                }
-                            }
-                        }
+                        OutlinedTextField(
+                            readOnly = true,
+                            value = state.category.displayName,
+                            onValueChange = {},
+                            label = { Text("Категория рецепта") },
+                            leadingIcon = {
+                                Icon(
+                                    state.category.icon,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+                            },
+                            trailingIcon = {
+                                Icon(
+                                    Icons.Filled.ArrowDropDown,
+                                    contentDescription = "Открыть выбор категорий",
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(AppCornerRadius)
+                        )
+                        Box(
+                            modifier = Modifier
+                                .matchParentSize()
+                                .clickable { openBottomSheet = !openBottomSheet }
+                        )
                     }
                 }
 
@@ -322,8 +358,6 @@ fun RecipeEditorScreen(
                 }
 
                 // ── Оригинальный заголовок "Шаги приготовления" ──────────
-                // Обычный элемент списка (не sticky) — прилипающая копия
-                // рисуется отдельно поверх LazyColumn в Box ниже
                 item {
                     StepsHeaderBar(
                         onAddPhoto = { stepPhotoPicker.launch("image/*") },
@@ -332,7 +366,7 @@ fun RecipeEditorScreen(
                 }
 
                 StepContent(
-                    steps = state.steps,
+                    renderedSteps = renderedSteps,
                     focusRequestIndex = focusRequestIndex,
                     onDeleteImageClick = { index -> viewModel.deleteStepItem(index) },
                     onTextChange = { index, text -> viewModel.onStepTextChange(index, text) },
@@ -341,9 +375,6 @@ fun RecipeEditorScreen(
                 )
             }
 
-            // ── Прилипающая копия заголовка ──────────────────────────────
-            // Показывается поверх списка только когда пользователь
-            // проскроллил мимо оригинального заголовка внутри LazyColumn
             if (showPinnedStepsHeader) {
                 StepsHeaderBar(
                     onAddPhoto = { stepPhotoPicker.launch("image/*") },
@@ -384,6 +415,96 @@ fun RecipeEditorScreen(
                 TextButton(onClick = { showExitConfirmation = false }) { Text("Отмена") }
             }
         )
+    }
+
+    if (openBottomSheet) {
+        ModalBottomSheet(
+            onDismissRequest = { openBottomSheet = false },
+            sheetState = bottomSheetState,
+            shape = RoundedCornerShape(topStart = AppCornerRadius, topEnd = AppCornerRadius),
+            containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .navigationBarsPadding()
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
+            ) {
+                Text(
+                    text = "Выберите категорию",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(bottom = 16.dp),
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(2),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    items(RecipeCategory.entries) { category ->
+                        val isSelected = state.category == category
+
+                        Surface(
+                            onClick = {
+                                viewModel.onCategoryChange(category)
+                                scope
+                                    .launch { bottomSheetState.hide() }
+                                    .invokeOnCompletion {
+                                        if (!bottomSheetState.isVisible) {
+                                            openBottomSheet = false
+                                        }
+                                    }
+                            },
+                            shape = RoundedCornerShape(AppCornerRadius),
+                            color = if (isSelected) {
+                                MaterialTheme.colorScheme.primaryContainer
+                            } else {
+                                MaterialTheme.colorScheme.surfaceContainerHigh
+                            },
+                            contentColor = if (isSelected) {
+                                MaterialTheme.colorScheme.onPrimaryContainer
+                            } else {
+                                MaterialTheme.colorScheme.onSurface
+                            },
+                            tonalElevation = if (isSelected) 0.dp else 1.dp,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .defaultMinSize(minHeight = 64.dp)
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .padding(horizontal = 12.dp, vertical = 8.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Start
+                            ) {
+                                Icon(
+                                    imageVector = category.icon,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(22.dp),
+                                    tint = if (isSelected) {
+                                        MaterialTheme.colorScheme.primary
+                                    } else {
+                                        MaterialTheme.colorScheme.onSurfaceVariant
+                                    }
+                                )
+                                Spacer(Modifier.width(10.dp))
+                                Text(
+                                    text = category.displayName,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
+                                    maxLines = 2,
+                                    overflow = TextOverflow.Ellipsis,
+                                    modifier = Modifier.weight(1f)
+                                )
+                            }
+                        }
+                    }
+                }
+                Spacer(modifier = Modifier.height(16.dp))
+            }
+        }
     }
 
     state.errorMessage?.let { message ->
