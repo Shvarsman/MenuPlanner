@@ -26,7 +26,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -34,7 +33,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -43,6 +41,7 @@ import com.shvarsman.menuplanner.domain.model.Category
 import com.shvarsman.menuplanner.domain.model.Product
 import com.shvarsman.menuplanner.presentation.screens.fridge.ProductIcon
 import com.shvarsman.menuplanner.presentation.ui.icons.icon
+import com.shvarsman.menuplanner.presentation.utils.GroupedRow
 import com.shvarsman.menuplanner.presentation.utils.SearchBar
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -52,32 +51,18 @@ fun ProductCatalogScreen(
     onBack: () -> Unit,
     viewModel: ProductCatalogViewModel = hiltViewModel()
 ) {
-    val products by viewModel.products.collectAsStateWithLifecycle()
+    val listState by viewModel.listState.collectAsStateWithLifecycle()
     val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
     var productPendingDelete by remember { mutableStateOf<Product?>(null) }
 
-    val grouped = remember(products) {
-        products.groupBy { it.category }.toSortedMap(compareBy { it.ordinal })
-    }
-
-    val listState = rememberLazyListState()
-
-    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior(
-        state = rememberTopAppBarState()
-    )
+    val lazyListState = rememberLazyListState()
 
     Scaffold(
-        modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+        modifier = modifier,
         topBar = {
             Column {
                 TopAppBar(
-                    title = {
-                        SearchBar(
-                            placeholderText = "Поиск продукта",
-                            searchQuery = searchQuery,
-                            onQueryChanged = { viewModel.onSearchQueryChange(it) }
-                        )
-                    },
+                    title = { Text(text = "Каталог продуктов") },
                     colors = TopAppBarDefaults.topAppBarColors(
                         containerColor = MaterialTheme.colorScheme.background,
                         scrolledContainerColor = MaterialTheme.colorScheme.background
@@ -89,13 +74,18 @@ fun ProductCatalogScreen(
                                 contentDescription = "Назад"
                             )
                         }
-                    },
-                    scrollBehavior = scrollBehavior
+                    }
+                )
+                SearchBar(
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                    placeholderText = "Поиск продукта",
+                    searchQuery = searchQuery,
+                    onQueryChanged = { viewModel.onSearchQueryChange(it) }
                 )
             }
         }
     ) { padding ->
-        if (products.isEmpty()) {
+        if (listState.isEmpty) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -112,19 +102,34 @@ fun ProductCatalogScreen(
             }
         } else {
             LazyColumn(
-                state = listState,
+                state = lazyListState,
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(
                     top = padding.calculateTopPadding(),
                     bottom = padding.calculateBottomPadding() + 16.dp
                 )
             ) {
-                grouped.forEach { (category, categoryProducts) ->
-                    item(key = "header_${category.name}") { CatalogCategoryHeader(category) }
-                    items(categoryProducts, key = { it.id }) { product ->
-                        CatalogProductRow(
-                            product = product,
-                            onDelete = { productPendingDelete = product })
+                items(
+                    items = listState.rows,
+                    key = { row ->
+                        when (row) {
+                            is GroupedRow.Header -> "header_${row.category.name}"
+                            is GroupedRow.Item -> "item_${row.value.id}"
+                        }
+                    },
+                    contentType = { row ->
+                        when (row) {
+                            is GroupedRow.Header -> "header"
+                            is GroupedRow.Item -> "product"
+                        }
+                    }
+                ) { row ->
+                    when (row) {
+                        is GroupedRow.Header -> CatalogCategoryHeader(category = row.category)
+                        is GroupedRow.Item -> CatalogProductRow(
+                            product = row.value,
+                            onDelete = { productPendingDelete = row.value }
+                        )
                     }
                 }
             }

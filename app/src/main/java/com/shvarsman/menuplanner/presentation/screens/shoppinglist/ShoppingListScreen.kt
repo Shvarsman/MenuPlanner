@@ -32,19 +32,13 @@ import com.shvarsman.menuplanner.presentation.ui.theme.AppCornerRadius
 @Composable
 fun ShoppingListScreen(viewModel: ShoppingListViewModel = hiltViewModel()) {
     val items by viewModel.items.collectAsStateWithLifecycle()
+    val groupedUnchecked by viewModel.groupedUnchecked.collectAsStateWithLifecycle()
+    val checkedItems by viewModel.checkedItems.collectAsStateWithLifecycle()
+    val hasCheckedItems by viewModel.hasCheckedItems.collectAsStateWithLifecycle()
     val catalog by viewModel.catalog.collectAsStateWithLifecycle()
     val isPickerOpen by viewModel.isPickerOpen.collectAsStateWithLifecycle()
 
-    val hasCheckedItems = remember(items) { items.any { it.isChecked } }
     var showMoveConfirmation by remember { mutableStateOf(false) }
-
-    // Группируем по категории продукта; купленные позиции — отдельно, в конце
-    val groupedUnchecked = remember(items) {
-        items.filter { !it.isChecked }
-            .groupBy { it.product.category }
-            .toSortedMap(compareBy { it.ordinal })
-    }
-    val checkedItems = remember(items) { items.filter { it.isChecked } }
 
     Scaffold(
         contentWindowInsets = WindowInsets(0),

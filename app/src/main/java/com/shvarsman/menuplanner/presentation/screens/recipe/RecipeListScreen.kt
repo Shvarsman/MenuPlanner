@@ -1,10 +1,5 @@
 package com.shvarsman.menuplanner.presentation.screens.recipe
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.expandVertically
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -20,10 +15,6 @@ import androidx.compose.runtime.*
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
-import androidx.compose.ui.input.nestedscroll.NestedScrollSource
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -32,6 +23,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.shvarsman.menuplanner.domain.model.RecipeCategory
 import com.shvarsman.menuplanner.presentation.ui.icons.icon
 import com.shvarsman.menuplanner.presentation.ui.theme.AppCornerRadius
+import com.shvarsman.menuplanner.presentation.utils.rememberDebouncedSearch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -43,26 +35,14 @@ fun RecipeListScreen(
     viewModel: RecipeListViewModel = hiltViewModel()
 ) {
     val recipes by viewModel.filteredRecipes.collectAsStateWithLifecycle()
+    val grouped by viewModel.groupedRecipes.collectAsStateWithLifecycle()
     val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
     val isSearching = searchQuery.isNotBlank()
-
-    val grouped = remember(recipes) {
-        recipes.groupBy { it.category }.toSortedMap(compareBy { it.ordinal })
+    val (localSearchQuery, onLocalSearchQueryChange) = rememberDebouncedSearch(searchQuery) {
+        viewModel.onSearchQueryChange(it)
     }
 
     val listState = rememberLazyListState()
-    var searchBarVisible by remember { mutableStateOf(true) }
-
-    // Скрываем строку поиска при скролле вниз, показываем при скролле вверх
-    val nestedScrollConnection = remember {
-        object : NestedScrollConnection {
-            override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
-                if (available.y < -2) searchBarVisible = false
-                if (available.y > 2) searchBarVisible = true
-                return Offset.Zero
-            }
-        }
-    }
 
     Scaffold(
         contentWindowInsets = WindowInsets(0),
@@ -78,30 +58,24 @@ fun RecipeListScreen(
                             containerColor = MaterialTheme.colorScheme.background
                         )
                     )
-                    AnimatedVisibility(
-                        visible = searchBarVisible,
-                        enter = expandVertically() + fadeIn(),
-                        exit = shrinkVertically() + fadeOut()
-                    ) {
-                        OutlinedTextField(
-                            value = searchQuery,
-                            onValueChange = { viewModel.onSearchQueryChange(it) },
-                            placeholder = { Text("Поиск рецептов") },
-                            leadingIcon = { Icon(Icons.Filled.Search, contentDescription = null) },
-                            trailingIcon = {
-                                if (searchQuery.isNotEmpty()) {
-                                    IconButton(onClick = { viewModel.onSearchQueryChange("") }) {
-                                        Icon(Icons.Filled.Close, contentDescription = "Очистить")
-                                    }
+                    OutlinedTextField(
+                        value = localSearchQuery,
+                        onValueChange = onLocalSearchQueryChange,
+                        placeholder = { Text("Поиск рецептов") },
+                        leadingIcon = { Icon(Icons.Filled.Search, contentDescription = null) },
+                        trailingIcon = {
+                            if (localSearchQuery.isNotEmpty()) {
+                                IconButton(onClick = { onLocalSearchQueryChange("") }) {
+                                    Icon(Icons.Filled.Close, contentDescription = "Очистить")
                                 }
-                            },
-                            singleLine = true,
-                            shape = RoundedCornerShape(AppCornerRadius),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 16.dp, vertical = 8.dp)
-                        )
-                    }
+                            }
+                        },
+                        singleLine = true,
+                        shape = RoundedCornerShape(AppCornerRadius),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 8.dp)
+                    )
                 }
             }
         },
@@ -113,15 +87,12 @@ fun RecipeListScreen(
     ) { padding ->
         LazyColumn(
             state = listState,
-            modifier = Modifier
-                .fillMaxSize()
-                .nestedScroll(nestedScrollConnection),
+            modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(
                 top = padding.calculateTopPadding(),
                 bottom = padding.calculateBottomPadding() + 88.dp
             )
         ) {
-            // Сетку категорий и заголовок показываем только когда поиск не активен
             if (!isSearching) {
                 item(key = "category_grid") {
                     RecipeCategoryGrid(onCategoryClick = onCategoryClick)

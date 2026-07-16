@@ -71,6 +71,7 @@ import com.shvarsman.menuplanner.domain.model.ReservedAmount
 import com.shvarsman.menuplanner.domain.model.availability
 import com.shvarsman.menuplanner.presentation.screens.common.rememberSizedImageRequest
 import com.shvarsman.menuplanner.presentation.ui.theme.AppCornerRadius
+import com.shvarsman.menuplanner.presentation.utils.rememberDebouncedSearch
 import java.time.DayOfWeek
 import java.time.format.TextStyle
 import java.util.Locale
@@ -100,6 +101,7 @@ fun MenuScreen(
     val navigateToCooking = uiState.navigateToCooking
     val reservedQuantities = uiState.reservedQuantities
     val recipeSearchQuery = uiState.recipeSearchQuery
+    val filteredPickerRecipes = uiState.filteredPickerRecipes
 
     LaunchedEffect(navigateToCooking) {
         navigateToCooking?.let { (recipeId, menuEntryId) ->
@@ -163,7 +165,8 @@ fun MenuScreen(
 
     if (pickerTarget != null) {
         RecipePickerDialog(
-            recipes = recipes,
+            filteredRecipes = filteredPickerRecipes,
+            allRecipesEmpty = recipes.isEmpty(),
             fridgeItems = fridgeItems,
             reservedQuantities = reservedQuantities,
             searchQuery = recipeSearchQuery,
@@ -374,7 +377,8 @@ private fun InsufficientIngredientsDialog(
 
 @Composable
 private fun RecipePickerDialog(
-    recipes: List<Recipe>,
+    filteredRecipes: List<Recipe>,
+    allRecipesEmpty: Boolean,
     fridgeItems: List<FridgeItem>,
     reservedQuantities: Map<Long, ReservedAmount>,
     searchQuery: String,
@@ -384,11 +388,7 @@ private fun RecipePickerDialog(
     onCreateNew: () -> Unit
 ) {
     var expandedRecipeId by remember { mutableStateOf<Long?>(null) }
-
-    val filteredRecipes = remember(recipes, searchQuery) {
-        if (searchQuery.isBlank()) recipes
-        else recipes.filter { it.title.contains(searchQuery, ignoreCase = true) }
-    }
+    val (localSearchQuery, onLocalSearchQueryChange) = rememberDebouncedSearch(searchQuery, onSearchQueryChange)
 
     Dialog(
         onDismissRequest = onDismiss,
@@ -416,13 +416,13 @@ private fun RecipePickerDialog(
                 }
 
                 OutlinedTextField(
-                    value = searchQuery,
-                    onValueChange = onSearchQueryChange,
+                    value = localSearchQuery,
+                    onValueChange = onLocalSearchQueryChange,
                     placeholder = { Text("Поиск рецептов") },
                     leadingIcon = { Icon(Icons.Filled.Search, contentDescription = null) },
                     trailingIcon = {
-                        if (searchQuery.isNotEmpty()) {
-                            IconButton(onClick = { onSearchQueryChange("") }) {
+                        if (localSearchQuery.isNotEmpty()) {
+                            IconButton(onClick = { onLocalSearchQueryChange("") }) {
                                 Icon(Icons.Filled.Close, contentDescription = "Очистить")
                             }
                         }
@@ -459,7 +459,7 @@ private fun RecipePickerDialog(
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            if (recipes.isEmpty()) "У вас пока нет рецептов" else "Ничего не найдено",
+                            if (allRecipesEmpty) "У вас пока нет рецептов" else "Ничего не найдено",
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }

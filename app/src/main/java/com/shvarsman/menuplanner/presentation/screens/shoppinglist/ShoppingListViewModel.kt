@@ -13,6 +13,7 @@ import com.shvarsman.menuplanner.domain.usecase.shoppinglist.GetShoppingListUseC
 import com.shvarsman.menuplanner.domain.usecase.shoppinglist.MoveCheckedItemsToFridgeUseCase
 import com.shvarsman.menuplanner.domain.usecase.shoppinglist.RemoveShoppingItemUseCase
 import com.shvarsman.menuplanner.domain.usecase.shoppinglist.ToggleShoppingItemUseCase
+import com.shvarsman.menuplanner.presentation.utils.mapOnDefault
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -34,6 +35,22 @@ class ShoppingListViewModel @Inject constructor(
 
     val items: StateFlow<List<ShoppingListItem>> = getShoppingList()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    val groupedUnchecked: StateFlow<Map<Category, List<ShoppingListItem>>> = items
+        .mapOnDefault { list ->
+            list.filter { !it.isChecked }
+                .groupBy { it.product.category }
+                .toSortedMap(compareBy { it.ordinal })
+        }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyMap())
+
+    val checkedItems: StateFlow<List<ShoppingListItem>> = items
+        .mapOnDefault { list -> list.filter { it.isChecked } }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    val hasCheckedItems: StateFlow<Boolean> = items
+        .mapOnDefault { list -> list.any { it.isChecked } }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
 
     val catalog: StateFlow<List<Product>> = getAllProducts()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())

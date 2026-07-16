@@ -6,7 +6,9 @@ import com.shvarsman.menuplanner.data.local.entity.FridgeItemEntity
 import com.shvarsman.menuplanner.domain.model.FridgeItem
 import com.shvarsman.menuplanner.domain.model.Product
 import com.shvarsman.menuplanner.domain.repository.FridgeRepository
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
@@ -15,9 +17,9 @@ class FridgeRepositoryImpl @Inject constructor(
 ) : FridgeRepository {
 
     override fun observeItems(): Flow<List<FridgeItem>> =
-        dao.observeAllWithProduct().map { list ->
-            list.map { it.toDomain() }.sortedBy { it.product.name }
-        }
+        dao.observeAllWithProduct()
+            .map { list -> list.map { it.toDomain() }.sortedBy { it.product.name } }
+            .flowOn(Dispatchers.Default)
 
     override suspend fun getItem(id: Long): FridgeItem? = dao.getByIdWithProduct(id)?.toDomain()
 

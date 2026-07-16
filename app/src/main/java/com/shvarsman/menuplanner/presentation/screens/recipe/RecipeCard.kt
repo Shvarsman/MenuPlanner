@@ -2,6 +2,7 @@ package com.shvarsman.menuplanner.presentation.screens.recipe
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -50,7 +51,7 @@ fun RecipeCard(
         onClick = onClick,
         shape = RoundedCornerShape(AppCornerRadius)
     ) {
-        Box(
+        BoxWithConstraints(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(CardImageHeight)
@@ -60,7 +61,7 @@ fun RecipeCard(
                     modifier = Modifier.fillMaxSize(),
                     model = rememberSizedImageRequest(
                         model = recipe.photoUri,
-                        width = 400.dp,
+                        width = maxWidth,
                         height = CardImageHeight
                     ),
                     contentDescription = recipe.title,

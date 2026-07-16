@@ -12,6 +12,10 @@ import com.shvarsman.menuplanner.domain.usecase.fridge.GetFridgeItemsUseCase
 import com.shvarsman.menuplanner.domain.usecase.fridge.UpdateFridgeItemUseCase
 import com.shvarsman.menuplanner.domain.usecase.product.FindOrCreateProductUseCase
 import com.shvarsman.menuplanner.domain.usecase.product.GetAllProductsUseCase
+import com.shvarsman.menuplanner.presentation.utils.GroupedRow
+import com.shvarsman.menuplanner.presentation.utils.buildGroupedRows
+import com.shvarsman.menuplanner.presentation.utils.debounceSearch
+import com.shvarsman.menuplanner.presentation.utils.mapOnDefault
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -20,6 +24,13 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+
+typealias FridgeListRow = GroupedRow<FridgeItem, Category>
+
+data class FridgeListState(
+    val rows: List<FridgeListRow> = emptyList(),
+    val isEmpty: Boolean = true
+)
 
 @HiltViewModel
 class FridgeViewModel @Inject constructor(
@@ -41,14 +52,20 @@ class FridgeViewModel @Inject constructor(
     private val allItems: StateFlow<List<FridgeItem>> = getFridgeItems()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    val items: StateFlow<List<FridgeItem>> = combine(allItems, _searchQuery) { list, query ->
-        if (query.isBlank()) list else list.filter {
-            it.product.name.contains(
-                query,
-                ignoreCase = true
+    val listState: StateFlow<FridgeListState> = combine(
+        allItems,
+        _searchQuery.debounceSearch()
+    ) { list, query ->
+        if (query.isBlank()) list
+        else list.filter { it.product.name.contains(query, ignoreCase = true) }
+    }
+        .mapOnDefault { filtered ->
+            FridgeListState(
+                rows = buildGroupedRows(filtered, { it.product.category }) { it.ordinal },
+                isEmpty = filtered.isEmpty()
             )
         }
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), FridgeListState())
 
     val catalog: StateFlow<List<Product>> = getAllProducts()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())

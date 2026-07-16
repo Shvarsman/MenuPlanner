@@ -39,6 +39,11 @@ fun LazyListScope.StepContent(
     onNext: (currentIndex: Int) -> Unit,
     onFocusConsumed: () -> Unit
 ) {
+    var stepNum = 0
+    val stepNumbers = steps.map { item ->
+        if (item is StepContentItem.Text) ++stepNum else 0
+    }
+
     steps.forEachIndexed { index, item ->
         item(key = "step_$index") {
             when (item) {
@@ -63,10 +68,8 @@ fun LazyListScope.StepContent(
                 }
 
                 is StepContentItem.Text -> {
-                    val stepNumber = steps.take(index + 1).count { it is StepContentItem.Text }
-
                     StepTextBlock(
-                        stepNumber = stepNumber,
+                        stepNumber = stepNumbers[index],
                         text = item.content,
                         shouldRequestFocus = focusRequestIndex == index,
                         onTextChange = { onTextChange(index, it) },

@@ -30,18 +30,30 @@ data class RecipeWithIngredients(
 )
 
 data class RecipeSummaryRow(
-    @Embedded val recipe: RecipeEntity,
-    val ingredientCount: Int
+    val id: Long,
+    val title: String,
+    val category: com.shvarsman.menuplanner.domain.model.RecipeCategory,
+    val photoUri: String?,
+    val ingredientCount: Int,
+    val stepCount: Int
 )
 
 @Dao
 interface RecipeDao {
     @Query(
         """
-        SELECT recipes.*,
-            (SELECT COUNT(*) FROM recipe_ingredients WHERE recipeId = recipes.id) AS ingredientCount
+        SELECT
+            recipes.id,
+            recipes.title,
+            recipes.category,
+            recipes.photoUri,
+            (SELECT COUNT(*) FROM recipe_ingredients WHERE recipeId = recipes.id) AS ingredientCount,
+            CASE
+                WHEN recipes.steps IS NULL OR recipes.steps = '' THEN 0
+                ELSE LENGTH(recipes.steps) - LENGTH(REPLACE(recipes.steps, '␟', '')) + 1
+            END AS stepCount
         FROM recipes
-        ORDER BY title ASC
+        ORDER BY recipes.title ASC
         """
     )
     fun observeSummaries(): Flow<List<RecipeSummaryRow>>

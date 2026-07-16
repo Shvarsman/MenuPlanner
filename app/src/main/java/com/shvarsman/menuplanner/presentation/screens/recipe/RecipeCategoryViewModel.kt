@@ -7,6 +7,7 @@ import com.shvarsman.menuplanner.domain.model.RecipeCategory
 import com.shvarsman.menuplanner.domain.model.RecipeSummary
 import com.shvarsman.menuplanner.domain.usecase.recipe.DeleteRecipeUseCase
 import com.shvarsman.menuplanner.domain.usecase.recipe.GetRecipeSummariesUseCase
+import com.shvarsman.menuplanner.presentation.utils.mapOnDefault
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -28,6 +29,7 @@ class RecipeCategoryViewModel @Inject constructor(
 
     val recipes: StateFlow<List<RecipeSummary>> = getRecipeSummaries()
         .map { list -> list.filter { it.category == category } }
+        .mapOnDefault { it }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     fun onDelete(recipe: RecipeSummary) {

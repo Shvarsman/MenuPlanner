@@ -15,6 +15,8 @@ import com.shvarsman.menuplanner.domain.usecase.menu.AssignRecipeToMenuUseCase
 import com.shvarsman.menuplanner.domain.usecase.menu.GetWeekMenuUseCase
 import com.shvarsman.menuplanner.domain.usecase.menu.RemoveMenuEntryUseCase
 import com.shvarsman.menuplanner.domain.usecase.recipe.GetRecipesUseCase
+import com.shvarsman.menuplanner.presentation.utils.debounceSearch
+import com.shvarsman.menuplanner.presentation.utils.mapOnDefault
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -33,7 +35,8 @@ data class MenuUiState(
     val pickerTarget: Pair<DayOfWeek, MealType>? = null,
     val insufficientDialogEntry: MenuEntry? = null,
     val navigateToCooking: Pair<Long, Long>? = null,
-    val recipeSearchQuery: String = ""
+    val recipeSearchQuery: String = "",
+    val filteredPickerRecipes: List<Recipe> = emptyList()
 )
 
 @HiltViewModel
@@ -54,32 +57,38 @@ class MenuViewModel @Inject constructor(
     private val _insufficientDialogEntry = MutableStateFlow<MenuEntry?>(null)
     private val _navigateToCooking = MutableStateFlow<Pair<Long, Long>?>(null)
 
-    private val dialogState = combine(
-        _pickerTarget,
-        _insufficientDialogEntry,
-        _navigateToCooking,
-        _recipeSearchQuery
-    ) { picker, dialog, nav, query ->
-        DialogSlice(picker, dialog, nav, query)
-    }
-
-    val uiState: StateFlow<MenuUiState> = combine(
-        weekMenuFlow,
-        recipesFlow,
-        fridgeItemsFlow,
-        dialogState
-    ) { menu, recipes, fridge, dialog ->
-        MenuUiState(
+    private val coreMenuData = combine(weekMenuFlow, recipesFlow, fridgeItemsFlow) { menu, recipes, fridge ->
+        CoreMenuData(
             weekMenu = menu,
             recipes = recipes,
             fridgeItems = fridge,
-            reservedQuantities = computeReservedAmounts(menu, recipes),
-            pickerTarget = dialog.pickerTarget,
-            insufficientDialogEntry = dialog.insufficientDialogEntry,
-            navigateToCooking = dialog.navigateToCooking,
-            recipeSearchQuery = dialog.recipeSearchQuery
+            reservedQuantities = computeReservedAmounts(menu, recipes)
         )
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), MenuUiState())
+    }.mapOnDefault { it }
+
+    val uiState: StateFlow<MenuUiState> = combine(
+        coreMenuData,
+        _pickerTarget,
+        _insufficientDialogEntry,
+        _navigateToCooking,
+        _recipeSearchQuery.debounceSearch()
+    ) { core, picker, dialog, nav, query ->
+        val filtered = if (query.isBlank()) core.recipes
+        else core.recipes.filter { it.title.contains(query, ignoreCase = true) }
+        MenuUiState(
+            weekMenu = core.weekMenu,
+            recipes = core.recipes,
+            fridgeItems = core.fridgeItems,
+            reservedQuantities = core.reservedQuantities,
+            pickerTarget = picker,
+            insufficientDialogEntry = dialog,
+            navigateToCooking = nav,
+            recipeSearchQuery = query,
+            filteredPickerRecipes = filtered
+        )
+    }
+        .mapOnDefault { it }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), MenuUiState())
 
     fun openRecipePicker(day: DayOfWeek, meal: MealType) {
         _pickerTarget.value = day to meal
@@ -134,10 +143,10 @@ class MenuViewModel @Inject constructor(
         _recipeSearchQuery.value = query
     }
 
-    private data class DialogSlice(
-        val pickerTarget: Pair<DayOfWeek, MealType>?,
-        val insufficientDialogEntry: MenuEntry?,
-        val navigateToCooking: Pair<Long, Long>?,
-        val recipeSearchQuery: String
+    private data class CoreMenuData(
+        val weekMenu: List<MenuEntry>,
+        val recipes: List<Recipe>,
+        val fridgeItems: List<FridgeItem>,
+        val reservedQuantities: Map<Long, ReservedAmount>
     )
 }

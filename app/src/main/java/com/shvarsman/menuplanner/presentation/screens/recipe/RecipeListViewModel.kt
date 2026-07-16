@@ -2,9 +2,12 @@ package com.shvarsman.menuplanner.presentation.screens.recipe
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.shvarsman.menuplanner.domain.model.RecipeCategory
 import com.shvarsman.menuplanner.domain.model.RecipeSummary
 import com.shvarsman.menuplanner.domain.usecase.recipe.DeleteRecipeUseCase
 import com.shvarsman.menuplanner.domain.usecase.recipe.GetRecipeSummariesUseCase
+import com.shvarsman.menuplanner.presentation.utils.debounceSearch
+import com.shvarsman.menuplanner.presentation.utils.mapOnDefault
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -26,10 +29,18 @@ class RecipeListViewModel @Inject constructor(
     private val allRecipes: StateFlow<List<RecipeSummary>> = getRecipeSummaries()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    val filteredRecipes: StateFlow<List<RecipeSummary>> = combine(allRecipes, _searchQuery) { recipes, query ->
+    val filteredRecipes: StateFlow<List<RecipeSummary>> = combine(allRecipes, _searchQuery.debounceSearch()) { recipes, query ->
         if (query.isBlank()) recipes
         else recipes.filter { it.title.contains(query, ignoreCase = true) }
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+    }
+        .mapOnDefault { it }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    val groupedRecipes: StateFlow<Map<RecipeCategory, List<RecipeSummary>>> = filteredRecipes
+        .mapOnDefault { recipes ->
+            recipes.groupBy { it.category }.toSortedMap(compareBy { it.ordinal })
+        }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyMap())
 
     fun onSearchQueryChange(query: String) {
         _searchQuery.value = query

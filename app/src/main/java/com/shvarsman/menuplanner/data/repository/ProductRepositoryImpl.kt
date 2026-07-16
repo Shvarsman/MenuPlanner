@@ -6,7 +6,9 @@ import com.shvarsman.menuplanner.domain.model.Category
 import com.shvarsman.menuplanner.domain.model.MeasureUnit
 import com.shvarsman.menuplanner.domain.model.Product
 import com.shvarsman.menuplanner.domain.repository.ProductRepository
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
@@ -15,7 +17,9 @@ class ProductRepositoryImpl @Inject constructor(
 ) : ProductRepository {
 
     override fun observeAllProducts(): Flow<List<Product>> =
-        dao.observeAll().map { list -> list.map { it.toDomain() } }
+        dao.observeAll()
+            .map { list -> list.map { it.toDomain() } }
+            .flowOn(Dispatchers.Default)
 
     override suspend fun getProduct(id: Long): Product? = dao.getById(id)?.toDomain()
 

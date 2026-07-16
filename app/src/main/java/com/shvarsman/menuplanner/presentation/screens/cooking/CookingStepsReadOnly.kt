@@ -16,6 +16,11 @@ import com.shvarsman.menuplanner.presentation.screens.common.rememberSizedImageR
 
 /** Displays recipe steps read-only — no TextField, for the Cooking screen. */
 fun LazyListScope.CookingStepsReadOnly(steps: List<StepContentItem>) {
+    var stepNum = 0
+    val stepNumbers = steps.map { item ->
+        if (item is StepContentItem.Text && item.content.isNotBlank()) ++stepNum else 0
+    }
+
     steps.forEachIndexed { index, item ->
         item(key = "cook_step_$index") {
             when (item) {
@@ -46,9 +51,6 @@ fun LazyListScope.CookingStepsReadOnly(steps: List<StepContentItem>) {
 
                 is StepContentItem.Text -> {
                     if (item.content.isNotBlank()) {
-                        val stepNumber = steps.take(index + 1).count {
-                            it is StepContentItem.Text && it.content.isNotBlank()
-                        }
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -64,7 +66,7 @@ fun LazyListScope.CookingStepsReadOnly(steps: List<StepContentItem>) {
                             ) {
                                 Box(contentAlignment = Alignment.Center) {
                                     Text(
-                                        "$stepNumber",
+                                        "${stepNumbers[index]}",
                                         style = MaterialTheme.typography.labelSmall,
                                         color = MaterialTheme.colorScheme.onPrimaryContainer
                                     )
