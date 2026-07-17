@@ -1,4 +1,4 @@
-package com.shvarsman.menuplanner.presentation.screens.recipe
+package com.shvarsman.menuplanner.presentation.screens.common
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.*
@@ -26,7 +26,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
 import com.shvarsman.menuplanner.domain.model.StepContentItem
-import com.shvarsman.menuplanner.presentation.screens.common.rememberSizedImageRequest
 import com.shvarsman.menuplanner.presentation.ui.theme.AppCornerRadius
 import kotlinx.coroutines.launch
 

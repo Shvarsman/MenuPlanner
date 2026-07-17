@@ -14,11 +14,12 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuAnchorType
@@ -40,12 +41,13 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.shvarsman.menuplanner.domain.model.Category
-import com.shvarsman.menuplanner.presentation.ui.icons.icon
 import com.shvarsman.menuplanner.domain.model.MeasureUnit
 import com.shvarsman.menuplanner.domain.model.Product
 import com.shvarsman.menuplanner.presentation.screens.fridge.ProductIcon
+import com.shvarsman.menuplanner.presentation.ui.icons.icon
 import com.shvarsman.menuplanner.presentation.ui.theme.AppCornerRadius
 import kotlinx.coroutines.launch
 
@@ -71,32 +73,36 @@ fun ProductPickerDialog(
 
     var newName by remember { mutableStateOf("") }
     var newCategory by remember { mutableStateOf(Category.GROCERY) }
+    var createError by remember { mutableStateOf<String?>(null) }
+    var isCreating by remember { mutableStateOf(false) }
 
     val coroutineScope = rememberCoroutineScope()
 
     val filtered = remember(query, catalog) {
         if (query.isBlank()) catalog else catalog.filter {
-            it.name.contains(
-                query,
-                ignoreCase = true
-            )
+            it.name.contains(query, ignoreCase = true)
         }
     }
 
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = {
-            Text(
-                when (step) {
-                    PickerStep.SELECT -> "Выбрать продукт"
-                    PickerStep.CREATE -> "Новый продукт"
-                    PickerStep.QUANTITY -> selectedProduct?.name.orEmpty()
-                }
-            )
+    val parsedQuantity = quantityText.toDoubleOrNull()
+
+    AppBottomSheet(
+        title = when (step) {
+            PickerStep.SELECT -> "Выбрать продукт"
+            PickerStep.CREATE -> "Новый продукт"
+            PickerStep.QUANTITY -> selectedProduct?.name.orEmpty()
         },
-        text = {
+        fillMaxHeight = true,
+        onDismissRequest = onDismiss
+    ) { onClose ->
+
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxWidth()
+        ) {
             when (step) {
-                PickerStep.SELECT -> Column {
+                PickerStep.SELECT -> {
                     OutlinedTextField(
                         value = query,
                         onValueChange = { query = it },
@@ -108,7 +114,11 @@ fun ProductPickerDialog(
                     )
                     Spacer(Modifier.height(8.dp))
                     TextButton(
-                        onClick = { newName = query; step = PickerStep.CREATE },
+                        onClick = {
+                            newName = query
+                            createError = null
+                            step = PickerStep.CREATE
+                        },
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Icon(
@@ -120,6 +130,7 @@ fun ProductPickerDialog(
                         Text("Создать новый продукт")
                     }
                     HorizontalDivider()
+
                     if (filtered.isEmpty()) {
                         Text(
                             "Ничего не найдено",
@@ -127,7 +138,7 @@ fun ProductPickerDialog(
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     } else {
-                        LazyColumn(modifier = Modifier.heightIn(max = 320.dp)) {
+                        LazyColumn(modifier = Modifier.weight(1f)) {
                             items(filtered, key = { it.id }) { product ->
                                 ListItem(
                                     headlineContent = { Text(product.name) },
@@ -155,53 +166,72 @@ fun ProductPickerDialog(
                     }
                 }
 
-                PickerStep.CREATE -> Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    OutlinedTextField(
-                        value = newName,
-                        onValueChange = { newName = it },
-                        label = { Text("Название") },
-                        singleLine = true,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                    Text("Категория", style = MaterialTheme.typography.labelLarge)
-                    LazyColumn(modifier = Modifier.heightIn(max = 220.dp)) {
-                        items(Category.entries.toTypedArray()) { category ->
-                            ListItem(
-                                headlineContent = { Text(category.displayName) },
-                                leadingContent = { Icon(category.icon, contentDescription = null) },
-                                trailingContent = {
-                                    RadioButton(
-                                        selected = category == newCategory,
-                                        onClick = { newCategory = category })
-                                },
-                                modifier = Modifier.clickable { newCategory = category }
-                            )
-                        }
-                    }
-                    ExposedDropdownMenuBox(
-                        expanded = unitMenuExpanded,
-                        onExpandedChange = { unitMenuExpanded = it }) {
+                PickerStep.CREATE -> {
+                    Column(
+                        modifier = Modifier.weight(1f),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
                         OutlinedTextField(
-                            readOnly = true,
-                            value = selectedUnit.displayName,
-                            onValueChange = {},
-                            label = { Text("Ед. изм. по умолчанию") },
-                            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = unitMenuExpanded) },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .menuAnchor(
-                                    ExposedDropdownMenuAnchorType.PrimaryNotEditable,
-                                    enabled = true
-                                )
+                            value = newName,
+                            onValueChange = {
+                                newName = it
+                                createError = null
+                            },
+                            label = { Text("Название") },
+                            singleLine = true,
+                            isError = createError != null,
+                            supportingText = createError?.let { { Text(it) } },
+                            modifier = Modifier.fillMaxWidth()
                         )
-                        ExposedDropdownMenu(
-                            expanded = unitMenuExpanded,
-                            onDismissRequest = { unitMenuExpanded = false }) {
-                            MeasureUnit.entries.forEach { unit ->
-                                DropdownMenuItem(
-                                    text = { Text(unit.displayName) },
-                                    onClick = { selectedUnit = unit; unitMenuExpanded = false }
+
+                        Text("Категория", style = MaterialTheme.typography.labelLarge)
+                        LazyColumn(modifier = Modifier.heightIn(max = 220.dp)) {
+                            items(Category.entries.toTypedArray()) { category ->
+                                ListItem(
+                                    headlineContent = { Text(category.displayName) },
+                                    leadingContent = { Icon(category.icon, contentDescription = null) },
+                                    trailingContent = {
+                                        RadioButton(
+                                            selected = category == newCategory,
+                                            // клик обрабатывает родительский Modifier.clickable —
+                                            // не дублируем интерактивный элемент внутри строки
+                                            onClick = null
+                                        )
+                                    },
+                                    modifier = Modifier.clickable { newCategory = category }
                                 )
+                            }
+                        }
+
+                        ExposedDropdownMenuBox(
+                            expanded = unitMenuExpanded,
+                            onExpandedChange = { unitMenuExpanded = it }
+                        ) {
+                            OutlinedTextField(
+                                readOnly = true,
+                                value = selectedUnit.displayName,
+                                onValueChange = {},
+                                label = { Text("Ед. изм. по умолчанию") },
+                                trailingIcon = {
+                                    ExposedDropdownMenuDefaults.TrailingIcon(expanded = unitMenuExpanded)
+                                },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .menuAnchor(
+                                        ExposedDropdownMenuAnchorType.PrimaryNotEditable,
+                                        enabled = true
+                                    )
+                            )
+                            ExposedDropdownMenu(
+                                expanded = unitMenuExpanded,
+                                onDismissRequest = { unitMenuExpanded = false }
+                            ) {
+                                MeasureUnit.entries.forEach { unit ->
+                                    DropdownMenuItem(
+                                        text = { Text(unit.displayName) },
+                                        onClick = { selectedUnit = unit; unitMenuExpanded = false }
+                                    )
+                                }
                             }
                         }
                     }
@@ -209,7 +239,10 @@ fun ProductPickerDialog(
 
                 PickerStep.QUANTITY -> {
                     val product = selectedProduct
-                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Column(
+                        modifier = Modifier.weight(1f),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
                         if (product != null) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 ProductIcon(
@@ -228,9 +261,18 @@ fun ProductPickerDialog(
                                 value = quantityText,
                                 onValueChange = {
                                     quantityText = it.filter { c -> c.isDigit() || c == '.' }
+                                        .let { filtered ->
+                                            // не даём ввести больше одной десятичной точки
+                                            val firstDot = filtered.indexOf('.')
+                                            if (firstDot == -1) filtered
+                                            else filtered.substring(0, firstDot + 1) +
+                                                    filtered.substring(firstDot + 1).replace(".", "")
+                                        }
                                 },
                                 label = { Text("Количество") },
                                 singleLine = true,
+                                isError = quantityText.isNotEmpty() && parsedQuantity == null,
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                                 modifier = Modifier.weight(1f)
                             )
                             Spacer(Modifier.width(8.dp))
@@ -256,7 +298,8 @@ fun ProductPickerDialog(
                                 )
                                 ExposedDropdownMenu(
                                     expanded = unitMenuExpanded,
-                                    onDismissRequest = { unitMenuExpanded = false }) {
+                                    onDismissRequest = { unitMenuExpanded = false }
+                                ) {
                                     MeasureUnit.entries.forEach { unit ->
                                         DropdownMenuItem(
                                             text = { Text(unit.displayName) },
@@ -271,43 +314,67 @@ fun ProductPickerDialog(
                     }
                 }
             }
-        },
-        confirmButton = {
-            when (step) {
-                PickerStep.SELECT -> {}
-                PickerStep.CREATE -> TextButton(
-                    enabled = newName.isNotBlank(),
-                    onClick = {
-                        coroutineScope.launch {
-                            val created = onCreateProduct(newName.trim(), newCategory, selectedUnit)
-                            selectedProduct = created
-                            quantityText = "1"
-                            step = PickerStep.QUANTITY
-                        }
-                    }
-                ) { Text("Далее") }
+        }
 
-                PickerStep.QUANTITY -> TextButton(onClick = {
-                    val product = selectedProduct ?: return@TextButton
-                    onConfirm(product, selectedUnit, quantityText.toDoubleOrNull() ?: 0.0)
-                }) { Text("Добавить") }
-            }
-        },
-        dismissButton = {
+        Spacer(Modifier.height(8.dp))
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
             when (step) {
-                PickerStep.SELECT -> TextButton(onClick = onDismiss) { Text("Отмена") }
-                else -> TextButton(onClick = { step = PickerStep.SELECT }) {
-                    Icon(
-                        Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = null,
-                        modifier = Modifier.size(16.dp)
-                    )
-                    Spacer(Modifier.width(4.dp))
-                    Text("Назад")
+                PickerStep.SELECT -> {
+                    TextButton(onClick = onClose) { Text("Отмена") }
+                    Spacer(Modifier.width(0.dp))
+                }
+
+                else -> {
+                    TextButton(onClick = { step = PickerStep.SELECT }) {
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = null,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(Modifier.width(4.dp))
+                        Text("Назад")
+                    }
                 }
             }
+
+            when (step) {
+                PickerStep.SELECT -> {}
+
+                PickerStep.CREATE -> Button(
+                    enabled = newName.isNotBlank() && !isCreating,
+                    onClick = {
+                        isCreating = true
+                        coroutineScope.launch {
+                            try {
+                                val created = onCreateProduct(newName.trim(), newCategory, selectedUnit)
+                                selectedProduct = created
+                                quantityText = "1"
+                                createError = null
+                                step = PickerStep.QUANTITY
+                            } catch (e: Exception) {
+                                createError = "Не удалось создать продукт: ${e.localizedMessage}"
+                            } finally {
+                                isCreating = false
+                            }
+                        }
+                    }
+                ) { Text(if (isCreating) "Создание..." else "Далее") }
+
+                PickerStep.QUANTITY -> Button(
+                    enabled = parsedQuantity != null && parsedQuantity > 0,
+                    onClick = {
+                        val product = selectedProduct ?: return@Button
+                        onConfirm(product, selectedUnit, parsedQuantity ?: 0.0)
+                    }
+                ) { Text("Добавить") }
+            }
         }
-    )
+    }
 }
 
 private enum class PickerStep { SELECT, CREATE, QUANTITY }

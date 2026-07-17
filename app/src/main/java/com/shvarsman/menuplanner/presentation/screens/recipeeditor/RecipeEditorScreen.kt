@@ -1,9 +1,8 @@
-package com.shvarsman.menuplanner.presentation.screens.recipe
+package com.shvarsman.menuplanner.presentation.screens.recipeeditor
 
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -11,12 +10,9 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -31,21 +27,19 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AddAPhoto
-import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Kitchen
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuAnchorType
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -53,15 +47,12 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -69,22 +60,29 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
+import com.shvarsman.menuplanner.domain.model.CookingMethod
 import com.shvarsman.menuplanner.domain.model.FridgeItem
 import com.shvarsman.menuplanner.domain.model.IngredientAvailability
 import com.shvarsman.menuplanner.domain.model.RecipeCategory
 import com.shvarsman.menuplanner.domain.model.RecipeIngredient
 import com.shvarsman.menuplanner.domain.model.availability
+import com.shvarsman.menuplanner.presentation.screens.common.AppBottomSheet
+import com.shvarsman.menuplanner.presentation.screens.common.DurationPickerDialog
+import com.shvarsman.menuplanner.presentation.screens.common.DurationSelectorField
 import com.shvarsman.menuplanner.presentation.screens.common.ProductPickerDialog
+import com.shvarsman.menuplanner.presentation.screens.common.SelectionTile
+import com.shvarsman.menuplanner.presentation.screens.common.SelectorField
+import com.shvarsman.menuplanner.presentation.screens.common.StepContent
+import com.shvarsman.menuplanner.presentation.screens.common.buildRenderedSteps
+import com.shvarsman.menuplanner.presentation.screens.common.formatCookingTime
 import com.shvarsman.menuplanner.presentation.screens.common.rememberSizedImageRequest
 import com.shvarsman.menuplanner.presentation.ui.icons.icon
 import com.shvarsman.menuplanner.presentation.ui.theme.AppCornerRadius
-import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -101,13 +99,12 @@ fun RecipeEditorScreen(
     val focusRequestIndex by viewModel.focusRequestIndex.collectAsStateWithLifecycle()
     val isIngredientPickerOpen by viewModel.isIngredientPickerOpen.collectAsStateWithLifecycle()
 
-    var openBottomSheet by rememberSaveable { mutableStateOf(false) }
-    var skipPartiallyExpanded by rememberSaveable { mutableStateOf(false) }
-    val scope = rememberCoroutineScope()
-    val bottomSheetState =
-        rememberModalBottomSheetState(skipPartiallyExpanded = skipPartiallyExpanded)
+    var showCategoryBottomSheet by remember { mutableStateOf(false) }
+    var showCookingMethodBottomSheet by remember { mutableStateOf(false) }
 
     var showExitConfirmation by remember { mutableStateOf(false) }
+
+    var showDurationPickerDialog by remember { mutableStateOf(false) }
 
     val coverPhotoPicker = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
@@ -125,15 +122,12 @@ fun RecipeEditorScreen(
 
     val listState = rememberLazyListState()
 
-    // Оптимизировано: убран лишний derivedStateOf, так как размер меняется редко
     val stepsHeaderIndex = remember(state.ingredients.size) {
         5 + state.ingredients.size
     }
 
-    // ИСПРАВЛЕНО: Вычисляем сгруппированные шаги в Composable-контексте экрана
     val renderedSteps = remember(state.steps) { buildRenderedSteps(state.steps) }
 
-    // true, когда пользователь проскроллил мимо оригинального заголовка "Шаги приготовления"
     val showPinnedStepsHeader by remember {
         derivedStateOf {
             val firstVisible = listState.firstVisibleItemIndex
@@ -143,7 +137,7 @@ fun RecipeEditorScreen(
     }
 
     Scaffold(
-        contentWindowInsets = WindowInsets(0.dp), // Исправлено на dp
+        contentWindowInsets = WindowInsets(0.dp),
         topBar = {
             TopAppBar(
                 title = {
@@ -216,116 +210,36 @@ fun RecipeEditorScreen(
                 }
 
                 item {
-                    Box(modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)) {
-                        OutlinedTextField(
-                            readOnly = true,
-                            value = state.category.displayName,
-                            onValueChange = {},
-                            label = { Text("Категория рецепта") },
-                            leadingIcon = {
-                                Icon(
-                                    state.category.icon,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.primary
-                                )
-                            },
-                            trailingIcon = {
-                                Icon(
-                                    Icons.Filled.ArrowDropDown,
-                                    contentDescription = "Открыть выбор категорий",
-                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            },
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(AppCornerRadius)
-                        )
-                        Box(
-                            modifier = Modifier
-                                .matchParentSize()
-                                .clickable { openBottomSheet = !openBottomSheet }
-                        )
-                    }
+                    SelectorField(
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+                        label = "Категория рецепта",
+                        value = state.category.displayName,
+                        placeholder = "Выберите категорию",
+                        leadingIcon = state.category.icon,
+                        onClick = { showCategoryBottomSheet = true },
+                    )
                 }
 
-                // ── Метод приготовления и время ──────────────────────────
                 item {
-                    var showCookingMethodPicker by remember { mutableStateOf(false) }
-
-                    Column(
+                    SelectorField(
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        Box {
-                            OutlinedTextField(
-                                value = state.cookingMethod?.displayName ?: "",
-                                onValueChange = {},
-                                readOnly = true,
-                                label = { Text("Способ приготовления") },
-                                placeholder = { Text("Выберите способ") },
-                                leadingIcon = {
-                                    Icon(
-                                        Icons.Filled.Kitchen,
-                                        contentDescription = null
-                                    )
-                                },
-                                trailingIcon = {
-                                    Icon(
-                                        Icons.Filled.ArrowDropDown,
-                                        contentDescription = null
-                                    )
-                                },
-                                modifier = Modifier.fillMaxWidth(),
-                                shape = RoundedCornerShape(AppCornerRadius)
-                            )
-                            Box(
-                                modifier = Modifier
-                                    .matchParentSize()
-                                    .clickable { showCookingMethodPicker = true }
-                            )
-                        }
+                        label = "Способ приготовления",
+                        value = state.cookingMethod?.displayName ?: "",
+                        placeholder = "Выберите способ",
+                        leadingIcon = Icons.Filled.Kitchen,
+                        onClick = { showCookingMethodBottomSheet = true }
+                    )
+                }
 
-                        if (showCookingMethodPicker) {
-                            CookingMethodPickerDialog(
-                                current = state.cookingMethod,
-                                onDismiss = { showCookingMethodPicker = false },
-                                onSelect = { method ->
-                                    viewModel.onCookingMethodChange(method)
-                                    showCookingMethodPicker = false
-                                }
-                            )
-                        }
-
-                        Text("Время приготовления", style = MaterialTheme.typography.labelLarge)
-                        Row(
-                            horizontalArrangement = Arrangement.spacedBy(12.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            CompactNumberPicker(
-                                value = state.cookingHours,
-                                onValueChange = {
-                                    viewModel.onCookingTimeChange(
-                                        it,
-                                        state.cookingMinutes
-                                    )
-                                },
-                                range = 0..23,
-                                label = "Часы",
-                                modifier = Modifier.weight(1f)
-                            )
-                            CompactNumberPicker(
-                                value = state.cookingMinutes,
-                                onValueChange = {
-                                    viewModel.onCookingTimeChange(
-                                        state.cookingHours,
-                                        it
-                                    )
-                                },
-                                range = 0..59,
-                                label = "Минуты",
-                                modifier = Modifier.weight(1f)
-                            )
-                        }
-                    }
+                item {
+                    DurationSelectorField(
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+                        label = "Время приготовления",
+                        hours = state.cookingHours,
+                        minutes = state.cookingMinutes,
+                        leadingIcon = Icons.Outlined.Schedule,
+                        onClick = { showDurationPickerDialog = true },
+                    )
                 }
 
                 // ── Ингредиенты ───────────────────────────────────────────
@@ -417,94 +331,124 @@ fun RecipeEditorScreen(
         )
     }
 
-    if (openBottomSheet) {
-        ModalBottomSheet(
-            onDismissRequest = { openBottomSheet = false },
-            sheetState = bottomSheetState,
-            shape = RoundedCornerShape(topStart = AppCornerRadius, topEnd = AppCornerRadius),
-            containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
-        ) {
-            Column(
+    if (showCategoryBottomSheet) {
+        AppBottomSheet(
+            title = "Выберите категорию",
+            onDismissRequest = { showCategoryBottomSheet = false }
+        ) { onClose ->
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(2),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                items(RecipeCategory.entries) { category ->
+                    SelectionTile(
+                        text = category.displayName,
+                        icon = category.icon,
+                        isSelected = state.category == category,
+                        onClick = {
+                            viewModel.onCategoryChange(category)
+                            onClose()
+                        }
+                    )
+                }
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+        }
+    }
+
+    if (showCookingMethodBottomSheet) {
+        var searchQuery by remember { mutableStateOf("") }
+        val filteredMethods = remember(searchQuery) {
+            CookingMethod.entries.filter { method ->
+                method.displayName.contains(searchQuery, ignoreCase = true)
+            }
+        }
+
+        AppBottomSheet(
+            title = "Способ приготовления",
+            fillMaxHeight = true,
+            onDismissRequest = { showCookingMethodBottomSheet = false }
+        ) { onClose ->
+            OutlinedTextField(
+                value = searchQuery,
+                onValueChange = { searchQuery = it },
+                modifier = Modifier.fillMaxWidth(),
+                placeholder = { Text("Поиск способа...") },
+                leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
+                trailingIcon = {
+                    if (searchQuery.isNotEmpty()) {
+                        IconButton(onClick = { searchQuery = "" }) {
+                            Icon(Icons.Default.Close, contentDescription = "Очистить")
+                        }
+                    }
+                },
+                singleLine = true,
+                shape = RoundedCornerShape(AppCornerRadius),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant
+                )
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .navigationBarsPadding()
-                    .padding(horizontal = 16.dp, vertical = 8.dp)
+                    .weight(1f)
             ) {
-                Text(
-                    text = "Выберите категорию",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(bottom = 16.dp),
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                LazyVerticalGrid(
-                    columns = GridCells.Fixed(2),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    items(RecipeCategory.entries) { category ->
-                        val isSelected = state.category == category
-
-                        Surface(
-                            onClick = {
-                                viewModel.onCategoryChange(category)
-                                scope
-                                    .launch { bottomSheetState.hide() }
-                                    .invokeOnCompletion {
-                                        if (!bottomSheetState.isVisible) {
-                                            openBottomSheet = false
-                                        }
-                                    }
-                            },
-                            shape = RoundedCornerShape(AppCornerRadius),
-                            color = if (isSelected) {
-                                MaterialTheme.colorScheme.primaryContainer
-                            } else {
-                                MaterialTheme.colorScheme.surfaceContainerHigh
-                            },
-                            contentColor = if (isSelected) {
-                                MaterialTheme.colorScheme.onPrimaryContainer
-                            } else {
-                                MaterialTheme.colorScheme.onSurface
-                            },
-                            tonalElevation = if (isSelected) 0.dp else 1.dp,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .defaultMinSize(minHeight = 64.dp)
-                        ) {
-                            Row(
-                                modifier = Modifier
-                                    .padding(horizontal = 12.dp, vertical = 8.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.Start
-                            ) {
-                                Icon(
-                                    imageVector = category.icon,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(22.dp),
-                                    tint = if (isSelected) {
-                                        MaterialTheme.colorScheme.primary
-                                    } else {
-                                        MaterialTheme.colorScheme.onSurfaceVariant
-                                    }
-                                )
-                                Spacer(Modifier.width(10.dp))
-                                Text(
-                                    text = category.displayName,
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
-                                    maxLines = 2,
-                                    overflow = TextOverflow.Ellipsis,
-                                    modifier = Modifier.weight(1f)
-                                )
-                            }
+                if (filteredMethods.isEmpty()) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 32.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            "Ничего не найдено",
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                } else {
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
+                        verticalArrangement = Arrangement.spacedBy(4.dp),
+                        contentPadding = PaddingValues(bottom = 16.dp)
+                    ) {
+                        items(filteredMethods) { method ->
+                            val isSelected = state.cookingMethod == method
+                            SelectionTile(
+                                text = method.displayName,
+                                icon = if (isSelected) Icons.Default.Check else Icons.Default.Kitchen,
+                                isSelected = isSelected,
+                                useTransparentUnselected = true,
+                                minHeight = 56.dp,
+                                onClick = {
+                                    viewModel.onCookingMethodChange(method)
+                                    onClose()
+                                }
+                            )
                         }
                     }
                 }
-                Spacer(modifier = Modifier.height(16.dp))
             }
         }
+    }
+
+    // Диалог выбора времени приготовления
+    if (showDurationPickerDialog) {
+        DurationPickerDialog(
+            initialHours = state.cookingHours,
+            initialMinutes = state.cookingMinutes,
+            onDismissRequest = { showDurationPickerDialog = false },
+            onConfirm = { hours, minutes ->
+                // Вызываем метод вашего ViewModel для сохранения времени
+                viewModel.onCookingTimeChange(hours, minutes)
+                showDurationPickerDialog = false
+            }
+        )
     }
 
     state.errorMessage?.let { message ->
@@ -616,53 +560,6 @@ private fun IngredientRow(
         )
         IconButton(onClick = onRemove) {
             Icon(Icons.Filled.Close, contentDescription = "Удалить ингредиент")
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun CompactNumberPicker(
-    value: Int,
-    onValueChange: (Int) -> Unit,
-    range: IntRange,
-    label: String,
-    modifier: Modifier = Modifier
-) {
-    var expanded by remember { mutableStateOf(false) }
-
-    ExposedDropdownMenuBox(
-        expanded = expanded,
-        onExpandedChange = { expanded = it },
-        modifier = modifier
-    ) {
-        OutlinedTextField(
-            readOnly = true,
-            value = value.toString(),
-            onValueChange = {},
-            label = { Text(label) },
-            textStyle = MaterialTheme.typography.bodyMedium,
-            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
-            modifier = Modifier
-                .fillMaxWidth()
-                .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable, enabled = true),
-            shape = RoundedCornerShape(AppCornerRadius)
-        )
-        ExposedDropdownMenu(
-            expanded = expanded,
-            onDismissRequest = { expanded = false },
-            modifier = Modifier.heightIn(max = 240.dp),
-            shape = RoundedCornerShape(AppCornerRadius)
-        ) {
-            range.forEach { number ->
-                DropdownMenuItem(
-                    text = { Text(number.toString()) },
-                    onClick = {
-                        onValueChange(number)
-                        expanded = false
-                    }
-                )
-            }
         }
     }
 }

@@ -1,4 +1,4 @@
-package com.shvarsman.menuplanner.presentation.screens.recipe
+package com.shvarsman.menuplanner.presentation.screens.recipeeditor
 
 import android.net.Uri
 import androidx.lifecycle.ViewModel
@@ -24,6 +24,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -73,11 +74,14 @@ class RecipeEditorViewModel @Inject constructor(
     fun load(recipeId: Long) {
         if (loadedForRecipeId == recipeId) return
 
+        loadedForRecipeId = recipeId
         viewModelScope.launch {
-            loadedForRecipeId = recipeId
             if (recipeId == 0L) {
                 _state.value = RecipeEditorState(isLoading = false)
-            } else {
+                return@launch
+            }
+
+            try {
                 val recipe = recipeRepository.getRecipe(recipeId)
                 _state.value = if (recipe != null) {
                     val steps = recipe.steps.let { list ->
@@ -101,24 +105,30 @@ class RecipeEditorViewModel @Inject constructor(
                 } else {
                     RecipeEditorState(isLoading = false)
                 }
+            } catch (e: Exception) {
+                loadedForRecipeId = null
+                _state.value = _state.value.copy(
+                    isLoading = false,
+                    errorMessage = "Не удалось загрузить рецепт: ${e.localizedMessage}"
+                )
             }
         }
     }
 
     fun onTitleChange(value: String) {
-        _state.value = _state.value.copy(title = value)
+        _state.update { it.copy(title = value) }
     }
 
     fun onCategoryChange(category: RecipeCategory) {
-        _state.value = _state.value.copy(category = category)
+        _state.update { it.copy(category = category) }
     }
 
     fun onCookingMethodChange(method: CookingMethod?) {
-        _state.value = _state.value.copy(cookingMethod = method)
+        _state.update { it.copy(cookingMethod = method) }
     }
 
     fun onCookingTimeChange(hours: Int, minutes: Int) {
-        _state.value = _state.value.copy(cookingHours = hours, cookingMinutes = minutes)
+        _state.update { it.copy(cookingHours = hours, cookingMinutes = minutes) }
     }
 
     fun onCoverPhotoSelected(uri: Uri) {
@@ -126,7 +136,7 @@ class RecipeEditorViewModel @Inject constructor(
             val persistedUri = withContext(Dispatchers.IO) {
                 imageFileManager.persistImage(uri)
             }
-            _state.value = _state.value.copy(photoUri = persistedUri)
+            _state.update { it.copy(photoUri = persistedUri) }
         }
     }
 
@@ -142,26 +152,30 @@ class RecipeEditorViewModel @Inject constructor(
         findOrCreateProduct(name, category, unit)
 
     fun addIngredient(product: Product, unit: MeasureUnit, quantity: Double) {
-        _state.value = _state.value.copy(
-            ingredients = _state.value.ingredients + RecipeIngredient(
-                product = product,
-                unit = unit,
-                quantity = quantity
+        _state.update { current ->
+            current.copy(
+                ingredients = current.ingredients + RecipeIngredient(
+                    product = product,
+                    unit = unit,
+                    quantity = quantity
+                )
             )
-        )
+        }
         closeIngredientPicker()
     }
 
     fun removeIngredient(ingredient: RecipeIngredient) {
-        _state.value = _state.value.copy(ingredients = _state.value.ingredients - ingredient)
+        _state.update { it.copy(ingredients = it.ingredients - ingredient) }
     }
 
     fun onStepTextChange(index: Int, text: String) {
-        _state.value = _state.value.copy(
-            steps = _state.value.steps.mapIndexed { i, item ->
-                if (i == index && item is StepContentItem.Text) item.copy(content = text) else item
-            }
-        )
+        _state.update { current ->
+            current.copy(
+                steps = current.steps.mapIndexed { i, item ->
+                    if (i == index && item is StepContentItem.Text) item.copy(content = text) else item
+                }
+            )
+        }
     }
 
     fun onStepNext(currentIndex: Int) {
@@ -185,9 +199,13 @@ class RecipeEditorViewModel @Inject constructor(
         if (lastIsEmptyText) {
             _focusRequestIndex.value = current.lastIndex
         } else {
-            val newSteps = current + StepContentItem.Text("")
-            _state.value = _state.value.copy(steps = newSteps)
-            _focusRequestIndex.value = newSteps.lastIndex
+            var newLastIndex = -1
+            _state.update { state ->
+                val newSteps = state.steps + StepContentItem.Text("")
+                newLastIndex = newSteps.lastIndex
+                state.copy(steps = newSteps)
+            }
+            _focusRequestIndex.value = newLastIndex
         }
     }
 
@@ -197,16 +215,20 @@ class RecipeEditorViewModel @Inject constructor(
                 imageFileManager.persistImage(uri)
             }
 
-            val current = _state.value.steps.toMutableList()
-            if (current.lastOrNull().let {
-                    it is StepContentItem.Text && it.content.isBlank()
-                }) {
-                current.removeAt(current.lastIndex)
+            var newLastIndex = -1
+            _state.update { state ->
+                val current = state.steps.toMutableList()
+                if (current.lastOrNull().let {
+                        it is StepContentItem.Text && it.content.isBlank()
+                    }) {
+                    current.removeAt(current.lastIndex)
+                }
+                current.add(StepContentItem.Image(persistedUri))
+                current.add(StepContentItem.Text(""))
+                newLastIndex = current.lastIndex
+                state.copy(steps = current)
             }
-            current.add(StepContentItem.Image(persistedUri))
-            current.add(StepContentItem.Text(""))
-            _state.value = _state.value.copy(steps = current)
-            _focusRequestIndex.value = current.lastIndex
+            _focusRequestIndex.value = newLastIndex
         }
     }
 
@@ -217,15 +239,17 @@ class RecipeEditorViewModel @Inject constructor(
                 imageFileManager.deleteImage(itemToRemove.url)
             }
         }
-        _state.value = _state.value.copy(
-            steps = _state.value.steps.toMutableList()
-                .apply { removeAt(index) }
-                .let { list ->
-                    if (list.lastOrNull() !is StepContentItem.Text) {
-                        list + StepContentItem.Text("")
-                    } else list
-                }
-        )
+        _state.update { current ->
+            current.copy(
+                steps = current.steps.toMutableList()
+                    .apply { removeAt(index) }
+                    .let { list ->
+                        if (list.lastOrNull() !is StepContentItem.Text) {
+                            list + StepContentItem.Text("")
+                        } else list
+                    }
+            )
+        }
     }
 
     fun clearFocusRequest() {
@@ -257,17 +281,18 @@ class RecipeEditorViewModel @Inject constructor(
                         steps = stepsToSave
                     )
                 )
-                _state.value = current.copy(isSaved = true)
+                _state.update { it.copy(isSaved = true) }
             } catch (e: IllegalArgumentException) {
-                _state.value = current.copy(errorMessage = e.message)
+                _state.update { it.copy(errorMessage = e.message) }
             } catch (e: Exception) {
-                _state.value =
-                    current.copy(errorMessage = "Не удалось сохранить рецепт: ${e.localizedMessage}")
+                _state.update {
+                    it.copy(errorMessage = "Не удалось сохранить рецепт: ${e.localizedMessage}")
+                }
             }
         }
     }
 
     fun clearError() {
-        _state.value = _state.value.copy(errorMessage = null)
+        _state.update { it.copy(errorMessage = null) }
     }
 }

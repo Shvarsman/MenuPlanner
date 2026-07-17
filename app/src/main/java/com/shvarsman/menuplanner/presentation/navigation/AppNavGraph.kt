@@ -40,7 +40,7 @@ import com.shvarsman.menuplanner.presentation.screens.cooking.CookingScreen
 import com.shvarsman.menuplanner.presentation.screens.fridge.FridgeScreen
 import com.shvarsman.menuplanner.presentation.screens.menu.MenuScreen
 import com.shvarsman.menuplanner.presentation.screens.recipe.RecipeCategoryScreen
-import com.shvarsman.menuplanner.presentation.screens.recipe.RecipeEditorScreen
+import com.shvarsman.menuplanner.presentation.screens.recipeeditor.RecipeEditorScreen
 import com.shvarsman.menuplanner.presentation.screens.recipe.RecipeListScreen
 import com.shvarsman.menuplanner.presentation.screens.recipe.RecipeViewScreen
 import com.shvarsman.menuplanner.presentation.screens.shoppinglist.ShoppingListScreen
