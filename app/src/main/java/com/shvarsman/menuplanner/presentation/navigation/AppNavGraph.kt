@@ -196,13 +196,14 @@ private fun MainTabsScreen(rootNavController: NavHostController) {
         ) {
             composable(Destination.Menu.route) {
                 MenuScreen(
-                    onNavigateToRecipes = { childNavController.navigate(Destination.Recipes.route) },
+                    onCreateRecipe = {
+                        rootNavController.navigate(
+                            Destination.RecipeEditor.createRoute(Destination.RecipeEditor.NEW_RECIPE_ID)
+                        )
+                    },
                     onNavigateToCooking = { recipeId, menuEntryId ->
                         rootNavController.navigate(
-                            Destination.Cooking.createRoute(
-                                recipeId,
-                                menuEntryId
-                            )
+                            Destination.Cooking.createRoute(recipeId, menuEntryId)
                         )
                     },
                     onViewRecipe = { recipeId ->

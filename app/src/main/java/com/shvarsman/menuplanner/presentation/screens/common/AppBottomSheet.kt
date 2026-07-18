@@ -44,7 +44,7 @@ fun AppBottomSheet(
     content: @Composable ColumnScope.(onClose: () -> Unit) -> Unit
 ) {
     val sheetState = rememberModalBottomSheetState(
-        skipPartiallyExpanded = !fillMaxHeight
+        skipPartiallyExpanded = true
     )
     val scope = rememberCoroutineScope()
 
