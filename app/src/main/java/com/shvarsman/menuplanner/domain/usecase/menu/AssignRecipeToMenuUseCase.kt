@@ -7,6 +7,7 @@ import com.shvarsman.menuplanner.domain.model.ReservedKey
 import com.shvarsman.menuplanner.domain.model.UnitConversion
 import com.shvarsman.menuplanner.domain.repository.FridgeRepository
 import com.shvarsman.menuplanner.domain.repository.MenuRepository
+import com.shvarsman.menuplanner.domain.repository.TransactionRunner
 import com.shvarsman.menuplanner.domain.usecase.shoppinglist.AddToShoppingListUseCase
 import kotlinx.coroutines.flow.first
 import java.time.DayOfWeek
@@ -16,38 +17,38 @@ class AssignRecipeToMenuUseCase @Inject constructor(
     private val menuRepository: MenuRepository,
     private val fridgeRepository: FridgeRepository,
     private val addToShoppingList: AddToShoppingListUseCase,
-    private val getReservedQuantities: GetReservedQuantitiesUseCase
+    private val getReservedQuantities: GetReservedQuantitiesUseCase,
+    private val transactionRunner: TransactionRunner
 ) {
-    suspend operator fun invoke(day: DayOfWeek, mealType: MealType, recipe: Recipe): Long {
-        val reserved = getReservedQuantities()
-        val fridgeSnapshot = fridgeRepository.observeItems().first()
+    suspend operator fun invoke(day: DayOfWeek, mealType: MealType, recipe: Recipe): Long =
+        transactionRunner.runInTransaction {
+            val reserved = getReservedQuantities()
+            val fridgeSnapshot = fridgeRepository.observeItems().first()
 
-        val entryId = menuRepository.addEntry(
-            MenuEntry(dayOfWeek = day, mealType = mealType, recipeId = recipe.id)
-        )
+            val entryId = menuRepository.addEntry(
+                MenuEntry(dayOfWeek = day, mealType = mealType, recipeId = recipe.id)
+            )
 
-        recipe.ingredients.forEach { ingredient ->
-            if (ingredient.product.isToTaste) return@forEach // специи/соль и т.п. никогда не докупаются автоматически
+            recipe.ingredients.forEach { ingredient ->
+                if (ingredient.product.isToTaste) return@forEach // специи/соль и т.п. никогда не докупаются автоматически
 
-            // Суммируем ВСЕ записи холодильника этого продукта, а не первую попавшуюся —
-            // продукт может быть учтён несколькими записями с разными, но совместимыми единицами.
-            val fridgeQty = fridgeSnapshot
-                .filter { it.product.id == ingredient.product.id }
-                .sumOf { UnitConversion.convert(it.quantity, it.unit, ingredient.unit) ?: 0.0 }
+                val fridgeQty = fridgeSnapshot
+                    .filter { it.product.id == ingredient.product.id }
+                    .sumOf { UnitConversion.convert(it.quantity, it.unit, ingredient.unit) ?: 0.0 }
 
-            val canonical = UnitConversion.canonicalUnit(ingredient.unit)
-            val reservedAmount = reserved[ReservedKey(ingredient.product.id, canonical)]
-            val reservedQty = reservedAmount
-                ?.let { UnitConversion.convert(it.amount, it.unit, ingredient.unit) } ?: 0.0
+                val canonical = UnitConversion.canonicalUnit(ingredient.unit)
+                val reservedAmount = reserved[ReservedKey(ingredient.product.id, canonical)]
+                val reservedQty = reservedAmount
+                    ?.let { UnitConversion.convert(it.amount, it.unit, ingredient.unit) } ?: 0.0
 
-            val trulyAvailable = (fridgeQty - reservedQty).coerceAtLeast(0.0)
+                val trulyAvailable = (fridgeQty - reservedQty).coerceAtLeast(0.0)
 
-            if (trulyAvailable < ingredient.quantity) {
-                val shortage = ingredient.quantity - trulyAvailable
-                addToShoppingList(ingredient.product, ingredient.unit, shortage)
+                if (trulyAvailable < ingredient.quantity) {
+                    val shortage = ingredient.quantity - trulyAvailable
+                    addToShoppingList(ingredient.product, ingredient.unit, shortage)
+                }
             }
-        }
 
-        return entryId
-    }
+            entryId
+        }
 }

@@ -47,11 +47,8 @@ interface RecipeDao {
             recipes.title,
             recipes.category,
             recipes.photoUri,
-            (SELECT COUNT(*) FROM recipe_ingredients WHERE recipeId = recipes.id) AS ingredientCount,
-            CASE
-                WHEN recipes.steps IS NULL OR recipes.steps = '' THEN 0
-                ELSE LENGTH(recipes.steps) - LENGTH(REPLACE(recipes.steps, '␟', '')) + 1
-            END AS stepCount
+            recipes.stepCount,
+            (SELECT COUNT(*) FROM recipe_ingredients WHERE recipeId = recipes.id) AS ingredientCount
         FROM recipes
         ORDER BY recipes.title ASC
         """
@@ -81,12 +78,6 @@ interface RecipeDao {
     @Query("DELETE FROM recipe_ingredients WHERE recipeId = :recipeId")
     suspend fun deleteIngredientsForRecipe(recipeId: Long)
 
-    /**
-     * Атомарно создаёт/обновляет рецепт вместе с ингредиентами.
-     * Без этого insertRecipe/deleteIngredientsForRecipe/insertIngredients — три
-     * отдельных запроса, и убийство процесса между ними могло оставить рецепт
-     * без единого ингредиента.
-     */
     @Transaction
     suspend fun upsertRecipeWithIngredients(
         recipe: RecipeEntity,

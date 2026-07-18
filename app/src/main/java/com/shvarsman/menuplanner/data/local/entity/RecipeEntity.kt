@@ -14,5 +14,6 @@ data class RecipeEntity(
     val photoUri: String?,
     val cookingMethod: CookingMethod?,
     val cookingTimeMinutes: Int?,
-    val steps: List<StepContentItem>
+    val steps: List<StepContentItem>,
+    val stepCount: Int
 )

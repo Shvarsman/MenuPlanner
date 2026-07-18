@@ -5,6 +5,7 @@ import com.shvarsman.menuplanner.data.repository.FridgeRepositoryImpl
 import com.shvarsman.menuplanner.data.repository.MenuRepositoryImpl
 import com.shvarsman.menuplanner.data.repository.ProductRepositoryImpl
 import com.shvarsman.menuplanner.data.repository.RecipeRepositoryImpl
+import com.shvarsman.menuplanner.data.repository.RoomTransactionRunner
 import com.shvarsman.menuplanner.data.repository.ShoppingListRepositoryImpl
 import com.shvarsman.menuplanner.domain.repository.BackupRepository
 import com.shvarsman.menuplanner.domain.repository.FridgeRepository
@@ -12,6 +13,7 @@ import com.shvarsman.menuplanner.domain.repository.MenuRepository
 import com.shvarsman.menuplanner.domain.repository.ProductRepository
 import com.shvarsman.menuplanner.domain.repository.RecipeRepository
 import com.shvarsman.menuplanner.domain.repository.ShoppingListRepository
+import com.shvarsman.menuplanner.domain.repository.TransactionRunner
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -45,4 +47,8 @@ abstract class RepositoryModule {
     @Binds
     @Singleton
     abstract fun bindBackupRepository(impl: BackupRepositoryImpl): BackupRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindTransactionRunner(impl: RoomTransactionRunner): TransactionRunner
 }

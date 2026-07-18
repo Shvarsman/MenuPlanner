@@ -10,6 +10,7 @@ import com.shvarsman.menuplanner.domain.model.Product
 import com.shvarsman.menuplanner.domain.model.Recipe
 import com.shvarsman.menuplanner.domain.model.RecipeIngredient
 import com.shvarsman.menuplanner.domain.model.RecipeSummary
+import com.shvarsman.menuplanner.domain.model.StepContentItem
 import com.shvarsman.menuplanner.domain.repository.RecipeRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -89,9 +90,9 @@ private fun Recipe.toEntity() = RecipeEntity(
     photoUri = photoUri,
     cookingMethod = cookingMethod,
     cookingTimeMinutes = cookingTimeMinutes,
-    steps = steps
+    steps = steps,
+    stepCount = steps.count { it is StepContentItem.Text && it.content.isNotBlank() }
 )
-
 private fun RecipeIngredient.toEntity(recipeId: Long) = RecipeIngredientEntity(
     id = id,
     recipeId = recipeId,
