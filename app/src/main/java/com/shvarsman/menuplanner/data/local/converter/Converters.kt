@@ -3,8 +3,8 @@ package com.shvarsman.menuplanner.data.local.converter
 import androidx.room.TypeConverter
 import com.shvarsman.menuplanner.domain.model.Category
 import com.shvarsman.menuplanner.domain.model.CookingMethod
-import com.shvarsman.menuplanner.domain.model.MeasureUnit
 import com.shvarsman.menuplanner.domain.model.MealType
+import com.shvarsman.menuplanner.domain.model.MeasureUnit
 import com.shvarsman.menuplanner.domain.model.RecipeCategory
 import com.shvarsman.menuplanner.domain.model.StepContentItem
 import java.time.DayOfWeek
@@ -45,13 +45,13 @@ class Converters {
     @TypeConverter
     fun toDayOfWeek(value: String): DayOfWeek = DayOfWeek.valueOf(value)
 
-    // StepContentItem: элементы разделены \u241F, тип закодирован первым символом T/I
     @TypeConverter
     fun fromStepContentList(steps: List<StepContentItem>): String =
         steps.joinToString("\u241F") { item ->
             when (item) {
                 is StepContentItem.Text -> "T${item.content}"
                 is StepContentItem.Image -> "I${item.url}"
+                is StepContentItem.Timer -> "M${item.minutes}"
             }
         }
 
@@ -62,6 +62,7 @@ class Converters {
             when {
                 item.startsWith("T") -> StepContentItem.Text(item.drop(1))
                 item.startsWith("I") -> StepContentItem.Image(item.drop(1))
+                item.startsWith("M") -> StepContentItem.Timer(item.drop(1).toIntOrNull() ?: 5)
                 else -> StepContentItem.Text(item)
             }
         }

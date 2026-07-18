@@ -81,6 +81,7 @@ class BackupRepositoryImpl @Inject constructor(
                 when (step) {
                     is StepContentItem.Text -> BackupStepDto(type = "text", text = step.content)
                     is StepContentItem.Image -> BackupStepDto(type = "image", imageFileName = registerImage(step.url))
+                    is StepContentItem.Timer -> BackupStepDto(type = "timer", minutes = step.minutes)
                 }
             }
             return BackupRecipeDto(
@@ -240,6 +241,7 @@ class BackupRepositoryImpl @Inject constructor(
             val steps = recipeDto.steps.mapNotNull { stepDto ->
                 when (stepDto.type) {
                     "image" -> extractedImages[stepDto.imageFileName]?.let { StepContentItem.Image(url = it) }
+                    "timer" -> StepContentItem.Timer(minutes = stepDto.minutes ?: 5)
                     else -> StepContentItem.Text(content = stepDto.text ?: "")
                 }
             }

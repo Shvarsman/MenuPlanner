@@ -1,6 +1,7 @@
 package com.shvarsman.menuplanner.domain.usecase.menu
 
 import com.shvarsman.menuplanner.domain.model.ReservedAmount
+import com.shvarsman.menuplanner.domain.model.ReservedKey
 import com.shvarsman.menuplanner.domain.model.computeReservedAmounts
 import com.shvarsman.menuplanner.domain.repository.MenuRepository
 import com.shvarsman.menuplanner.domain.repository.RecipeRepository
@@ -11,7 +12,7 @@ class GetReservedQuantitiesUseCase @Inject constructor(
     private val menuRepository: MenuRepository,
     private val recipeRepository: RecipeRepository
 ) {
-    suspend operator fun invoke(excludeMenuEntryId: Long? = null): Map<Long, ReservedAmount> {
+    suspend operator fun invoke(excludeMenuEntryId: Long? = null): Map<ReservedKey, ReservedAmount> {
         val entries = menuRepository.observeWeekMenu().first()
         val recipes = recipeRepository.observeRecipes().first()
         return computeReservedAmounts(entries, recipes, excludeMenuEntryId)

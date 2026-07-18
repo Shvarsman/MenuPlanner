@@ -17,17 +17,35 @@ class CompleteCookingUseCase @Inject constructor(
         recipe.ingredients.forEach { ingredient ->
             if (ingredient.product.isToTaste) return@forEach // специи и т.п. не списываются поштучно
 
-            val fridgeItem = fridgeSnapshot.firstOrNull { it.product.id == ingredient.product.id }
-                ?: return@forEach
+            var remainingToConsume = ingredient.quantity
 
-            val neededInFridgeUnit = UnitConversion.convert(ingredient.quantity, ingredient.unit, fridgeItem.unit)
-                ?: return@forEach
+            // Все записи холодильника этого продукта, конвертируемые в единицу ингредиента,
+            // от меньшей к большей — сначала списываем то, что можно списать целиком
+            val candidates = fridgeSnapshot
+                .filter { it.product.id == ingredient.product.id }
+                .mapNotNull { fridgeItem ->
+                    UnitConversion.convert(fridgeItem.quantity, fridgeItem.unit, ingredient.unit)
+                        ?.let { fridgeItem to it }
+                }
+                .sortedBy { it.second }
 
-            if (fridgeItem.quantity <= neededInFridgeUnit) {
-                fridgeRepository.deleteItem(fridgeItem.id)
-            } else {
-                fridgeRepository.decreaseQuantity(fridgeItem.id, neededInFridgeUnit)
+            for ((fridgeItem, availableInIngredientUnit) in candidates) {
+                if (remainingToConsume <= 0.0) break
+
+                if (availableInIngredientUnit <= remainingToConsume) {
+                    fridgeRepository.deleteItem(fridgeItem.id)
+                    remainingToConsume -= availableInIngredientUnit
+                } else {
+                    val neededInFridgeUnit =
+                        UnitConversion.convert(remainingToConsume, ingredient.unit, fridgeItem.unit)
+                            ?: continue
+                    fridgeRepository.decreaseQuantity(fridgeItem.id, neededInFridgeUnit)
+                    remainingToConsume = 0.0
+                }
             }
+            // Если remainingToConsume > 0 после цикла — значит, ни одна запись холодильника
+            // не сконвертировалась в единицу ингредиента (несовместимые единицы). Как и раньше,
+            // такие продукты просто не списываются — это осознанное ограничение, а не баг.
         }
 
         menuRepository.removeEntry(menuEntryId)

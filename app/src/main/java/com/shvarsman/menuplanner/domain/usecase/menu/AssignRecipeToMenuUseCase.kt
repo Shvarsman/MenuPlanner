@@ -3,6 +3,7 @@ package com.shvarsman.menuplanner.domain.usecase.menu
 import com.shvarsman.menuplanner.domain.model.MealType
 import com.shvarsman.menuplanner.domain.model.MenuEntry
 import com.shvarsman.menuplanner.domain.model.Recipe
+import com.shvarsman.menuplanner.domain.model.ReservedKey
 import com.shvarsman.menuplanner.domain.model.UnitConversion
 import com.shvarsman.menuplanner.domain.repository.FridgeRepository
 import com.shvarsman.menuplanner.domain.repository.MenuRepository
@@ -28,11 +29,14 @@ class AssignRecipeToMenuUseCase @Inject constructor(
         recipe.ingredients.forEach { ingredient ->
             if (ingredient.product.isToTaste) return@forEach // специи/соль и т.п. никогда не докупаются автоматически
 
-            val fridgeItem = fridgeSnapshot.firstOrNull { it.product.id == ingredient.product.id }
-            val fridgeQty = fridgeItem
-                ?.let { UnitConversion.convert(it.quantity, it.unit, ingredient.unit) } ?: 0.0
+            // Суммируем ВСЕ записи холодильника этого продукта, а не первую попавшуюся —
+            // продукт может быть учтён несколькими записями с разными, но совместимыми единицами.
+            val fridgeQty = fridgeSnapshot
+                .filter { it.product.id == ingredient.product.id }
+                .sumOf { UnitConversion.convert(it.quantity, it.unit, ingredient.unit) ?: 0.0 }
 
-            val reservedAmount = reserved[ingredient.product.id]
+            val canonical = UnitConversion.canonicalUnit(ingredient.unit)
+            val reservedAmount = reserved[ReservedKey(ingredient.product.id, canonical)]
             val reservedQty = reservedAmount
                 ?.let { UnitConversion.convert(it.amount, it.unit, ingredient.unit) } ?: 0.0
 

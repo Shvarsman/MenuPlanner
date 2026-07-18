@@ -8,6 +8,7 @@ import com.shvarsman.menuplanner.domain.model.MealType
 import com.shvarsman.menuplanner.domain.model.MenuEntry
 import com.shvarsman.menuplanner.domain.model.Recipe
 import com.shvarsman.menuplanner.domain.model.ReservedAmount
+import com.shvarsman.menuplanner.domain.model.ReservedKey
 import com.shvarsman.menuplanner.domain.model.availability
 import com.shvarsman.menuplanner.domain.model.computeReservedAmounts
 import com.shvarsman.menuplanner.domain.usecase.fridge.GetFridgeItemsUseCase
@@ -32,7 +33,7 @@ data class MenuUiState(
     val weekMenu: List<MenuEntry> = emptyList(),
     val recipes: List<Recipe> = emptyList(),
     val fridgeItems: List<FridgeItem> = emptyList(),
-    val reservedQuantities: Map<Long, ReservedAmount> = emptyMap(),
+    val reservedQuantities: Map<ReservedKey, ReservedAmount> = emptyMap(),
     val pickerTarget: Pair<DayOfWeek, MealType>? = null,
     val insufficientDialogEntry: MenuEntry? = null,
     val navigateToCooking: Pair<Long, Long>? = null,
@@ -157,6 +158,6 @@ class MenuViewModel @Inject constructor(
         val weekMenu: List<MenuEntry>,
         val recipes: List<Recipe>,
         val fridgeItems: List<FridgeItem>,
-        val reservedQuantities: Map<Long, ReservedAmount>
+        val reservedQuantities: Map<ReservedKey, ReservedAmount>
     )
 }

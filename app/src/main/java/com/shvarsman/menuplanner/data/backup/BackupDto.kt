@@ -38,7 +38,8 @@ data class BackupIngredientDto(
 data class BackupStepDto(
     val type: String,
     val text: String? = null,
-    val imageFileName: String? = null
+    val imageFileName: String? = null,
+    val minutes: Int? = null
 )
 
 @Serializable

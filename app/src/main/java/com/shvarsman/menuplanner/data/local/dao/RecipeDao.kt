@@ -80,4 +80,21 @@ interface RecipeDao {
 
     @Query("DELETE FROM recipe_ingredients WHERE recipeId = :recipeId")
     suspend fun deleteIngredientsForRecipe(recipeId: Long)
+
+    /**
+     * Атомарно создаёт/обновляет рецепт вместе с ингредиентами.
+     * Без этого insertRecipe/deleteIngredientsForRecipe/insertIngredients — три
+     * отдельных запроса, и убийство процесса между ними могло оставить рецепт
+     * без единого ингредиента.
+     */
+    @Transaction
+    suspend fun upsertRecipeWithIngredients(
+        recipe: RecipeEntity,
+        ingredients: List<RecipeIngredientEntity>
+    ): Long {
+        val recipeId = insertRecipe(recipe)
+        deleteIngredientsForRecipe(recipeId)
+        insertIngredients(ingredients.map { it.copy(recipeId = recipeId) })
+        return recipeId
+    }
 }

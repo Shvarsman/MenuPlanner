@@ -13,14 +13,15 @@ class AddToShoppingListUseCase @Inject constructor(
 ) {
     suspend operator fun invoke(product: Product, unit: MeasureUnit, quantity: Double) {
         val currentItems = repository.observeItems().first()
-        val existing = currentItems.firstOrNull { it.product.id == product.id && !it.isChecked }
+        val existing = currentItems.firstOrNull {
+            it.product.id == product.id && !it.isChecked &&
+                    UnitConversion.convert(quantity, unit, it.unit) != null
+        }
 
         if (existing != null) {
-            val convertedQuantity = UnitConversion.convert(quantity, unit, existing.unit)
-            if (convertedQuantity != null) {
-                repository.updateItem(existing.copy(quantity = existing.quantity + convertedQuantity))
-                return
-            }
+            val convertedQuantity = UnitConversion.convert(quantity, unit, existing.unit)!!
+            repository.updateItem(existing.copy(quantity = existing.quantity + convertedQuantity))
+            return
         }
         repository.addItem(ShoppingListItem(product = product, unit = unit, quantity = quantity))
     }

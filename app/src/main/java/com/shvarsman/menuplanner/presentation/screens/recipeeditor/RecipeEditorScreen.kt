@@ -9,10 +9,10 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -31,25 +31,33 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Kitchen
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.PlainTooltip
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.TooltipAnchorPosition
+import androidx.compose.material3.TooltipBox
+import androidx.compose.material3.TooltipDefaults
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -58,6 +66,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -70,6 +79,7 @@ import com.shvarsman.menuplanner.domain.model.FridgeItem
 import com.shvarsman.menuplanner.domain.model.IngredientAvailability
 import com.shvarsman.menuplanner.domain.model.RecipeCategory
 import com.shvarsman.menuplanner.domain.model.RecipeIngredient
+import com.shvarsman.menuplanner.domain.model.StepContentItem
 import com.shvarsman.menuplanner.domain.model.availability
 import com.shvarsman.menuplanner.presentation.screens.common.AppBottomSheet
 import com.shvarsman.menuplanner.presentation.screens.common.DurationPickerDialog
@@ -78,8 +88,8 @@ import com.shvarsman.menuplanner.presentation.screens.common.ProductPickerDialog
 import com.shvarsman.menuplanner.presentation.screens.common.SelectionTile
 import com.shvarsman.menuplanner.presentation.screens.common.SelectorField
 import com.shvarsman.menuplanner.presentation.screens.common.StepContent
+import com.shvarsman.menuplanner.presentation.screens.common.TimerMinutesPickerDialog
 import com.shvarsman.menuplanner.presentation.screens.common.buildRenderedSteps
-import com.shvarsman.menuplanner.presentation.screens.common.formatCookingTime
 import com.shvarsman.menuplanner.presentation.screens.common.rememberSizedImageRequest
 import com.shvarsman.menuplanner.presentation.ui.icons.icon
 import com.shvarsman.menuplanner.presentation.ui.theme.AppCornerRadius
@@ -105,6 +115,9 @@ fun RecipeEditorScreen(
     var showExitConfirmation by remember { mutableStateOf(false) }
 
     var showDurationPickerDialog by remember { mutableStateOf(false) }
+    var showTimerPickerDialog by remember { mutableStateOf(false) }
+    var editingTimerIndex by remember { mutableStateOf<Int?>(null) }
+    var editingTimerMinutes by remember { mutableStateOf(5) }
 
     val coverPhotoPicker = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
@@ -118,26 +131,15 @@ fun RecipeEditorScreen(
         if (state.isSaved) onDone()
     }
 
-    BackHandler { showExitConfirmation = true }
+    BackHandler {
+        if (state.isDirty) showExitConfirmation = true else onDone()
+    }
 
     val listState = rememberLazyListState()
 
-    val stepsHeaderIndex = remember(state.ingredients.size) {
-        5 + state.ingredients.size
-    }
-
     val renderedSteps = remember(state.steps) { buildRenderedSteps(state.steps) }
 
-    val showPinnedStepsHeader by remember {
-        derivedStateOf {
-            val firstVisible = listState.firstVisibleItemIndex
-            firstVisible > stepsHeaderIndex ||
-                    (firstVisible == stepsHeaderIndex && listState.firstVisibleItemScrollOffset > 0)
-        }
-    }
-
     Scaffold(
-        contentWindowInsets = WindowInsets(0.dp),
         topBar = {
             TopAppBar(
                 title = {
@@ -148,15 +150,38 @@ fun RecipeEditorScreen(
                     )
                 },
                 navigationIcon = {
-                    IconButton(onClick = { showExitConfirmation = true }) {
+                    IconButton(onClick = {
+                        if (state.isDirty) showExitConfirmation = true else onDone()
+                    }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад")
                     }
                 },
                 actions = {
-                    TextButton(onClick = { viewModel.save() }) {
-                        Text("Сохранить")
+                    TextButton(
+                        onClick = { viewModel.save() },
+                        enabled = !state.isSaving
+                    ) {
+                        if (state.isSaving) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(18.dp),
+                                strokeWidth = 2.dp
+                            )
+                        } else {
+                            Text("Сохранить")
+                        }
                     }
                 }
+            )
+        },
+        bottomBar = {
+            StepsBottomAppBar(
+                onAddPhoto = { stepPhotoPicker.launch("image/*") },
+                onAddTimer = {
+                    editingTimerIndex = null
+                    editingTimerMinutes = 5
+                    showTimerPickerDialog = true
+                },
+                onAddStep = { viewModel.addTextStep() }
             )
         }
     ) { padding ->
@@ -180,7 +205,6 @@ fun RecipeEditorScreen(
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(top = 8.dp, bottom = 16.dp)
             ) {
-                // ── Фото обложки ──────────────────────────────────────────
                 item {
                     CoverPhotoPicker(
                         modifier = Modifier.padding(horizontal = 16.dp),
@@ -190,7 +214,6 @@ fun RecipeEditorScreen(
                     Spacer(Modifier.height(12.dp))
                 }
 
-                // ── Название ──────────────────────────────────────────────
                 item {
                     TextField(
                         value = state.title,
@@ -271,12 +294,8 @@ fun RecipeEditorScreen(
                     )
                 }
 
-                // ── Оригинальный заголовок "Шаги приготовления" ──────────
                 item {
-                    StepsHeaderBar(
-                        onAddPhoto = { stepPhotoPicker.launch("image/*") },
-                        onAddStep = { viewModel.addTextStep() }
-                    )
+                    StepsSectionTitle()
                 }
 
                 StepContent(
@@ -285,15 +304,14 @@ fun RecipeEditorScreen(
                     onDeleteImageClick = { index -> viewModel.deleteStepItem(index) },
                     onTextChange = { index, text -> viewModel.onStepTextChange(index, text) },
                     onNext = { index -> viewModel.onStepNext(index) },
-                    onFocusConsumed = { viewModel.clearFocusRequest() }
-                )
-            }
-
-            if (showPinnedStepsHeader) {
-                StepsHeaderBar(
-                    onAddPhoto = { stepPhotoPicker.launch("image/*") },
-                    onAddStep = { viewModel.addTextStep() },
-                    modifier = Modifier.align(Alignment.TopCenter)
+                    onFocusConsumed = { viewModel.clearFocusRequest() },
+                    onTimerClick = { index ->
+                        val timer = state.steps.getOrNull(index) as? StepContentItem.Timer
+                        editingTimerIndex = index
+                        editingTimerMinutes = timer?.minutes ?: 5
+                        showTimerPickerDialog = true
+                    },
+                    onDeleteTimerClick = { index -> viewModel.deleteStepItem(index) }
                 )
             }
         }
@@ -340,7 +358,9 @@ fun RecipeEditorScreen(
                 columns = GridCells.Fixed(2),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(max = 420.dp)
             ) {
                 items(RecipeCategory.entries) { category ->
                     SelectionTile(
@@ -437,16 +457,30 @@ fun RecipeEditorScreen(
         }
     }
 
-    // Диалог выбора времени приготовления
     if (showDurationPickerDialog) {
         DurationPickerDialog(
             initialHours = state.cookingHours,
             initialMinutes = state.cookingMinutes,
             onDismissRequest = { showDurationPickerDialog = false },
             onConfirm = { hours, minutes ->
-                // Вызываем метод вашего ViewModel для сохранения времени
                 viewModel.onCookingTimeChange(hours, minutes)
                 showDurationPickerDialog = false
+            }
+        )
+    }
+
+    if (showTimerPickerDialog) {
+        TimerMinutesPickerDialog(
+            initialMinutes = editingTimerMinutes,
+            onDismissRequest = { showTimerPickerDialog = false },
+            onConfirm = { minutes ->
+                val index = editingTimerIndex
+                if (index != null) {
+                    viewModel.updateStepTimer(index, minutes)
+                } else {
+                    viewModel.addStepTimer(minutes)
+                }
+                showTimerPickerDialog = false
             }
         )
     }
@@ -462,37 +496,73 @@ fun RecipeEditorScreen(
 }
 
 @Composable
-private fun StepsHeaderBar(
+private fun StepsSectionTitle(modifier: Modifier = Modifier) {
+    Text(
+        text = "Шаги приготовления",
+        style = MaterialTheme.typography.titleMedium,
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp)
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun StepsBottomAppBar(
     onAddPhoto: () -> Unit,
-    onAddStep: () -> Unit,
-    modifier: Modifier = Modifier
+    onAddTimer: () -> Unit,
+    onAddStep: () -> Unit
 ) {
-    Surface(
-        color = MaterialTheme.colorScheme.background,
-        tonalElevation = 0.dp,
-        shadowElevation = 2.dp,
-        modifier = modifier.fillMaxWidth()
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 8.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text("Шаги приготовления", style = MaterialTheme.typography.titleMedium)
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                IconButton(onClick = onAddPhoto) {
-                    Icon(Icons.Filled.AddAPhoto, contentDescription = "Добавить фото к шагу")
-                }
-                IconButton(onClick = onAddStep) {
-                    Icon(
-                        Icons.Filled.Add,
-                        contentDescription = "Добавить шаг",
-                        tint = MaterialTheme.colorScheme.primary
-                    )
+    BottomAppBar(
+        actions = {
+            ToolbarTooltipIconButton(
+                icon = Icons.Filled.AddAPhoto,
+                label = "Добавить фото к шагу",
+                onClick = onAddPhoto
+            )
+            ToolbarTooltipIconButton(
+                icon = Icons.Filled.Timer,
+                label = "Добавить таймер к шагу",
+                onClick = onAddTimer
+            )
+        },
+        floatingActionButton = {
+            TooltipBox(
+                positionProvider = TooltipDefaults.rememberTooltipPositionProvider(
+                    TooltipAnchorPosition.Above
+                ),
+                tooltip = { PlainTooltip { Text("Добавить шаг") } },
+                state = rememberTooltipState()
+            ) {
+                FloatingActionButton(
+                    onClick = onAddStep,
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                    elevation = FloatingActionButtonDefaults.bottomAppBarFabElevation()
+                ) {
+                    Icon(Icons.Filled.Add, contentDescription = "Добавить шаг")
                 }
             }
+        }
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ToolbarTooltipIconButton(
+    icon: ImageVector,
+    label: String,
+    onClick: () -> Unit
+) {
+    TooltipBox(
+        positionProvider = TooltipDefaults.rememberTooltipPositionProvider(
+            TooltipAnchorPosition.Above
+        ),
+        tooltip = { PlainTooltip { Text(label) } },
+        state = rememberTooltipState()
+    ) {
+        IconButton(onClick = onClick) {
+            Icon(icon, contentDescription = label)
         }
     }
 }

@@ -71,6 +71,8 @@ import com.shvarsman.menuplanner.domain.model.MealType
 import com.shvarsman.menuplanner.domain.model.MenuEntry
 import com.shvarsman.menuplanner.domain.model.Recipe
 import com.shvarsman.menuplanner.domain.model.ReservedAmount
+import com.shvarsman.menuplanner.domain.model.ReservedKey
+import com.shvarsman.menuplanner.domain.model.UnitConversion
 import com.shvarsman.menuplanner.domain.model.availability
 import com.shvarsman.menuplanner.presentation.screens.common.rememberSizedImageRequest
 import com.shvarsman.menuplanner.presentation.ui.theme.AppCornerRadius
@@ -436,7 +438,7 @@ private fun RecipePickerDialog(
     filteredRecipes: List<Recipe>,
     allRecipesEmpty: Boolean,
     fridgeItems: List<FridgeItem>,
-    reservedQuantities: Map<Long, ReservedAmount>,
+    reservedQuantities: Map<ReservedKey, ReservedAmount>,
     searchQuery: String,
     onSearchQueryChange: (String) -> Unit,
     onDismiss: () -> Unit,
@@ -444,7 +446,10 @@ private fun RecipePickerDialog(
     onCreateNew: () -> Unit
 ) {
     var expandedRecipeId by remember { mutableStateOf<Long?>(null) }
-    val (localSearchQuery, onLocalSearchQueryChange) = rememberDebouncedSearch(searchQuery, onSearchQueryChange)
+    val (localSearchQuery, onLocalSearchQueryChange) = rememberDebouncedSearch(
+        searchQuery,
+        onSearchQueryChange
+    )
 
     Dialog(
         onDismissRequest = onDismiss,
@@ -554,7 +559,7 @@ private fun RecipePickerCard(
     onToggleExpand: () -> Unit,
     onSelect: () -> Unit,
     fridgeItems: List<FridgeItem>,
-    reservedQuantities: Map<Long, ReservedAmount>
+    reservedQuantities: Map<ReservedKey, ReservedAmount>,
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -637,7 +642,12 @@ private fun RecipePickerCard(
                 Column(modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 12.dp)) {
                     HorizontalDivider(modifier = Modifier.padding(bottom = 8.dp))
                     recipe.ingredients.forEach { ingredient ->
-                        val reserved = reservedQuantities[ingredient.product.id]
+                        val reserved = reservedQuantities[
+                            ReservedKey(
+                                productId = ingredient.product.id,
+                                canonicalUnit = UnitConversion.canonicalUnit(ingredient.unit)
+                            )
+                        ]
                         val status = ingredient.availability(fridgeItems, reserved)
                         val color = when (status) {
                             IngredientAvailability.AVAILABLE -> MaterialTheme.colorScheme.primary

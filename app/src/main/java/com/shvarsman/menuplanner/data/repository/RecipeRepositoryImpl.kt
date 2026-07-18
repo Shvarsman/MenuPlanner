@@ -33,16 +33,15 @@ class RecipeRepositoryImpl @Inject constructor(
 
     override suspend fun getRecipe(id: Long): Recipe? = dao.getByIdWithIngredients(id)?.toDomain()
 
-    override suspend fun addRecipe(recipe: Recipe): Long {
-        val recipeId = dao.insertRecipe(recipe.toEntity())
-        dao.insertIngredients(recipe.ingredients.map { it.toEntity(recipeId) })
-        return recipeId
-    }
+    override suspend fun addRecipe(recipe: Recipe): Long =
+        dao.upsertRecipeWithIngredients(
+            recipe.toEntity(),
+            recipe.ingredients.map { it.toEntity(0) })
 
     override suspend fun updateRecipe(recipe: Recipe) {
-        dao.updateRecipe(recipe.toEntity())
-        dao.deleteIngredientsForRecipe(recipe.id)
-        dao.insertIngredients(recipe.ingredients.map { it.toEntity(recipe.id) })
+        dao.upsertRecipeWithIngredients(
+            recipe.toEntity(),
+            recipe.ingredients.map { it.toEntity(recipe.id) })
     }
 
     override suspend fun deleteRecipe(id: Long) = dao.deleteRecipe(id)

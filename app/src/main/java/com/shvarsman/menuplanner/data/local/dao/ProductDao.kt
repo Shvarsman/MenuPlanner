@@ -23,4 +23,15 @@ interface ProductDao {
 
     @Query("DELETE FROM products WHERE id = :id")
     suspend fun deleteById(id: Long)
+
+    /** Сколько раз продукт используется в рецептах, холодильнике и списке покупок суммарно. */
+    @Query(
+        """
+        SELECT
+            (SELECT COUNT(*) FROM recipe_ingredients WHERE productId = :productId) +
+            (SELECT COUNT(*) FROM fridge_items WHERE productId = :productId) +
+            (SELECT COUNT(*) FROM shopping_list_items WHERE productId = :productId)
+        """
+    )
+    suspend fun countUsages(productId: Long): Int
 }

@@ -10,6 +10,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -21,6 +22,7 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -40,6 +42,11 @@ sealed interface RenderedStep {
         val startIndex: Int,
         val urls: List<String>
     ) : RenderedStep
+
+    data class TimerItem(
+        val originalIndex: Int,
+        val minutes: Int
+    ) : RenderedStep
 }
 
 fun buildRenderedSteps(steps: List<StepContentItem>): List<RenderedStep> {
@@ -53,6 +60,7 @@ fun buildRenderedSteps(steps: List<StepContentItem>): List<RenderedStep> {
                 result.add(RenderedStep.Text(i, stepNum, item))
                 i++
             }
+
             is StepContentItem.Image -> {
                 val imageUrls = mutableListOf<String>()
                 val startIndex = i
@@ -62,6 +70,11 @@ fun buildRenderedSteps(steps: List<StepContentItem>): List<RenderedStep> {
                 }
                 result.add(RenderedStep.ImageGroup(startIndex, imageUrls))
             }
+
+            is StepContentItem.Timer -> {
+                result.add(RenderedStep.TimerItem(i, item.minutes))
+                i++
+            }
         }
     }
     return result
@@ -69,12 +82,14 @@ fun buildRenderedSteps(steps: List<StepContentItem>): List<RenderedStep> {
 
 @OptIn(ExperimentalFoundationApi::class)
 fun LazyListScope.StepContent(
-    renderedSteps: List<RenderedStep>, // ИСПРАВЛЕНО: Принимаем уже готовый и кэшированный список
+    renderedSteps: List<RenderedStep>,
     focusRequestIndex: Int?,
     onDeleteImageClick: (index: Int) -> Unit,
     onTextChange: (index: Int, text: String) -> Unit,
     onNext: (currentIndex: Int) -> Unit,
-    onFocusConsumed: () -> Unit
+    onFocusConsumed: () -> Unit,
+    onTimerClick: (index: Int) -> Unit,
+    onDeleteTimerClick: (index: Int) -> Unit
 ) {
     renderedSteps.forEach { step ->
         when (step) {
@@ -104,6 +119,19 @@ fun LazyListScope.StepContent(
                     )
                 }
             }
+
+            is RenderedStep.TimerItem -> {
+                item(key = "timer_${step.originalIndex}") {
+                    StepTimerRow(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 4.dp),
+                        minutes = step.minutes,
+                        onClick = { onTimerClick(step.originalIndex) },
+                        onDelete = { onDeleteTimerClick(step.originalIndex) }
+                    )
+                }
+            }
         }
     }
 }
@@ -124,8 +152,8 @@ private fun StepTextBlock(
 
     LaunchedEffect(shouldRequestFocus) {
         if (shouldRequestFocus) {
-            bringIntoViewRequester.bringIntoView()
             focusRequester.requestFocus()
+            bringIntoViewRequester.bringIntoView()
             onFocusConsumed()
         }
     }
@@ -231,6 +259,65 @@ private fun StepImageContent(
                 contentDescription = "Удалить фото",
                 tint = MaterialTheme.colorScheme.onSurface
             )
+        }
+    }
+}
+
+/**
+ * Строка таймера в списке шагов редактора: иконка + подпись, крупное значение
+ * в формате ММ:00, справа — кнопка удаления. Тап по всей строке открывает
+ * TimerMinutesPickerDialog для изменения длительности.
+ */
+@Composable
+private fun StepTimerRow(
+    minutes: Int,
+    onClick: () -> Unit,
+    onDelete: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        onClick = onClick,
+        modifier = modifier,
+        shape = RoundedCornerShape(AppCornerRadius),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.secondaryContainer
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 10.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = Icons.Filled.Timer,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSecondaryContainer
+            )
+            Spacer(Modifier.width(12.dp))
+            Text(
+                text = "Таймер",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSecondaryContainer,
+                modifier = Modifier.weight(1f)
+            )
+            Text(
+                text = "%02d:00".format(minutes),
+                style = MaterialTheme.typography.titleLarge.copy(
+                    fontWeight = FontWeight.SemiBold,
+                    fontFeatureSettings = "tnum"
+                ),
+                color = MaterialTheme.colorScheme.onSecondaryContainer
+            )
+            Spacer(Modifier.width(4.dp))
+            IconButton(onClick = onDelete) {
+                Icon(
+                    imageVector = Icons.Default.Close,
+                    contentDescription = "Удалить таймер",
+                    tint = MaterialTheme.colorScheme.onSecondaryContainer
+                )
+            }
         }
     }
 }

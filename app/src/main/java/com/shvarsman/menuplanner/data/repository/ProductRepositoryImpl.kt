@@ -35,6 +35,8 @@ class ProductRepositoryImpl @Inject constructor(
         val newId = dao.insert(ProductEntity(name = name, category = category, defaultUnit = defaultUnit))
         return Product(id = newId, name = name, category = category, defaultUnit = defaultUnit)
     }
+
+    override suspend fun countUsages(productId: Long): Int = dao.countUsages(productId)
 }
 
 private fun ProductEntity.toDomain() = Product(

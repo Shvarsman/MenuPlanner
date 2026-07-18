@@ -40,6 +40,8 @@ data class RecipeEditorState(
     val ingredients: List<RecipeIngredient> = emptyList(),
     val steps: List<StepContentItem> = listOf(StepContentItem.Text("")),
     val isLoading: Boolean = true,
+    val isSaving: Boolean = false,
+    val isDirty: Boolean = false,
     val isSaved: Boolean = false,
     val errorMessage: String? = null
 )
@@ -71,19 +73,48 @@ class RecipeEditorViewModel @Inject constructor(
 
     private var loadedForRecipeId: Long? = null
 
+    // "Слепок" состояния сразу после загрузки — база для сравнения при вычислении isDirty
+    private var initialSnapshot: RecipeEditorState? = null
+
+    /**
+     * Единая точка изменения состояния для всех редактирующих операций.
+     * Помимо самого transform, пересчитывает isDirty относительно initialSnapshot,
+     * чтобы экран мог решить, нужно ли спрашивать подтверждение выхода.
+     */
+    private fun updateState(transform: (RecipeEditorState) -> RecipeEditorState) {
+        _state.update { current ->
+            val updated = transform(current)
+            updated.copy(isDirty = isContentDirty(updated))
+        }
+    }
+
+    private fun isContentDirty(current: RecipeEditorState): Boolean {
+        val base = initialSnapshot ?: return false
+        return current.title != base.title ||
+                current.category != base.category ||
+                current.photoUri != base.photoUri ||
+                current.cookingMethod != base.cookingMethod ||
+                current.cookingHours != base.cookingHours ||
+                current.cookingMinutes != base.cookingMinutes ||
+                current.ingredients != base.ingredients ||
+                current.steps != base.steps
+    }
+
     fun load(recipeId: Long) {
         if (loadedForRecipeId == recipeId) return
 
         loadedForRecipeId = recipeId
         viewModelScope.launch {
             if (recipeId == 0L) {
-                _state.value = RecipeEditorState(isLoading = false)
+                val fresh = RecipeEditorState(isLoading = false)
+                _state.value = fresh
+                initialSnapshot = fresh
                 return@launch
             }
 
             try {
                 val recipe = recipeRepository.getRecipe(recipeId)
-                _state.value = if (recipe != null) {
+                val loaded = if (recipe != null) {
                     val steps = recipe.steps.let { list ->
                         if (list.lastOrNull() !is StepContentItem.Text) {
                             list + StepContentItem.Text("")
@@ -105,6 +136,8 @@ class RecipeEditorViewModel @Inject constructor(
                 } else {
                     RecipeEditorState(isLoading = false)
                 }
+                _state.value = loaded
+                initialSnapshot = loaded
             } catch (e: Exception) {
                 loadedForRecipeId = null
                 _state.value = _state.value.copy(
@@ -116,19 +149,19 @@ class RecipeEditorViewModel @Inject constructor(
     }
 
     fun onTitleChange(value: String) {
-        _state.update { it.copy(title = value) }
+        updateState { it.copy(title = value) }
     }
 
     fun onCategoryChange(category: RecipeCategory) {
-        _state.update { it.copy(category = category) }
+        updateState { it.copy(category = category) }
     }
 
     fun onCookingMethodChange(method: CookingMethod?) {
-        _state.update { it.copy(cookingMethod = method) }
+        updateState { it.copy(cookingMethod = method) }
     }
 
     fun onCookingTimeChange(hours: Int, minutes: Int) {
-        _state.update { it.copy(cookingHours = hours, cookingMinutes = minutes) }
+        updateState { it.copy(cookingHours = hours, cookingMinutes = minutes) }
     }
 
     fun onCoverPhotoSelected(uri: Uri) {
@@ -136,7 +169,7 @@ class RecipeEditorViewModel @Inject constructor(
             val persistedUri = withContext(Dispatchers.IO) {
                 imageFileManager.persistImage(uri)
             }
-            _state.update { it.copy(photoUri = persistedUri) }
+            updateState { it.copy(photoUri = persistedUri) }
         }
     }
 
@@ -152,7 +185,7 @@ class RecipeEditorViewModel @Inject constructor(
         findOrCreateProduct(name, category, unit)
 
     fun addIngredient(product: Product, unit: MeasureUnit, quantity: Double) {
-        _state.update { current ->
+        updateState { current ->
             current.copy(
                 ingredients = current.ingredients + RecipeIngredient(
                     product = product,
@@ -165,11 +198,11 @@ class RecipeEditorViewModel @Inject constructor(
     }
 
     fun removeIngredient(ingredient: RecipeIngredient) {
-        _state.update { it.copy(ingredients = it.ingredients - ingredient) }
+        updateState { it.copy(ingredients = it.ingredients - ingredient) }
     }
 
     fun onStepTextChange(index: Int, text: String) {
-        _state.update { current ->
+        updateState { current ->
             current.copy(
                 steps = current.steps.mapIndexed { i, item ->
                     if (i == index && item is StepContentItem.Text) item.copy(content = text) else item
@@ -200,12 +233,43 @@ class RecipeEditorViewModel @Inject constructor(
             _focusRequestIndex.value = current.lastIndex
         } else {
             var newLastIndex = -1
-            _state.update { state ->
+            updateState { state ->
                 val newSteps = state.steps + StepContentItem.Text("")
                 newLastIndex = newSteps.lastIndex
                 state.copy(steps = newSteps)
             }
             _focusRequestIndex.value = newLastIndex
+        }
+    }
+
+    fun addStepTimer(minutes: Int) {
+        var newLastIndex = -1
+        updateState { state ->
+            val current = state.steps.toMutableList()
+            if (current.lastOrNull().let {
+                    it is StepContentItem.Text && it.content.isBlank()
+                }) {
+                current.removeAt(current.lastIndex)
+            }
+            current.add(StepContentItem.Timer(minutes))
+            current.add(StepContentItem.Text(""))
+            newLastIndex = current.lastIndex
+            state.copy(steps = current)
+        }
+        _focusRequestIndex.value = newLastIndex
+    }
+
+    fun updateStepTimer(index: Int, minutes: Int) {
+        updateState { current ->
+            current.copy(
+                steps = current.steps.mapIndexed { i, item ->
+                    if (i == index && item is StepContentItem.Timer) {
+                        item.copy(minutes = minutes)
+                    } else {
+                        item
+                    }
+                }
+            )
         }
     }
 
@@ -216,7 +280,7 @@ class RecipeEditorViewModel @Inject constructor(
             }
 
             var newLastIndex = -1
-            _state.update { state ->
+            updateState { state ->
                 val current = state.steps.toMutableList()
                 if (current.lastOrNull().let {
                         it is StepContentItem.Text && it.content.isBlank()
@@ -239,7 +303,7 @@ class RecipeEditorViewModel @Inject constructor(
                 imageFileManager.deleteImage(itemToRemove.url)
             }
         }
-        _state.update { current ->
+        updateState { current ->
             current.copy(
                 steps = current.steps.toMutableList()
                     .apply { removeAt(index) }
@@ -258,7 +322,10 @@ class RecipeEditorViewModel @Inject constructor(
 
     fun save() {
         val current = _state.value
+        if (current.isSaving) return // защита от повторного сабмита по двойному тапу
+
         viewModelScope.launch {
+            _state.update { it.copy(isSaving = true) }
             try {
                 require(current.title.isNotBlank()) { "Название рецепта не может быть пустым" }
 
@@ -281,12 +348,15 @@ class RecipeEditorViewModel @Inject constructor(
                         steps = stepsToSave
                     )
                 )
-                _state.update { it.copy(isSaved = true) }
+                _state.update { it.copy(isSaving = false, isSaved = true) }
             } catch (e: IllegalArgumentException) {
-                _state.update { it.copy(errorMessage = e.message) }
+                _state.update { it.copy(isSaving = false, errorMessage = e.message) }
             } catch (e: Exception) {
                 _state.update {
-                    it.copy(errorMessage = "Не удалось сохранить рецепт: ${e.localizedMessage}")
+                    it.copy(
+                        isSaving = false,
+                        errorMessage = "Не удалось сохранить рецепт: ${e.localizedMessage}"
+                    )
                 }
             }
         }
