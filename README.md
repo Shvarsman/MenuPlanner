@@ -31,8 +31,6 @@
 
 ## Что можно добавить дальше
 - Изменить отображение ингредиентов и шагов в карточке рецепта на способ и время приготовления
-- DismissibleNavigationDrawerSample на экране меню
 - При удалении добавить snackBar для возможности отмены 
 - ExitUntilCollapsedLargeTopAppBar для всех экранов
-- MultiSelectConnectedButtonGroupWithFlowLayoutSample - для выбора времени приема пищи в при создании/редактировании рецепта
 - Изменить категории на экране просмотра рецептов на CarouselWithShowAllButtonSample
