@@ -23,7 +23,8 @@ class AppDatabaseCallback(private val context: Context) : RoomDatabase.Callback(
     }
 
     private fun seedDefaultProducts(db: SupportSQLiteDatabase) {
-        val csvText = context.assets.open("seed_products.csv").bufferedReader().use { it.readText() }
+        val csvText =
+            context.assets.open("seed_products.csv").bufferedReader().use { it.readText() }
         val rows = SeedProductCsvParser.parse(csvText)
 
         db.beginTransaction()
@@ -33,7 +34,7 @@ class AppDatabaseCallback(private val context: Context) : RoomDatabase.Callback(
                     put("name", row.name)
                     put("category", row.category.name)
                     put("defaultUnit", row.unit.name)
-                    put("iconKey", Product.DEFAULT_ICON_KEY)
+                    put("iconKey", row.iconKey)
                     put("isDefault", 1)
                     put("isToTaste", if (row.isToTaste) 1 else 0)
                 }

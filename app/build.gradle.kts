@@ -67,6 +67,7 @@ dependencies {
     ksp(libs.androidx.room.compiler)
     implementation(libs.androidx.room.ktx)
     implementation(libs.coil.compose)
+    implementation(libs.coil.svg)
     implementation(libs.compose.material.icons.extended)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.androidx.core.splashscreen)
