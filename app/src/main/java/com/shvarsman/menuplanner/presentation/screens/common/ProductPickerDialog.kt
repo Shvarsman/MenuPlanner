@@ -47,7 +47,7 @@ import com.shvarsman.menuplanner.domain.model.Category
 import com.shvarsman.menuplanner.domain.model.MeasureUnit
 import com.shvarsman.menuplanner.domain.model.Product
 import com.shvarsman.menuplanner.presentation.screens.fridge.ProductIcon
-import com.shvarsman.menuplanner.presentation.ui.icons.icon
+import com.shvarsman.menuplanner.presentation.ui.icons.CategoryIcon
 import com.shvarsman.menuplanner.presentation.ui.theme.AppCornerRadius
 import kotlinx.coroutines.launch
 
@@ -189,7 +189,12 @@ fun ProductPickerDialog(
                             items(Category.entries.toTypedArray()) { category ->
                                 ListItem(
                                     headlineContent = { Text(category.displayName) },
-                                    leadingContent = { Icon(category.icon, contentDescription = null) },
+                                    leadingContent = {
+                                        CategoryIcon(
+                                            modifier = Modifier.size(24.dp),
+                                            category = category,
+                                        )
+                                    },
                                     trailingContent = {
                                         RadioButton(
                                             selected = category == newCategory,
@@ -266,7 +271,8 @@ fun ProductPickerDialog(
                                             val firstDot = filtered.indexOf('.')
                                             if (firstDot == -1) filtered
                                             else filtered.substring(0, firstDot + 1) +
-                                                    filtered.substring(firstDot + 1).replace(".", "")
+                                                    filtered.substring(firstDot + 1)
+                                                        .replace(".", "")
                                         }
                                 },
                                 label = { Text("Количество") },
@@ -351,7 +357,8 @@ fun ProductPickerDialog(
                         isCreating = true
                         coroutineScope.launch {
                             try {
-                                val created = onCreateProduct(newName.trim(), newCategory, selectedUnit)
+                                val created =
+                                    onCreateProduct(newName.trim(), newCategory, selectedUnit)
                                 selectedProduct = created
                                 quantityText = "1"
                                 createError = null

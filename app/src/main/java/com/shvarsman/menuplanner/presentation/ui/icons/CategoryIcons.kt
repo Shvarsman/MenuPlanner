@@ -1,63 +1,56 @@
 package com.shvarsman.menuplanner.presentation.ui.icons
 
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AcUnit
-import androidx.compose.material.icons.filled.BakeryDining
-import androidx.compose.material.icons.filled.Cake
-import androidx.compose.material.icons.filled.Circle
-import androidx.compose.material.icons.filled.Coffee
-import androidx.compose.material.icons.filled.Eco
-import androidx.compose.material.icons.filled.Egg
-import androidx.compose.material.icons.filled.Fastfood
-import androidx.compose.material.icons.filled.Grain
-import androidx.compose.material.icons.filled.Grass
-import androidx.compose.material.icons.filled.Icecream
-import androidx.compose.material.icons.filled.Inventory2
-import androidx.compose.material.icons.filled.LocalCafe
-import androidx.compose.material.icons.filled.LunchDining
-import androidx.compose.material.icons.filled.Park
-import androidx.compose.material.icons.filled.Restaurant
-import androidx.compose.material.icons.filled.RiceBowl
-import androidx.compose.material.icons.filled.SetMeal
-import androidx.compose.material.icons.filled.ShoppingBasket
-import androidx.compose.material.icons.filled.Spa
-import androidx.compose.material.icons.filled.Water
-import androidx.compose.material.icons.filled.WaterDrop
-import androidx.compose.material.icons.filled.WbSunny
-import androidx.compose.material.icons.filled.WineBar
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.material.icons.automirrored.filled.MenuBook
+import androidx.compose.material.icons.filled.Category
+import androidx.compose.material.icons.filled.Kitchen
+import androidx.compose.material.icons.filled.MenuBook
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
+import coil3.compose.AsyncImage
 import com.shvarsman.menuplanner.domain.model.Category
+import com.shvarsman.menuplanner.domain.model.CookingMethod
+import com.shvarsman.menuplanner.domain.model.RecipeCategory
 
-val Category.icon: ImageVector
-    get() = when (this) {
-        Category.FRUITS -> Icons.Filled.Spa
-        Category.BERRIES -> Icons.Filled.Grain
-        Category.CITRUS -> Icons.Filled.WbSunny
-        Category.VEGETABLES -> Icons.Filled.Eco
-        Category.HERBS -> Icons.Filled.Grass
-        Category.MUSHROOMS -> Icons.Filled.Park
-        Category.MEAT -> Icons.Filled.LunchDining
-        Category.POULTRY -> Icons.Filled.SetMeal
-        Category.OFFAL -> Icons.Filled.Restaurant
-        Category.FISH -> Icons.Filled.Water
-        Category.SEAFOOD -> Icons.Filled.SetMeal
-        Category.CANNED -> Icons.Filled.Inventory2
-        Category.DAIRY -> Icons.Filled.Icecream
-        Category.CHEESE -> Icons.Filled.Circle
-        Category.EGGS -> Icons.Filled.Egg
-        Category.BREAD_BAKING -> Icons.Filled.BakeryDining
-        Category.GROCERY -> Icons.Filled.ShoppingBasket
-        Category.SAUCES -> Icons.Filled.WaterDrop
-        Category.GRAINS -> Icons.Filled.Grain
-        Category.LEGUMES -> Icons.Filled.Grain
-        Category.PASTA -> Icons.Filled.RiceBowl
-        Category.SPICES -> Icons.Filled.Grain
-        Category.NUTS_SEEDS -> Icons.Filled.Park
-        Category.DRIED_FRUITS -> Icons.Filled.WbSunny
-        Category.FROZEN -> Icons.Filled.AcUnit
-        Category.COFFEE_TEA -> Icons.Filled.Coffee
-        Category.DRINKS_NON_ALCOHOL -> Icons.Filled.LocalCafe
-        Category.DRINKS_ALCOHOL -> Icons.Filled.WineBar
-        Category.HONEY_SWEETS -> Icons.Filled.Cake
-        Category.SNACKS -> Icons.Filled.Fastfood
-    }
+/**
+ * Имя SVG-файла выводится из имени enum-константы — специального поля в
+ * доменной модели заводить не нужно (в отличие от Product.iconKey, который
+ * завязан на свободный пользовательский ввод названия).
+ */
+private val Category.iconAssetKey: String get() = name.lowercase()
+private val RecipeCategory.iconAssetKey: String get() = name.lowercase()
+private val CookingMethod.iconAssetKey: String get() = name.lowercase()
+
+/** assets/category_icons/{имя_константы}.svg */
+@Composable
+fun CategoryIcon(category: Category, modifier: Modifier = Modifier) {
+    AsyncImage(
+        model = "file:///android_asset/category_icons/${category.iconAssetKey}.svg",
+        contentDescription = null,
+        modifier = modifier,
+        error = rememberVectorPainter(Icons.Filled.Category) // пока SVG не добавлен — нейтральный фолбэк
+    )
+}
+
+/** assets/recipe_category_icons/{имя_константы}.svg */
+@Composable
+fun RecipeCategoryIcon(category: RecipeCategory, modifier: Modifier = Modifier) {
+    AsyncImage(
+        model = "file:///android_asset/recipe_category_icons/${category.iconAssetKey}.svg",
+        contentDescription = null,
+        modifier = modifier,
+        error = rememberVectorPainter(Icons.AutoMirrored.Filled.MenuBook)
+    )
+}
+
+/** assets/cooking_method_icons/{имя_константы}.svg */
+@Composable
+fun CookingMethodIcon(method: CookingMethod, modifier: Modifier = Modifier) {
+    AsyncImage(
+        model = "file:///android_asset/cooking_method_icons/${method.iconAssetKey}.svg",
+        contentDescription = null,
+        modifier = modifier,
+        error = rememberVectorPainter(Icons.Filled.Kitchen)
+    )
+}

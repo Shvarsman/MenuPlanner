@@ -39,10 +39,11 @@ import com.shvarsman.menuplanner.presentation.screens.catalog.ProductCatalogScre
 import com.shvarsman.menuplanner.presentation.screens.cooking.CookingScreen
 import com.shvarsman.menuplanner.presentation.screens.fridge.FridgeScreen
 import com.shvarsman.menuplanner.presentation.screens.menu.MenuScreen
+import com.shvarsman.menuplanner.presentation.screens.recipe.AllCategoriesScreen
 import com.shvarsman.menuplanner.presentation.screens.recipe.RecipeCategoryScreen
-import com.shvarsman.menuplanner.presentation.screens.recipeeditor.RecipeEditorScreen
 import com.shvarsman.menuplanner.presentation.screens.recipe.RecipeListScreen
 import com.shvarsman.menuplanner.presentation.screens.recipe.RecipeViewScreen
+import com.shvarsman.menuplanner.presentation.screens.recipeeditor.RecipeEditorScreen
 import com.shvarsman.menuplanner.presentation.screens.shoppinglist.ShoppingListScreen
 
 private data class BottomItem(
@@ -150,6 +151,19 @@ fun AppNavGraph() {
             composable(Destination.Backup.route) {
                 BackupScreen(onBack = { rootNavController.popBackStack() })
             }
+
+            composable(Destination.AllCategories.route) {
+                AllCategoriesScreen(
+                    onBack = { rootNavController.popBackStack() },
+                    onCategoryClick = { category ->
+                        rootNavController.navigate(
+                            Destination.RecipeCategoryList.createRoute(
+                                category
+                            )
+                        )
+                    }
+                )
+            }
         }
     }
 }
@@ -225,10 +239,18 @@ private fun MainTabsScreen(rootNavController: NavHostController) {
                         )
                     },
                     onViewRecipe = { id ->
-                        rootNavController.navigate(Destination.RecipeView.createRoute(id))
+                        rootNavController.navigate(
+                            Destination.RecipeView.createRoute(
+                                id
+                            )
+                        )
                     },
                     onEditRecipe = { id ->
-                        rootNavController.navigate(Destination.RecipeEditor.createRoute(id))
+                        rootNavController.navigate(
+                            Destination.RecipeEditor.createRoute(
+                                id
+                            )
+                        )
                     },
                     onCategoryClick = { category ->
                         rootNavController.navigate(
@@ -236,7 +258,8 @@ private fun MainTabsScreen(rootNavController: NavHostController) {
                                 category
                             )
                         )
-                    }
+                    },
+                    onShowAllCategories = { rootNavController.navigate(Destination.AllCategories.route) } // добавить
                 )
             }
 

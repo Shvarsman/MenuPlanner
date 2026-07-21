@@ -44,6 +44,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -51,7 +52,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.shvarsman.menuplanner.domain.model.Category
 import com.shvarsman.menuplanner.domain.model.Product
 import com.shvarsman.menuplanner.presentation.screens.fridge.ProductIcon
-import com.shvarsman.menuplanner.presentation.ui.icons.icon
+import com.shvarsman.menuplanner.presentation.ui.icons.CategoryIcon
 import com.shvarsman.menuplanner.presentation.utils.GroupedRow
 import com.shvarsman.menuplanner.presentation.utils.rememberDebouncedSearch
 
@@ -277,10 +278,9 @@ private fun CategoryFilterSection(
                 onClick = { onCategoryClick(category) },
                 label = { Text("${category.displayName} ($count)") },
                 leadingIcon = {
-                    Icon(
-                        imageVector = category.icon,
-                        contentDescription = null,
-                        modifier = Modifier.size(FilterChipDefaults.IconSize)
+                    CategoryIcon(
+                        modifier = Modifier.size(FilterChipDefaults.IconSize),
+                        category = category
                     )
                 }
             )
@@ -311,10 +311,8 @@ private fun CatalogCategoryHeader(category: Category) {
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        Icon(
-            imageVector = category.icon,
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.primary,
+        CategoryIcon(
+            category = category,
             modifier = Modifier.size(20.dp)
         )
         Text(

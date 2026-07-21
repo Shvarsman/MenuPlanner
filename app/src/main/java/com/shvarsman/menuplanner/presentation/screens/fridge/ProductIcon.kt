@@ -2,14 +2,12 @@ package com.shvarsman.menuplanner.presentation.screens.fridge
 
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.shvarsman.menuplanner.domain.model.Product
-import com.shvarsman.menuplanner.presentation.ui.icons.icon
+import com.shvarsman.menuplanner.presentation.ui.icons.CategoryIcon
 
 @Composable
 fun ProductIcon(product: Product, modifier: Modifier = Modifier.size(40.dp)) {
@@ -20,11 +18,9 @@ fun ProductIcon(product: Product, modifier: Modifier = Modifier.size(40.dp)) {
             modifier = modifier.fillMaxSize()
         )
     } else {
-        Icon(
-            imageVector = product.category.icon,
-            contentDescription = null,
-            modifier = modifier.fillMaxSize(),
-            tint = MaterialTheme.colorScheme.onSurfaceVariant
+        CategoryIcon(
+            category = product.category,
+            modifier = modifier.fillMaxSize()
         )
     }
 }

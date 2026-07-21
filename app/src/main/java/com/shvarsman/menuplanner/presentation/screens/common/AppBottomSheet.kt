@@ -1,6 +1,7 @@
 package com.shvarsman.menuplanner.presentation.screens.common
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
@@ -89,7 +90,7 @@ fun AppBottomSheet(
 fun SelectionTile(
     modifier: Modifier = Modifier,
     text: String,
-    icon: ImageVector,
+    icon: @Composable () -> Unit,   // было: icon: ImageVector
     isSelected: Boolean,
     onClick: () -> Unit,
     minHeight: Dp = 64.dp,
@@ -120,16 +121,7 @@ fun SelectionTile(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Start
         ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                modifier = Modifier.size(22.dp),
-                tint = if (isSelected) {
-                    MaterialTheme.colorScheme.onPrimaryContainer
-                } else {
-                    MaterialTheme.colorScheme.onSurfaceVariant
-                }
-            )
+            Box(modifier = Modifier.size(22.dp)) { icon() }
             Spacer(Modifier.width(10.dp))
             Text(
                 text = text,

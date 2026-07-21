@@ -91,6 +91,8 @@ import com.shvarsman.menuplanner.presentation.screens.common.StepContent
 import com.shvarsman.menuplanner.presentation.screens.common.TimerMinutesPickerDialog
 import com.shvarsman.menuplanner.presentation.screens.common.buildRenderedSteps
 import com.shvarsman.menuplanner.presentation.screens.common.rememberSizedImageRequest
+import com.shvarsman.menuplanner.presentation.ui.icons.CookingMethodIcon
+import com.shvarsman.menuplanner.presentation.ui.icons.RecipeCategoryIcon
 import com.shvarsman.menuplanner.presentation.ui.icons.icon
 import com.shvarsman.menuplanner.presentation.ui.theme.AppCornerRadius
 
@@ -365,7 +367,7 @@ fun RecipeEditorScreen(
                 items(RecipeCategory.entries) { category ->
                     SelectionTile(
                         text = category.displayName,
-                        icon = category.icon,
+                        icon = { RecipeCategoryIcon(category = category) },
                         isSelected = state.category == category,
                         onClick = {
                             viewModel.onCategoryChange(category)
@@ -441,7 +443,17 @@ fun RecipeEditorScreen(
                             val isSelected = state.cookingMethod == method
                             SelectionTile(
                                 text = method.displayName,
-                                icon = if (isSelected) Icons.Default.Check else Icons.Default.Kitchen,
+                                icon = {
+                                    if (isSelected) {
+                                        Icon(
+                                            Icons.Default.Check,
+                                            contentDescription = null,
+                                            tint = MaterialTheme.colorScheme.primary
+                                        )
+                                    } else {
+                                        CookingMethodIcon(method = method)
+                                    }
+                                },
                                 isSelected = isSelected,
                                 useTransparentUnselected = true,
                                 minHeight = 56.dp,

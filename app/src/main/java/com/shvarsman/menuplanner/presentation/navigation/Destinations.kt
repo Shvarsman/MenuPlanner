@@ -32,4 +32,6 @@ sealed class Destination(val route: String) {
     }
 
     object Backup : Destination("backup")
+
+    object AllCategories : Destination("all_categories")
 }
