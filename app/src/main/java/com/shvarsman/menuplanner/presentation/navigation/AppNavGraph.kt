@@ -40,9 +40,11 @@ import com.shvarsman.menuplanner.presentation.screens.cooking.CookingScreen
 import com.shvarsman.menuplanner.presentation.screens.fridge.FridgeScreen
 import com.shvarsman.menuplanner.presentation.screens.menu.MenuScreen
 import com.shvarsman.menuplanner.presentation.screens.recipe.AllCategoriesScreen
+import com.shvarsman.menuplanner.presentation.screens.recipe.AllRecipesListScreen
 import com.shvarsman.menuplanner.presentation.screens.recipe.RecipeCategoryScreen
 import com.shvarsman.menuplanner.presentation.screens.recipe.RecipeListScreen
 import com.shvarsman.menuplanner.presentation.screens.recipe.RecipeViewScreen
+import com.shvarsman.menuplanner.presentation.screens.recipe.SuggestedRecipesScreen
 import com.shvarsman.menuplanner.presentation.screens.recipeeditor.RecipeEditorScreen
 import com.shvarsman.menuplanner.presentation.screens.shoppinglist.ShoppingListScreen
 
@@ -164,6 +166,46 @@ fun AppNavGraph() {
                     }
                 )
             }
+
+            composable(Destination.SuggestedRecipes.route) {
+                SuggestedRecipesScreen(
+                    onBack = { rootNavController.popBackStack() },
+                    onViewRecipe = { id ->
+                        rootNavController.navigate(
+                            Destination.RecipeView.createRoute(
+                                id
+                            )
+                        )
+                    },
+                    onEditRecipe = { id ->
+                        rootNavController.navigate(
+                            Destination.RecipeEditor.createRoute(
+                                id
+                            )
+                        )
+                    }
+                )
+            }
+
+            composable(Destination.AllRecipesList.route) {
+                AllRecipesListScreen(
+                    onBack = { rootNavController.popBackStack() },
+                    onViewRecipe = { id ->
+                        rootNavController.navigate(
+                            Destination.RecipeView.createRoute(
+                                id
+                            )
+                        )
+                    },
+                    onEditRecipe = { id ->
+                        rootNavController.navigate(
+                            Destination.RecipeEditor.createRoute(
+                                id
+                            )
+                        )
+                    }
+                )
+            }
         }
     }
 }
@@ -235,7 +277,9 @@ private fun MainTabsScreen(rootNavController: NavHostController) {
                 RecipeListScreen(
                     onAddRecipe = {
                         rootNavController.navigate(
-                            Destination.RecipeEditor.createRoute(Destination.RecipeEditor.NEW_RECIPE_ID)
+                            Destination.RecipeEditor.createRoute(
+                                Destination.RecipeEditor.NEW_RECIPE_ID
+                            )
                         )
                     },
                     onViewRecipe = { id ->
@@ -259,7 +303,9 @@ private fun MainTabsScreen(rootNavController: NavHostController) {
                             )
                         )
                     },
-                    onShowAllCategories = { rootNavController.navigate(Destination.AllCategories.route) } // добавить
+                    onShowAllCategories = { rootNavController.navigate(Destination.AllCategories.route) },
+                    onShowAllSuggested = { rootNavController.navigate(Destination.SuggestedRecipes.route) },   // добавить
+                    onShowAllRecipes = { rootNavController.navigate(Destination.AllRecipesList.route) }          // добавить
                 )
             }
 

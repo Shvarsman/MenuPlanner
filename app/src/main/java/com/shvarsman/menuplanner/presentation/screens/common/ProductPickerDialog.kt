@@ -1,5 +1,7 @@
 package com.shvarsman.menuplanner.presentation.screens.common
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -41,6 +43,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.shvarsman.menuplanner.domain.model.Category
@@ -59,6 +63,7 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProductPickerDialog(
+    modifier: Modifier = Modifier,
     catalog: List<Product>,
     onDismiss: () -> Unit,
     onConfirm: (product: Product, unit: MeasureUnit, quantity: Double) -> Unit,
@@ -87,6 +92,7 @@ fun ProductPickerDialog(
     val parsedQuantity = quantityText.toDoubleOrNull()
 
     AppBottomSheet(
+        modifier = modifier,
         title = when (step) {
             PickerStep.SELECT -> "Выбрать продукт"
             PickerStep.CREATE -> "Новый продукт"
@@ -110,7 +116,7 @@ fun ProductPickerDialog(
                         leadingIcon = { Icon(Icons.Filled.Search, contentDescription = null) },
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(AppCornerRadius)
+                        shape = RoundedCornerShape(24.dp)
                     )
                     Spacer(Modifier.height(8.dp))
                     TextButton(
@@ -172,6 +178,7 @@ fun ProductPickerDialog(
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         OutlinedTextField(
+                            modifier = Modifier.fillMaxWidth(),
                             value = newName,
                             onValueChange = {
                                 newName = it
@@ -181,7 +188,7 @@ fun ProductPickerDialog(
                             singleLine = true,
                             isError = createError != null,
                             supportingText = createError?.let { { Text(it) } },
-                            modifier = Modifier.fillMaxWidth()
+                            shape = RoundedCornerShape(24.dp)
                         )
 
                         Text("Категория", style = MaterialTheme.typography.labelLarge)
@@ -213,6 +220,12 @@ fun ProductPickerDialog(
                             onExpandedChange = { unitMenuExpanded = it }
                         ) {
                             OutlinedTextField(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .menuAnchor(
+                                        ExposedDropdownMenuAnchorType.PrimaryNotEditable,
+                                        enabled = true
+                                    ),
                                 readOnly = true,
                                 value = selectedUnit.displayName,
                                 onValueChange = {},
@@ -220,12 +233,7 @@ fun ProductPickerDialog(
                                 trailingIcon = {
                                     ExposedDropdownMenuDefaults.TrailingIcon(expanded = unitMenuExpanded)
                                 },
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .menuAnchor(
-                                        ExposedDropdownMenuAnchorType.PrimaryNotEditable,
-                                        enabled = true
-                                    )
+                                shape = RoundedCornerShape(24.dp)
                             )
                             ExposedDropdownMenu(
                                 expanded = unitMenuExpanded,
@@ -263,6 +271,7 @@ fun ProductPickerDialog(
                         }
                         Row {
                             OutlinedTextField(
+                                modifier = Modifier.weight(1f),
                                 value = quantityText,
                                 onValueChange = {
                                     quantityText = it.filter { c -> c.isDigit() || c == '.' }
@@ -279,7 +288,7 @@ fun ProductPickerDialog(
                                 singleLine = true,
                                 isError = quantityText.isNotEmpty() && parsedQuantity == null,
                                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                                modifier = Modifier.weight(1f)
+                                shape = RoundedCornerShape(24.dp)
                             )
                             Spacer(Modifier.width(8.dp))
                             ExposedDropdownMenuBox(
@@ -288,6 +297,10 @@ fun ProductPickerDialog(
                                 modifier = Modifier.weight(1f)
                             ) {
                                 OutlinedTextField(
+                                    modifier = Modifier.menuAnchor(
+                                        ExposedDropdownMenuAnchorType.PrimaryNotEditable,
+                                        enabled = true
+                                    ),
                                     readOnly = true,
                                     value = selectedUnit.displayName,
                                     onValueChange = {},
@@ -297,14 +310,43 @@ fun ProductPickerDialog(
                                             expanded = unitMenuExpanded
                                         )
                                     },
-                                    modifier = Modifier.menuAnchor(
-                                        ExposedDropdownMenuAnchorType.PrimaryNotEditable,
-                                        enabled = true
-                                    )
+                                    shape = RoundedCornerShape(24.dp)
                                 )
                                 ExposedDropdownMenu(
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(24.dp))
+                                        .background(
+                                            brush = Brush.verticalGradient(
+                                                colors = listOf(
+                                                    MaterialTheme.colorScheme.onSurfaceVariant.copy(
+                                                        alpha = 0.05f
+                                                    ),
+                                                    MaterialTheme.colorScheme.onSurfaceVariant.copy(
+                                                        alpha = 0.02f
+                                                    )
+                                                )
+                                            ),
+                                            shape = RoundedCornerShape(24.dp),
+                                        )
+                                        .border(
+                                            width = 1.dp,
+                                            brush = Brush.horizontalGradient(
+                                                colors = listOf(
+                                                    MaterialTheme.colorScheme.onSurfaceVariant.copy(
+                                                        alpha = 0.6f
+                                                    ),
+                                                    MaterialTheme.colorScheme.onSurfaceVariant.copy(
+                                                        alpha = 0.6f
+                                                    )
+                                                )
+                                            ),
+                                            shape = RoundedCornerShape(24.dp)
+                                        ),
                                     expanded = unitMenuExpanded,
-                                    onDismissRequest = { unitMenuExpanded = false }
+                                    onDismissRequest = { unitMenuExpanded = false },
+                                    containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.9f),
+                                    shape = RoundedCornerShape(24.dp),
+                                    shadowElevation = 0.dp
                                 ) {
                                     MeasureUnit.entries.forEach { unit ->
                                         DropdownMenuItem(

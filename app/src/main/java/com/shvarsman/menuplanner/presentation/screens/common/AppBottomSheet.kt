@@ -62,7 +62,7 @@ fun AppBottomSheet(
     ModalBottomSheet(
         onDismissRequest = onDismissRequest,
         sheetState = sheetState,
-        shape = RoundedCornerShape(topStart = AppCornerRadius, topEnd = AppCornerRadius),
+        shape = RoundedCornerShape(24.dp),
         containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
         modifier = modifier
     ) {
@@ -90,7 +90,7 @@ fun AppBottomSheet(
 fun SelectionTile(
     modifier: Modifier = Modifier,
     text: String,
-    icon: @Composable () -> Unit,   // было: icon: ImageVector
+    icon: @Composable () -> Unit,
     isSelected: Boolean,
     onClick: () -> Unit,
     minHeight: Dp = 64.dp,

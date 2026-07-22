@@ -1,20 +1,16 @@
 package com.shvarsman.menuplanner.presentation.screens.recipe
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ViewList
 import androidx.compose.material.icons.filled.GridView
-import androidx.compose.material.icons.filled.MenuBook
+import androidx.compose.material.icons.filled.RestaurantMenu
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -27,24 +23,24 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.shvarsman.menuplanner.presentation.screens.common.CollapsingLargeTopAppBar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RecipeCategoryScreen(
+fun SuggestedRecipesScreen(
     onBack: () -> Unit,
     onViewRecipe: (Long) -> Unit,
     onEditRecipe: (Long) -> Unit,
-    viewModel: RecipeCategoryViewModel = hiltViewModel()
+    viewModel: RecipeListViewModel = hiltViewModel()
 ) {
-    val recipes by viewModel.recipes.collectAsStateWithLifecycle()
+    val grouped by viewModel.suggestedRecipesGrouped.collectAsStateWithLifecycle()
     var viewMode by rememberSaveable { mutableStateOf(RecipeViewMode.PHOTO_CARDS) }
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
 
@@ -52,7 +48,7 @@ fun RecipeCategoryScreen(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             CollapsingLargeTopAppBar(
-                title = viewModel.category.displayName,
+                title = "Можно приготовить",
                 scrollBehavior = scrollBehavior,
                 navigationIcon = {
                     IconButton(onClick = onBack) {
@@ -75,34 +71,32 @@ fun RecipeCategoryScreen(
                             } else {
                                 Icons.Filled.GridView
                             },
-                            contentDescription = if (viewMode == RecipeViewMode.PHOTO_CARDS) {
-                                "Отображать списком"
-                            } else {
-                                "Отображать карточками"
-                            }
+                            contentDescription = null
                         )
                     }
                 }
             )
         }
     ) { padding ->
-        if (recipes.isEmpty()) {
+        if (grouped.isEmpty()) {
             Column(
-                modifier = Modifier.fillMaxSize().padding(padding),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
+                verticalArrangement = androidx.compose.foundation.layout.Arrangement.Center
             ) {
                 Icon(
-                    Icons.Filled.MenuBook,
+                    Icons.Filled.RestaurantMenu,
                     contentDescription = null,
                     modifier = Modifier.size(64.dp),
                     tint = MaterialTheme.colorScheme.outline
                 )
-                Spacer(Modifier.height(12.dp))
                 Text(
-                    "В этой категории пока нет рецептов.",
+                    "Пока нет рецептов, для которых хватает продуктов в холодильнике",
                     textAlign = TextAlign.Center,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(horizontal = 32.dp, vertical = 12.dp)
                 )
             }
         } else {
@@ -113,23 +107,13 @@ fun RecipeCategoryScreen(
                     bottom = padding.calculateBottomPadding() + 16.dp
                 )
             ) {
-                items(recipes, key = { it.id }) { recipe ->
-                    if (viewMode == RecipeViewMode.PHOTO_CARDS) {
-                        RecipeCard(
-                            recipe = recipe,
-                            onClick = { onViewRecipe(recipe.id) },
-                            onEdit = { onEditRecipe(recipe.id) },
-                            onDelete = { viewModel.onDelete(recipe) }
-                        )
-                    } else {
-                        RecipeListRow(
-                            recipe = recipe,
-                            onClick = { onViewRecipe(recipe.id) },
-                            onEdit = { onEditRecipe(recipe.id) },
-                            onDelete = { viewModel.onDelete(recipe) }
-                        )
-                    }
-                }
+                recipeGroupedItems(
+                    grouped = grouped,
+                    viewMode = viewMode,
+                    onViewRecipe = onViewRecipe,
+                    onEditRecipe = onEditRecipe,
+                    onDelete = { viewModel.onDelete(it) }
+                )
             }
         }
     }
