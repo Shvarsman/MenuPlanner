@@ -1,10 +1,8 @@
 package com.shvarsman.menuplanner.presentation.screens.recipe
 
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -17,30 +15,36 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material.icons.automirrored.filled.Sort
+import androidx.compose.material.icons.automirrored.filled.ViewList
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.ExpandLess
-import androidx.compose.material.icons.filled.ExpandMore
+import androidx.compose.material.icons.filled.GridView
 import androidx.compose.material.icons.filled.MenuBook
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.shvarsman.menuplanner.domain.model.RecipeCategory
-import com.shvarsman.menuplanner.presentation.ui.icons.CategoryIcon
+import com.shvarsman.menuplanner.presentation.screens.common.DropdownFilterChip
+import com.shvarsman.menuplanner.presentation.screens.common.TopBarSearchField
 import com.shvarsman.menuplanner.presentation.ui.icons.RecipeCategoryIcon
-import com.shvarsman.menuplanner.presentation.ui.icons.icon
 import com.shvarsman.menuplanner.presentation.utils.rememberDebouncedSearch
+
+private enum class RecipeViewMode { PHOTO_CARDS, LIST }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -63,87 +67,52 @@ fun RecipeListScreen(
         viewModel.onSearchQueryChange(it)
     }
 
-    var sortMenuExpanded by remember { mutableStateOf(false) }
+    var viewMode by rememberSaveable { mutableStateOf(RecipeViewMode.PHOTO_CARDS) }
     val listState = rememberLazyListState()
+    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
 
     Scaffold(
+        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         contentWindowInsets = WindowInsets(0),
         topBar = {
-            Surface(color = MaterialTheme.colorScheme.background, tonalElevation = 0.dp) {
-                Column {
-                    TopAppBar(
-                        title = { Text("Рецепты", fontSize = 24.sp, fontWeight = FontWeight.Medium) },
-                        colors = TopAppBarDefaults.topAppBarColors(
-                            containerColor = MaterialTheme.colorScheme.background
-                        )
+            TopAppBar(
+                scrollBehavior = scrollBehavior,
+                title = {
+                    TopBarSearchField(
+                        query = localSearchQuery,
+                        onQueryChange = onLocalSearchQueryChange,
+                        placeholder = "Поиск рецептов"
                     )
-
-                    DockedSearchBar(
-                        inputField = {
-                            SearchBarDefaults.InputField(
-                                query = localSearchQuery,
-                                onQueryChange = onLocalSearchQueryChange,
-                                onSearch = {},
-                                expanded = false,
-                                onExpandedChange = {},
-                                placeholder = { Text("Поиск рецептов") },
-                                leadingIcon = { Icon(Icons.Filled.Search, contentDescription = null) },
-                                trailingIcon = {
-                                    if (localSearchQuery.isNotEmpty()) {
-                                        IconButton(onClick = { onLocalSearchQueryChange("") }) {
-                                            Icon(Icons.Filled.Close, contentDescription = "Очистить")
-                                        }
-                                    }
-                                }
-                            )
-                        },
-                        expanded = false,
-                        onExpandedChange = {},
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 8.dp),
-                        content = {}
-                    )
-
-                    Box(modifier = Modifier.padding(start = 16.dp, bottom = 4.dp)) {
-                        AssistChip(
-                            onClick = { sortMenuExpanded = true },
-                            leadingIcon = {
-                                Icon(Icons.AutoMirrored.Filled.Sort, contentDescription = null)
-                            },
-                            label = { Text(sortOption.displayName) }
-                        )
-                        DropdownMenu(
-                            expanded = sortMenuExpanded,
-                            onDismissRequest = { sortMenuExpanded = false }
-                        ) {
-                            RecipeSortOption.entries.forEach { option ->
-                                DropdownMenuItem(
-                                    text = { Text(option.displayName) },
-                                    onClick = {
-                                        viewModel.selectSortOption(option)
-                                        sortMenuExpanded = false
-                                    },
-                                    trailingIcon = {
-                                        if (option == sortOption) {
-                                            Icon(Icons.Filled.Check, contentDescription = null)
-                                        }
-                                    }
-                                )
+                },
+                actions = {
+                    IconButton(
+                        onClick = {
+                            viewMode = if (viewMode == RecipeViewMode.PHOTO_CARDS) {
+                                RecipeViewMode.LIST
+                            } else {
+                                RecipeViewMode.PHOTO_CARDS
                             }
                         }
-                    }
-
-                    if (availableCategories.isNotEmpty()) {
-                        RecipeCategoryFilterChips(
-                            categories = availableCategories,
-                            selectedCategory = selectedCategory,
-                            onCategoryClick = { viewModel.selectCategory(it) },
-                            modifier = Modifier.padding(bottom = 4.dp)
+                    ) {
+                        Icon(
+                            imageVector = if (viewMode == RecipeViewMode.PHOTO_CARDS) {
+                                Icons.AutoMirrored.Filled.ViewList
+                            } else {
+                                Icons.Filled.GridView
+                            },
+                            contentDescription = if (viewMode == RecipeViewMode.PHOTO_CARDS) {
+                                "Отображать списком"
+                            } else {
+                                "Отображать карточками"
+                            }
                         )
                     }
-                }
-            }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.background,
+                    scrolledContainerColor = MaterialTheme.colorScheme.background
+                )
+            )
         },
         floatingActionButton = {
             FloatingActionButton(onClick = onAddRecipe) {
@@ -159,6 +128,72 @@ fun RecipeListScreen(
                 bottom = padding.calculateBottomPadding() + 88.dp
             )
         ) {
+            // Ряд фильтров теперь обычный элемент списка — прокручивается вместе
+            // с контентом и уезжает вслед за топбаром, а не живёт отдельно от него
+            item(key = "filters") {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .horizontalScroll(rememberScrollState())
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    DropdownFilterChip(
+                        displayText = selectedCategory?.displayName ?: "Категория",
+                        isActive = selectedCategory != null
+                    ) { close ->
+                        DropdownMenuItem(
+                            text = { Text("Все категории") },
+                            onClick = { viewModel.selectCategory(null); close() },
+
+                        )
+                        if (availableCategories.isNotEmpty()) {
+                            HorizontalDivider()
+                            availableCategories.forEach { (category, count) ->
+                                DropdownMenuItem(
+                                    text = {
+                                        Text(
+                                            "${category.displayName} ($count)",
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis
+                                        )
+                                    },
+                                    leadingIcon = {
+                                        RecipeCategoryIcon(category = category, modifier = Modifier.size(24.dp))
+                                    },
+                                    trailingIcon = {
+                                        if (category == selectedCategory) {
+                                            Icon(Icons.Filled.Check, contentDescription = null)
+                                        }
+                                    },
+                                    onClick = { viewModel.selectCategory(category); close() }
+                                )
+                            }
+                        }
+                    }
+
+                    DropdownFilterChip(
+                        displayText = sortOption.displayName,
+                        isActive = sortOption != RecipeSortOption.TITLE_ASC
+                    ) { close ->
+                        RecipeSortOption.entries.forEach { option ->
+                            DropdownMenuItem(
+                                text = { Text(option.displayName) },
+                                leadingIcon = {
+                                    Icon(Icons.AutoMirrored.Filled.Sort, contentDescription = null)
+                                },
+                                trailingIcon = {
+                                    if (option == sortOption) {
+                                        Icon(Icons.Filled.Check, contentDescription = null)
+                                    }
+                                },
+                                onClick = { viewModel.selectSortOption(option); close() }
+                            )
+                        }
+                    }
+                }
+            }
+
             if (!isFiltering) {
                 item(key = "category_grid") {
                     RecipeCategoryCarousel(
@@ -184,7 +219,7 @@ fun RecipeListScreen(
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Icon(
-                            Icons.Filled.MenuBook,
+                            Icons.AutoMirrored.Filled.MenuBook,
                             contentDescription = null,
                             modifier = Modifier.size(64.dp),
                             tint = MaterialTheme.colorScheme.outline
@@ -201,83 +236,24 @@ fun RecipeListScreen(
                 grouped.forEach { (category, categoryRecipes) ->
                     item(key = "header_${category.name}") { CategoryHeader(category) }
                     items(categoryRecipes, key = { it.id }) { recipe ->
-                        RecipeCard(
-                            recipe = recipe,
-                            onClick = { onViewRecipe(recipe.id) },
-                            onEdit = { onEditRecipe(recipe.id) },
-                            onDelete = { viewModel.onDelete(recipe) }
-                        )
+                        if (viewMode == RecipeViewMode.PHOTO_CARDS) {
+                            RecipeCard(
+                                recipe = recipe,
+                                onClick = { onViewRecipe(recipe.id) },
+                                onEdit = { onEditRecipe(recipe.id) },
+                                onDelete = { viewModel.onDelete(recipe) }
+                            )
+                        } else {
+                            RecipeListRow(
+                                recipe = recipe,
+                                onClick = { onViewRecipe(recipe.id) },
+                                onEdit = { onEditRecipe(recipe.id) },
+                                onDelete = { viewModel.onDelete(recipe) }
+                            )
+                        }
                     }
                 }
             }
-        }
-    }
-}
-
-/**
- * Ряд чипов категорий для фильтрации плоского списка рецептов на этом же экране —
- * отдельно от карусели/грида категорий, которые ведут на другой экран. Изначально
- * показаны первые несколько категорий, остальные — за чипом "Ещё N", тем же
- * паттерном, что и в каталоге продуктов.
- */
-@OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
-@Composable
-private fun RecipeCategoryFilterChips(
-    categories: List<Pair<RecipeCategory, Int>>,
-    selectedCategory: RecipeCategory?,
-    onCategoryClick: (RecipeCategory?) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    var isExpanded by remember { mutableStateOf(false) }
-    val collapsedCount = 5
-
-    val visibleCategories = if (isExpanded || categories.size <= collapsedCount) {
-        categories
-    } else {
-        categories.take(collapsedCount)
-    }
-    val hiddenCount = categories.size - visibleCategories.size
-
-    FlowRow(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        FilterChip(
-            selected = selectedCategory == null,
-            onClick = { onCategoryClick(null) },
-            label = { Text("Все категории") }
-        )
-
-        visibleCategories.forEach { (category, count) ->
-            FilterChip(
-                selected = category == selectedCategory,
-                onClick = { onCategoryClick(category) },
-                label = { Text("${category.displayName} ($count)") },
-                leadingIcon = {
-                    RecipeCategoryIcon(
-                        modifier = Modifier.size(FilterChipDefaults.IconSize),
-                        category = category,
-
-                    )
-                }
-            )
-        }
-
-        if (hiddenCount > 0 || isExpanded) {
-            AssistChip(
-                onClick = { isExpanded = !isExpanded },
-                label = { Text(if (isExpanded) "Свернуть" else "Ещё $hiddenCount") },
-                trailingIcon = {
-                    Icon(
-                        imageVector = if (isExpanded) Icons.Filled.ExpandLess else Icons.Filled.ExpandMore,
-                        contentDescription = null,
-                        modifier = Modifier.size(FilterChipDefaults.IconSize)
-                    )
-                }
-            )
         }
     }
 }
@@ -291,10 +267,7 @@ private fun CategoryHeader(category: RecipeCategory) {
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        RecipeCategoryIcon(
-            modifier = Modifier.size(20.dp),
-            category = category
-        )
+        RecipeCategoryIcon(category = category, modifier = Modifier.size(20.dp))
         Text(
             category.displayName,
             style = MaterialTheme.typography.titleSmall,
