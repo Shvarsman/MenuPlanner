@@ -44,7 +44,10 @@ private fun ShoppingListItemWithProduct.toDomain() = ShoppingListItem(
         isDefault = product.isDefault,
         isToTaste = product.isToTaste
     ),
-    unit = item.unit, quantity = item.quantity, isChecked = item.isChecked
+    unit = item.unit,
+    quantity = item.quantity,
+    isChecked = item.isChecked,
+    expirationDate = item.expirationDate
 )
 
 private fun ShoppingListItem.toEntity() = ShoppingListItemEntity(
@@ -52,5 +55,6 @@ private fun ShoppingListItem.toEntity() = ShoppingListItemEntity(
     productId = product.id,
     unit = unit,
     quantity = quantity,
-    isChecked = isChecked
+    isChecked = isChecked,
+    expirationDate = expirationDate
 )

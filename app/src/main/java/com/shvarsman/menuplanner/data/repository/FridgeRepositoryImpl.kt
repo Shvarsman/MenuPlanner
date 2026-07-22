@@ -29,7 +29,8 @@ class FridgeRepositoryImpl @Inject constructor(
 
     override suspend fun deleteItem(id: Long) = dao.deleteById(id)
 
-    override suspend fun decreaseQuantity(id: Long, amount: Double) = dao.decreaseQuantity(id, amount)
+    override suspend fun decreaseQuantity(id: Long, amount: Double) =
+        dao.decreaseQuantity(id, amount)
 }
 
 private fun FridgeItemWithProduct.toDomain() = FridgeItem(
@@ -40,7 +41,16 @@ private fun FridgeItemWithProduct.toDomain() = FridgeItem(
         isDefault = product.isDefault, isToTaste = product.isToTaste
     ),
     unit = item.unit,
-    quantity = item.quantity
+    quantity = item.quantity,
+    expirationDate = item.expirationDate,
+    isFavorite = item.isFavorite
 )
 
-private fun FridgeItem.toEntity() = FridgeItemEntity(id = id, productId = product.id, unit = unit, quantity = quantity)
+private fun FridgeItem.toEntity() = FridgeItemEntity(
+    id = id,
+    productId = product.id,
+    unit = unit,
+    quantity = quantity,
+    expirationDate = expirationDate,
+    isFavorite = isFavorite
+)

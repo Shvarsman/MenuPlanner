@@ -3,6 +3,7 @@
 package com.shvarsman.menuplanner.presentation.screens.fridge
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -25,6 +26,7 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Kitchen
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
@@ -77,6 +79,7 @@ fun FridgeScreen(
         remember(viewModel) { { item: FridgeItem -> viewModel.onDeleteClick(item) } }
 
     val lazyListState = rememberLazyListState()
+    val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
 
     Scaffold(
         modifier = modifier,
@@ -148,7 +151,12 @@ fun FridgeScreen(
                     .padding(horizontal = 16.dp, vertical = 8.dp)
             )
 
-            if (listState.isEmpty) {
+            if (isLoading) {
+                Box(
+                    Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) { CircularProgressIndicator() }
+            } else if (listState.isEmpty) {
                 EmptyFridgeState(
                     modifier = Modifier
                         .fillMaxSize()

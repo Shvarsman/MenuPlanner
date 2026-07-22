@@ -6,12 +6,18 @@ import com.shvarsman.menuplanner.domain.model.ShoppingListItem
 import com.shvarsman.menuplanner.domain.model.UnitConversion
 import com.shvarsman.menuplanner.domain.repository.ShoppingListRepository
 import kotlinx.coroutines.flow.first
+import java.time.LocalDate
 import javax.inject.Inject
 
 class AddToShoppingListUseCase @Inject constructor(
     private val repository: ShoppingListRepository
 ) {
-    suspend operator fun invoke(product: Product, unit: MeasureUnit, quantity: Double) {
+    suspend operator fun invoke(
+        product: Product,
+        unit: MeasureUnit,
+        quantity: Double,
+        expirationDate: LocalDate? = null
+    ) {
         val currentItems = repository.observeItems().first()
         val existing = currentItems.firstOrNull {
             it.product.id == product.id && !it.isChecked &&
@@ -20,9 +26,21 @@ class AddToShoppingListUseCase @Inject constructor(
 
         if (existing != null) {
             val convertedQuantity = UnitConversion.convert(quantity, unit, existing.unit)!!
-            repository.updateItem(existing.copy(quantity = existing.quantity + convertedQuantity))
+            repository.updateItem(
+                existing.copy(
+                    quantity = existing.quantity + convertedQuantity,
+                    expirationDate = expirationDate ?: existing.expirationDate
+                )
+            )
             return
         }
-        repository.addItem(ShoppingListItem(product = product, unit = unit, quantity = quantity))
+        repository.addItem(
+            ShoppingListItem(
+                product = product,
+                unit = unit,
+                quantity = quantity,
+                expirationDate = expirationDate
+            )
+        )
     }
 }

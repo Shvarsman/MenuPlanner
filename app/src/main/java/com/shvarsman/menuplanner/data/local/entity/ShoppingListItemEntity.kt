@@ -5,6 +5,7 @@ import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.shvarsman.menuplanner.domain.model.MeasureUnit
+import java.time.LocalDate
 
 @Entity(
     tableName = "shopping_list_items",
@@ -23,5 +24,6 @@ data class ShoppingListItemEntity(
     val productId: Long,
     val unit: MeasureUnit,
     val quantity: Double,
-    val isChecked: Boolean = false
+    val isChecked: Boolean = false,
+    val expirationDate: LocalDate? = null
 )

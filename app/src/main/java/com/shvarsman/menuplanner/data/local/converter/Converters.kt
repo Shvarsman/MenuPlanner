@@ -8,6 +8,7 @@ import com.shvarsman.menuplanner.domain.model.MeasureUnit
 import com.shvarsman.menuplanner.domain.model.RecipeCategory
 import com.shvarsman.menuplanner.domain.model.StepContentItem
 import java.time.DayOfWeek
+import java.time.LocalDate
 
 class Converters {
 
@@ -74,4 +75,10 @@ class Converters {
     @TypeConverter
     fun toCookingMethod(value: String?): CookingMethod? =
         value?.let { v -> CookingMethod.entries.firstOrNull { it.name == v } }
+
+    @TypeConverter
+    fun fromLocalDate(date: LocalDate?): Long? = date?.toEpochDay()
+
+    @TypeConverter
+    fun toLocalDate(value: Long?): LocalDate? = value?.let { LocalDate.ofEpochDay(it) }
 }

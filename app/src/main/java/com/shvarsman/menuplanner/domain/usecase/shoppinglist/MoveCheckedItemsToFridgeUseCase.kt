@@ -18,9 +18,6 @@ class MoveCheckedItemsToFridgeUseCase @Inject constructor(
         var fridgeSnapshot = fridgeRepository.observeItems().first()
 
         checkedItems.forEach { item ->
-            // Ищем ЛЮБУЮ существующую запись этого продукта с совместимой единицей —
-            // не только первую попавшуюся, иначе рискуем создать вторую запись для
-            // того же продукта, если первая случайно оказалась в несовместимой единице.
             val existing = fridgeSnapshot.firstOrNull {
                 it.product.id == item.product.id &&
                         UnitConversion.convert(item.quantity, item.unit, it.unit) != null
@@ -28,15 +25,22 @@ class MoveCheckedItemsToFridgeUseCase @Inject constructor(
 
             if (existing != null) {
                 val converted = UnitConversion.convert(item.quantity, item.unit, existing.unit)!!
-                val updated = existing.copy(quantity = existing.quantity + converted)
+                val updated = existing.copy(
+                    quantity = existing.quantity + converted,
+                    expirationDate = item.expirationDate ?: existing.expirationDate
+                )
                 fridgeRepository.updateItem(updated)
                 fridgeSnapshot = fridgeSnapshot.map { if (it.id == updated.id) updated else it }
             } else {
                 val newId = fridgeRepository.addItem(
-                    FridgeItem(product = item.product, unit = item.unit, quantity = item.quantity)
+                    FridgeItem(
+                        product = item.product, unit = item.unit, quantity = item.quantity,
+                        expirationDate = item.expirationDate
+                    )
                 )
                 fridgeSnapshot = fridgeSnapshot + FridgeItem(
-                    id = newId, product = item.product, unit = item.unit, quantity = item.quantity
+                    id = newId, product = item.product, unit = item.unit, quantity = item.quantity,
+                    expirationDate = item.expirationDate
                 )
             }
         }
