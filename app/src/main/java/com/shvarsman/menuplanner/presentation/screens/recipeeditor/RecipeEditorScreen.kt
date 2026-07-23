@@ -323,7 +323,13 @@ fun RecipeEditorScreen(
         ProductPickerDialog(
             catalog = fridgeProducts,
             onDismiss = { viewModel.closeIngredientPicker() },
-            onConfirm = { product, unit, qty -> viewModel.addIngredient(product, unit, qty) },
+            onConfirm = { product, unit, qty, _ ->
+                viewModel.addIngredient(
+                    product,
+                    unit,
+                    qty
+                )
+            },
             onCreateProduct = { name, category, unit ->
                 viewModel.createProduct(
                     name,

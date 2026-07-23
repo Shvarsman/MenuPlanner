@@ -158,7 +158,7 @@ fun ShoppingListScreen(viewModel: ShoppingListViewModel = hiltViewModel()) {
         ProductPickerDialog(
             catalog = catalog,
             onDismiss = { viewModel.closePicker() },
-            onConfirm = { product, unit, qty -> viewModel.addItem(product, unit, qty) },
+            onConfirm = { product, unit, qty, date -> viewModel.addItem(product, unit, qty, date) },
             onCreateProduct = { name, category, unit ->
                 viewModel.createProduct(
                     name,

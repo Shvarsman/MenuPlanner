@@ -20,6 +20,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import java.time.LocalDate
 import javax.inject.Inject
 
 @HiltViewModel
@@ -69,9 +70,9 @@ class ShoppingListViewModel @Inject constructor(
     suspend fun createProduct(name: String, category: Category, unit: MeasureUnit): Product =
         findOrCreateProduct(name, category, unit)
 
-    fun addItem(product: Product, unit: MeasureUnit, quantity: Double) {
+    fun addItem(product: Product, unit: MeasureUnit, quantity: Double, expirationDate: LocalDate? = null) {
         viewModelScope.launch {
-            addToShoppingList(product, unit, quantity)
+            addToShoppingList(product, unit, quantity, expirationDate)
             closePicker()
         }
     }

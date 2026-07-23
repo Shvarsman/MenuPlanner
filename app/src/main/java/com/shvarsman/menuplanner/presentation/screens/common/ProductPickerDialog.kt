@@ -52,8 +52,8 @@ import com.shvarsman.menuplanner.domain.model.MeasureUnit
 import com.shvarsman.menuplanner.domain.model.Product
 import com.shvarsman.menuplanner.presentation.screens.fridge.ProductIcon
 import com.shvarsman.menuplanner.presentation.ui.icons.CategoryIcon
-import com.shvarsman.menuplanner.presentation.ui.theme.AppCornerRadius
 import kotlinx.coroutines.launch
+import java.time.LocalDate
 
 /**
  * Универсальный диалог: поиск/выбор продукта из каталога, создание нового продукта,
@@ -66,7 +66,7 @@ fun ProductPickerDialog(
     modifier: Modifier = Modifier,
     catalog: List<Product>,
     onDismiss: () -> Unit,
-    onConfirm: (product: Product, unit: MeasureUnit, quantity: Double) -> Unit,
+    onConfirm: (product: Product, unit: MeasureUnit, quantity: Double, expirationDate: LocalDate?) -> Unit,
     onCreateProduct: suspend (name: String, category: Category, unit: MeasureUnit) -> Product
 ) {
     var step by remember { mutableStateOf(PickerStep.SELECT) }
@@ -75,6 +75,7 @@ fun ProductPickerDialog(
     var quantityText by remember { mutableStateOf("1") }
     var selectedUnit by remember { mutableStateOf(MeasureUnit.PIECE) }
     var unitMenuExpanded by remember { mutableStateOf(false) }
+    var expirationDate by remember { mutableStateOf<LocalDate?>(null) }
 
     var newName by remember { mutableStateOf("") }
     var newCategory by remember { mutableStateOf(Category.GROCERY) }
@@ -157,12 +158,17 @@ fun ProductPickerDialog(
                                     },
                                     modifier = Modifier.clickable {
                                         if (product.isToTaste) {
-                                            // Специи/соль/сахар и т.п. — без указания количества
-                                            onConfirm(product, product.defaultUnit, 0.0)
+                                            onConfirm(
+                                                product,
+                                                product.defaultUnit,
+                                                0.0,
+                                                null
+                                            )
                                         } else {
                                             selectedProduct = product
                                             selectedUnit = product.defaultUnit
                                             quantityText = "1"
+                                            expirationDate = null
                                             step = PickerStep.QUANTITY
                                         }
                                     }
@@ -359,6 +365,10 @@ fun ProductPickerDialog(
                                 }
                             }
                         }
+                        ExpirationDatePickerField(
+                            value = expirationDate,
+                            onValueChange = { expirationDate = it }
+                        )
                     }
                 }
             }
@@ -403,6 +413,7 @@ fun ProductPickerDialog(
                                     onCreateProduct(newName.trim(), newCategory, selectedUnit)
                                 selectedProduct = created
                                 quantityText = "1"
+                                expirationDate = null
                                 createError = null
                                 step = PickerStep.QUANTITY
                             } catch (e: Exception) {
@@ -418,7 +429,7 @@ fun ProductPickerDialog(
                     enabled = parsedQuantity != null && parsedQuantity > 0,
                     onClick = {
                         val product = selectedProduct ?: return@Button
-                        onConfirm(product, selectedUnit, parsedQuantity ?: 0.0)
+                        onConfirm(product, selectedUnit, parsedQuantity ?: 0.0, expirationDate)
                     }
                 ) { Text("Добавить") }
             }
