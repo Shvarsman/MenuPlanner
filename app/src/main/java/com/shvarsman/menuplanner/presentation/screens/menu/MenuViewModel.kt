@@ -16,6 +16,7 @@ import com.shvarsman.menuplanner.domain.usecase.menu.AssignRecipeToMenuUseCase
 import com.shvarsman.menuplanner.domain.usecase.menu.GetWeekMenuUseCase
 import com.shvarsman.menuplanner.domain.usecase.menu.RemoveMenuEntryUseCase
 import com.shvarsman.menuplanner.domain.usecase.recipe.GetRecipesUseCase
+import com.shvarsman.menuplanner.presentation.utils.PendingDeleteManager
 import com.shvarsman.menuplanner.presentation.utils.debounceSearch
 import com.shvarsman.menuplanner.presentation.utils.mapOnDefault
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -61,12 +62,17 @@ class MenuViewModel @Inject constructor(
     private val _navigateToCooking = MutableStateFlow<Pair<Long, Long>?>(null)
     private val _selectedDay = MutableStateFlow<DayOfWeek>(LocalDate.now().dayOfWeek)
 
-    private val coreMenuData = combine(weekMenuFlow, recipesFlow, fridgeItemsFlow) { menu, recipes, fridge ->
+    private val pendingDeleteManager = PendingDeleteManager<Long>(viewModelScope)
+
+    private val coreMenuData = combine(
+        weekMenuFlow, recipesFlow, fridgeItemsFlow, pendingDeleteManager.pendingIds
+    ) { menu, recipes, fridge, pendingIds ->
+        val visibleMenu = menu.filter { it.id !in pendingIds }
         CoreMenuData(
-            weekMenu = menu,
+            weekMenu = visibleMenu,
             recipes = recipes,
             fridgeItems = fridge,
-            reservedQuantities = computeReservedAmounts(menu, recipes)
+            reservedQuantities = computeReservedAmounts(visibleMenu, recipes)
         )
     }.mapOnDefault { it }
 
@@ -118,8 +124,12 @@ class MenuViewModel @Inject constructor(
         }
     }
 
-    fun removeEntry(entry: MenuEntry) {
-        viewModelScope.launch { removeMenuEntry(entry.id) }
+    fun requestDeleteEntry(id: Long) {
+        pendingDeleteManager.requestDelete(id) { removeMenuEntry(id) }
+    }
+
+    fun undoDeleteEntry(id: Long) {
+        pendingDeleteManager.undo(id)
     }
 
     fun onCookClick(entry: MenuEntry) {

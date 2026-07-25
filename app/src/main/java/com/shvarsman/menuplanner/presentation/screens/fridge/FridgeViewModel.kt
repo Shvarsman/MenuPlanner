@@ -6,6 +6,7 @@ import com.shvarsman.menuplanner.domain.model.Category
 import com.shvarsman.menuplanner.domain.model.FridgeItem
 import com.shvarsman.menuplanner.domain.model.MeasureUnit
 import com.shvarsman.menuplanner.domain.model.Product
+import com.shvarsman.menuplanner.domain.model.UnitConversion
 import com.shvarsman.menuplanner.domain.usecase.fridge.AddFridgeItemUseCase
 import com.shvarsman.menuplanner.domain.usecase.fridge.DeleteFridgeItemUseCase
 import com.shvarsman.menuplanner.domain.usecase.fridge.GetFridgeItemsUseCase
@@ -13,6 +14,7 @@ import com.shvarsman.menuplanner.domain.usecase.fridge.UpdateFridgeItemUseCase
 import com.shvarsman.menuplanner.domain.usecase.product.FindOrCreateProductUseCase
 import com.shvarsman.menuplanner.domain.usecase.product.GetAllProductsUseCase
 import com.shvarsman.menuplanner.presentation.utils.GroupedRow
+import com.shvarsman.menuplanner.presentation.utils.PendingDeleteManager
 import com.shvarsman.menuplanner.presentation.utils.buildGroupedRows
 import com.shvarsman.menuplanner.presentation.utils.debounceSearch
 import com.shvarsman.menuplanner.presentation.utils.mapOnDefault
@@ -100,21 +102,54 @@ class FridgeViewModel @Inject constructor(
         }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    val listState: StateFlow<FridgeListState> = combine(
+    private val pendingDeleteManager = PendingDeleteManager<Long>(viewModelScope)
+
+    fun requestDelete(id: Long) {
+        pendingDeleteManager.requestDelete(id) { deleteFridgeItem(id) }
+    }
+
+    fun undoDelete(id: Long) {
+        pendingDeleteManager.undo(id)
+    }
+
+    fun requestDeleteBulk(ids: List<Long>) {
+        ids.forEach { id -> pendingDeleteManager.requestDelete(id) { deleteFridgeItem(id) } }
+    }
+
+    fun undoDeleteBulk(ids: List<Long>) {
+        ids.forEach { pendingDeleteManager.undo(it) }
+    }
+
+    private data class FridgeFilterState(
+        val list: List<FridgeItem>,
+        val query: String,
+        val category: Category?,
+        val sort: FridgeSortOption,
+        val groupByCategory: Boolean
+    )
+
+    private val filterState = combine(
         allItems, _searchQuery.debounceSearch(), _selectedCategory, _sortOption, _groupByCategory
     ) { list, query, category, sort, groupByCategory ->
-        val filtered = list
-            .let { if (category != null) it.filter { i -> i.product.category == category } else it }
+        FridgeFilterState(list, query, category, sort, groupByCategory)
+    }
+
+    val listState: StateFlow<FridgeListState> = combine(
+        filterState, pendingDeleteManager.pendingIds
+    ) { state, pendingIds ->
+        val filtered = state.list
+            .filter { it.id !in pendingIds }   // мгновенно скрываем "удаляемые" элементы
+            .let { if (state.category != null) it.filter { i -> i.product.category == state.category } else it }
             .let {
-                if (query.isBlank()) it else it.filter { i ->
+                if (state.query.isBlank()) it else it.filter { i ->
                     i.product.name.contains(
-                        query,
+                        state.query,
                         ignoreCase = true
                     )
                 }
             }
 
-        val sorted = when (sort) {
+        val sorted = when (state.sort) {
             FridgeSortOption.NAME_ASC -> filtered.sortedBy { it.product.name.lowercase() }
             FridgeSortOption.NAME_DESC -> filtered.sortedByDescending { it.product.name.lowercase() }
             FridgeSortOption.EXPIRATION_SOON -> filtered.sortedWith(compareBy(nullsLast()) { it.expirationDate })
@@ -126,7 +161,7 @@ class FridgeViewModel @Inject constructor(
             )
         }
 
-        val rows = if (groupByCategory) {
+        val rows = if (state.groupByCategory) {
             buildGroupedRows(sorted, { it.product.category }) { it.ordinal }
         } else {
             sorted.map { GroupedRow.Item(it) }
@@ -136,7 +171,6 @@ class FridgeViewModel @Inject constructor(
     }
         .mapOnDefault { it }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), FridgeListState())
-
     val catalog: StateFlow<List<Product>> = getAllProducts()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
@@ -187,14 +221,6 @@ class FridgeViewModel @Inject constructor(
         _selectedIds.value = emptySet()
     }
 
-    fun deleteSelected() {
-        val ids = _selectedIds.value
-        viewModelScope.launch {
-            ids.forEach { deleteFridgeItem(it) }
-            _selectedIds.value = emptySet()
-        }
-    }
-
     fun toggleFavoriteSelected() {
         val items = allItems.value.filter { it.id in _selectedIds.value }
         if (items.isEmpty()) return
@@ -216,14 +242,30 @@ class FridgeViewModel @Inject constructor(
     fun addItem(product: Product, unit: MeasureUnit, quantity: Double, expirationDate: LocalDate?) {
         viewModelScope.launch {
             try {
-                addFridgeItem(
-                    FridgeItem(
-                        product = product,
-                        unit = unit,
-                        quantity = quantity,
-                        expirationDate = expirationDate
+                val existing = allItems.value.firstOrNull {
+                    it.product.id == product.id &&
+                            it.expirationDate == expirationDate &&
+                            UnitConversion.convert(quantity, unit, it.unit) != null
+                }
+
+                if (existing != null) {
+                    val converted = UnitConversion.convert(quantity, unit, existing.unit)!!
+                    updateFridgeItem(
+                        existing.copy(
+                            quantity = existing.quantity + converted,
+                            expirationDate = expirationDate ?: existing.expirationDate
+                        )
                     )
-                )
+                } else {
+                    addFridgeItem(
+                        FridgeItem(
+                            product = product,
+                            unit = unit,
+                            quantity = quantity,
+                            expirationDate = expirationDate
+                        )
+                    )
+                }
                 closeAddPicker()
             } catch (e: IllegalArgumentException) {
                 _errorMessage.value = e.message

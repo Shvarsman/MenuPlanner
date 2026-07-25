@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -18,15 +19,35 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
-import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.ListItem
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -40,6 +61,7 @@ import com.shvarsman.menuplanner.presentation.screens.fridge.ProductIcon
 import com.shvarsman.menuplanner.presentation.ui.icons.CategoryIcon
 import com.shvarsman.menuplanner.presentation.utils.GroupedRow
 import com.shvarsman.menuplanner.presentation.utils.rememberDebouncedSearch
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -63,8 +85,24 @@ fun ProductCatalogScreen(
     }
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
 
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
+
+    fun requestDelete(product: Product) {
+        viewModel.requestDelete(product)
+        scope.launch {
+            val result = snackbarHostState.showSnackbar(
+                message = "«${product.name}» удалён из каталога",
+                actionLabel = "Отменить",
+                duration = SnackbarDuration.Short
+            )
+            if (result == SnackbarResult.ActionPerformed) viewModel.undoDelete(product.id)
+        }
+    }
+
     Scaffold(
         modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
                 scrollBehavior = scrollBehavior,
@@ -105,27 +143,29 @@ fun ProductCatalogScreen(
                 FilterChip(
                     selected = showOnlyCustom,
                     onClick = { viewModel.toggleShowOnlyCustom() },
-                    label = { Text("Мои продукты") }
+                    label = { Text("Мои продукты") },
+                    shape = RoundedCornerShape(28.dp)
                 )
                 FilterChip(
                     selected = !showOnlyCustom,
                     onClick = { viewModel.toggleShowOnlyCustom() },
-                    label = { Text("Все") }
+                    label = { Text("Все") },
+                    shape = RoundedCornerShape(28.dp)
                 )
                 DropdownFilterChip(
                     displayText = selectedCategory?.displayName ?: "Категория",
                     isActive = selectedCategory != null
                 ) { close ->
                     DropdownMenuItem(
-                        modifier = Modifier.padding(horizontal = 8.dp),
+                        modifier = Modifier.padding(horizontal = 16.dp),
                         text = { Text("Все категории") },
                         onClick = { viewModel.selectCategory(null); close() }
                     )
                     if (availableCategories.isNotEmpty()) {
-                        HorizontalDivider(Modifier.padding(horizontal = 16.dp))
+                        HorizontalDivider(Modifier.padding(horizontal = 24.dp))
                         availableCategories.forEach { (category, count) ->
                             DropdownMenuItem(
-                                modifier = Modifier.padding(horizontal = 8.dp),
+                                modifier = Modifier.padding(horizontal = 16.dp),
                                 text = {
                                     Text(
                                         "${category.displayName} ($count)",
@@ -217,7 +257,7 @@ fun ProductCatalogScreen(
             text = { Text(text = "«${product.name}» будет удалён из каталога.") },
             confirmButton = {
                 TextButton(onClick = {
-                    viewModel.delete(product)
+                    requestDelete(product)
                     productPendingDelete = null
                 }) { Text(text = "Удалить") }
             },

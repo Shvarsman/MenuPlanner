@@ -13,11 +13,13 @@ import com.shvarsman.menuplanner.domain.usecase.shoppinglist.GetShoppingListUseC
 import com.shvarsman.menuplanner.domain.usecase.shoppinglist.MoveCheckedItemsToFridgeUseCase
 import com.shvarsman.menuplanner.domain.usecase.shoppinglist.RemoveShoppingItemUseCase
 import com.shvarsman.menuplanner.domain.usecase.shoppinglist.ToggleShoppingItemUseCase
+import com.shvarsman.menuplanner.presentation.utils.PendingDeleteManager
 import com.shvarsman.menuplanner.presentation.utils.mapOnDefault
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.time.LocalDate
@@ -34,8 +36,24 @@ class ShoppingListViewModel @Inject constructor(
     private val moveCheckedItemsToFridge: MoveCheckedItemsToFridgeUseCase
 ) : ViewModel() {
 
-    val items: StateFlow<List<ShoppingListItem>> = getShoppingList()
+    private val pendingDeleteManager = PendingDeleteManager<Long>(viewModelScope)
+
+    private val rawItems: StateFlow<List<ShoppingListItem>> = getShoppingList()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    val items: StateFlow<List<ShoppingListItem>> = combine(
+        rawItems, pendingDeleteManager.pendingIds
+    ) { list, pendingIds -> list.filter { it.id !in pendingIds } }
+        .mapOnDefault { it }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    fun requestDelete(id: Long) {
+        pendingDeleteManager.requestDelete(id) { removeShoppingItem(id) }
+    }
+
+    fun undoDelete(id: Long) {
+        pendingDeleteManager.undo(id)
+    }
 
     val groupedUnchecked: StateFlow<Map<Category, List<ShoppingListItem>>> = items
         .mapOnDefault { list ->
@@ -70,7 +88,12 @@ class ShoppingListViewModel @Inject constructor(
     suspend fun createProduct(name: String, category: Category, unit: MeasureUnit): Product =
         findOrCreateProduct(name, category, unit)
 
-    fun addItem(product: Product, unit: MeasureUnit, quantity: Double, expirationDate: LocalDate? = null) {
+    fun addItem(
+        product: Product,
+        unit: MeasureUnit,
+        quantity: Double,
+        expirationDate: LocalDate? = null
+    ) {
         viewModelScope.launch {
             addToShoppingList(product, unit, quantity, expirationDate)
             closePicker()

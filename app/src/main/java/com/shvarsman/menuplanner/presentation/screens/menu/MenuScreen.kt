@@ -41,6 +41,8 @@ import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -60,8 +62,6 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
@@ -79,6 +79,7 @@ import com.shvarsman.menuplanner.presentation.screens.common.rememberSizedImageR
 import com.shvarsman.menuplanner.presentation.ui.theme.AppCornerRadius
 import com.shvarsman.menuplanner.presentation.ui.theme.molleFont
 import com.shvarsman.menuplanner.presentation.utils.rememberDebouncedSearch
+import com.shvarsman.menuplanner.presentation.utils.rememberOptimisticDelete
 import kotlinx.coroutines.launch
 import java.time.DayOfWeek
 import java.time.LocalDate
@@ -113,7 +114,15 @@ fun MenuScreen(
     val filteredPickerRecipes = uiState.filteredPickerRecipes
     val selectedDay = uiState.selectedDay
 
-    // Стейты управления боковой панелью
+    val snackbarHostState = remember { SnackbarHostState() }
+    val requestDelete = rememberOptimisticDelete<MenuEntry, Long>(
+        snackbarHostState = snackbarHostState,
+        idOf = { it.id },
+        message = { entry -> "«${entry.recipeTitle}» убран из меню" },
+        onRequestDelete = { id -> viewModel.requestDeleteEntry(id) },
+        onUndo = { id -> viewModel.undoDeleteEntry(id) }
+    )
+
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
 
@@ -163,6 +172,7 @@ fun MenuScreen(
     ) {
         Scaffold(
             modifier = modifier,
+            snackbarHost = { SnackbarHost(snackbarHostState) },
             topBar = {
                 CenterAlignedTopAppBar(
                     title = {
@@ -201,7 +211,6 @@ fun MenuScreen(
                 ),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                // Отображаем только выбранный день
                 item(key = selectedDay.name) {
                     DayCard(
                         day = selectedDay,
@@ -209,7 +218,7 @@ fun MenuScreen(
                             entriesByKey[selectedDay to meal].orEmpty()
                         },
                         onAddMeal = { meal -> viewModel.openRecipePicker(selectedDay, meal) },
-                        onRemoveEntry = { viewModel.removeEntry(it) },
+                        onRemoveEntry = { requestDelete(it) },
                         onCookEntry = { viewModel.onCookClick(it) },
                         onViewEntry = { entry -> onViewRecipe(entry.recipeId) }
                     )

@@ -11,6 +11,7 @@ import com.shvarsman.menuplanner.domain.usecase.fridge.GetFridgeItemsUseCase
 import com.shvarsman.menuplanner.domain.usecase.recipe.DeleteRecipeUseCase
 import com.shvarsman.menuplanner.domain.usecase.recipe.GetRecipeSummariesUseCase
 import com.shvarsman.menuplanner.domain.usecase.recipe.GetRecipesUseCase
+import com.shvarsman.menuplanner.presentation.utils.PendingDeleteManager
 import com.shvarsman.menuplanner.presentation.utils.debounceSearch
 import com.shvarsman.menuplanner.presentation.utils.mapOnDefault
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -55,8 +56,24 @@ class RecipeListViewModel @Inject constructor(
         _sortOption.value = option
     }
 
-    val allRecipes: StateFlow<List<RecipeSummary>> = getRecipeSummaries()
+    private val pendingDeleteManager = PendingDeleteManager<Long>(viewModelScope)
+
+    private val rawRecipes: StateFlow<List<RecipeSummary>> = getRecipeSummaries()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    val allRecipes: StateFlow<List<RecipeSummary>> = combine(
+        rawRecipes, pendingDeleteManager.pendingIds
+    ) { list, pendingIds -> list.filter { it.id !in pendingIds } }
+        .mapOnDefault { it }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    fun requestDelete(id: Long) {
+        pendingDeleteManager.requestDelete(id) { deleteRecipe(id) }
+    }
+
+    fun undoDelete(id: Long) {
+        pendingDeleteManager.undo(id)
+    }
 
     private val fullRecipes = getRecipes()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())

@@ -32,6 +32,8 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -55,6 +57,7 @@ import com.shvarsman.menuplanner.presentation.screens.common.ProductPickerDialog
 import com.shvarsman.menuplanner.presentation.screens.fridge.ProductIcon
 import com.shvarsman.menuplanner.presentation.ui.icons.CategoryIcon
 import com.shvarsman.menuplanner.presentation.ui.theme.AppCornerRadius
+import com.shvarsman.menuplanner.presentation.utils.rememberOptimisticDelete
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -66,10 +69,19 @@ fun ShoppingListScreen(viewModel: ShoppingListViewModel = hiltViewModel()) {
     val catalog by viewModel.catalog.collectAsStateWithLifecycle()
     val isPickerOpen by viewModel.isPickerOpen.collectAsStateWithLifecycle()
 
+    val snackbarHostState = remember { SnackbarHostState() }
+    val requestDelete = rememberOptimisticDelete<ShoppingListItem, Long>(
+        snackbarHostState = snackbarHostState,
+        idOf = { it.id },
+        message = { item -> "«${item.product.name}» удалён" },
+        onRequestDelete = { id -> viewModel.requestDelete(id) },
+        onUndo = { id -> viewModel.undoDelete(id) }
+    )
     var showMoveConfirmation by remember { mutableStateOf(false) }
 
     Scaffold(
         contentWindowInsets = WindowInsets(0),
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
                 title = {
@@ -137,7 +149,7 @@ fun ShoppingListScreen(viewModel: ShoppingListViewModel = hiltViewModel()) {
                         ShoppingItemRow(
                             item = item,
                             onToggle = { viewModel.toggleChecked(item) },
-                            onRemove = { viewModel.removeItem(item) })
+                            onRemove = { requestDelete(item) })
                     }
                 }
 
@@ -147,7 +159,7 @@ fun ShoppingListScreen(viewModel: ShoppingListViewModel = hiltViewModel()) {
                         ShoppingItemRow(
                             item = item,
                             onToggle = { viewModel.toggleChecked(item) },
-                            onRemove = { viewModel.removeItem(item) })
+                            onRemove = { requestDelete(item) })
                     }
                 }
             }

@@ -26,8 +26,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.shvarsman.menuplanner.presentation.ui.theme.gradientStyle
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -36,10 +38,11 @@ fun DropdownFilterChip(
     isActive: Boolean,
     modifier: Modifier = Modifier,
     maxMenuHeight: Dp = 300.dp,
+    shape: Shape = RoundedCornerShape(28.dp),
     menuContent: @Composable ColumnScope.(closeMenu: () -> Unit) -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
-    Box(modifier = modifier) {
+    Box {
         FilterChip(
             selected = isActive,
             onClick = { expanded = true },
@@ -59,35 +62,18 @@ fun DropdownFilterChip(
                     contentDescription = null,
                     modifier = Modifier.size(FilterChipDefaults.IconSize)
                 )
-            }
+            },
+            shape = shape
         )
         DropdownMenu(
-            modifier = Modifier
-                .clip(RoundedCornerShape(24.dp))
+            modifier = modifier
+                .clip(RoundedCornerShape(28.dp))
                 .heightIn(max = maxMenuHeight)
-                .background(
-                    brush = Brush.verticalGradient(
-                        colors = listOf(
-                            MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.05f),
-                            MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.02f)
-                        )
-                    ),
-                    shape = RoundedCornerShape(24.dp),
-                )
-                .border(
-                    width = 1.dp,
-                    brush = Brush.horizontalGradient(
-                        colors = listOf(
-                            MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
-                            MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
-                        )
-                    ),
-                    shape = RoundedCornerShape(24.dp)
-                ),
+                .gradientStyle(),
             expanded = expanded,
             onDismissRequest = { expanded = false },
             containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.9f),
-            shape = RoundedCornerShape(24.dp),
+            shape = RoundedCornerShape(28.dp),
             shadowElevation = 0.dp
         ) {
             menuContent { expanded = false }

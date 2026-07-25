@@ -10,6 +10,7 @@ import com.shvarsman.menuplanner.domain.usecase.product.GetAllProductsUseCase
 import com.shvarsman.menuplanner.domain.usecase.product.ProductInUseException
 import com.shvarsman.menuplanner.domain.usecase.product.UpdateProductUseCase
 import com.shvarsman.menuplanner.presentation.utils.GroupedRow
+import com.shvarsman.menuplanner.presentation.utils.PendingDeleteManager
 import com.shvarsman.menuplanner.presentation.utils.buildGroupedRows
 import com.shvarsman.menuplanner.presentation.utils.debounceSearch
 import com.shvarsman.menuplanner.presentation.utils.mapOnDefault
@@ -39,6 +40,8 @@ class ProductCatalogViewModel @Inject constructor(
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery
     fun onSearchQueryChange(query: String) { _searchQuery.value = query }
+
+    private val pendingDeleteManager = PendingDeleteManager<Long>(viewModelScope)
 
     private val _showOnlyCustom = MutableStateFlow(true)
     val showOnlyCustom: StateFlow<Boolean> = _showOnlyCustom
@@ -105,14 +108,21 @@ class ProductCatalogViewModel @Inject constructor(
         }
     }
 
-    fun delete(product: Product) {
-        viewModelScope.launch {
+    fun requestDelete(product: Product) {
+        pendingDeleteManager.requestDelete(product.id) {
             try {
                 deleteProduct(product.id)
             } catch (e: ProductInUseException) {
+                // Продукт нельзя было удалить сразу — возвращаем его в список
+                // и просим явное подтверждение через отдельный диалог
+                pendingDeleteManager.undo(product.id)
                 _pendingForceDelete.value = product to e.usagesCount
             }
         }
+    }
+
+    fun undoDelete(id: Long) {
+        pendingDeleteManager.undo(id)
     }
 
     fun confirmForceDelete() {

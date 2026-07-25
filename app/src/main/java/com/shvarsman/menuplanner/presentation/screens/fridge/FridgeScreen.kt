@@ -18,10 +18,12 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ListAlt
 import androidx.compose.material.icons.filled.Add
@@ -48,22 +50,31 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MenuItemColors
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.SwipeToDismissBox
+import androidx.compose.material3.SwipeToDismissBoxState
 import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -75,8 +86,11 @@ import com.shvarsman.menuplanner.presentation.screens.common.DropdownFilterChip
 import com.shvarsman.menuplanner.presentation.screens.common.ProductPickerDialog
 import com.shvarsman.menuplanner.presentation.screens.common.TopBarSearchField
 import com.shvarsman.menuplanner.presentation.ui.icons.CategoryIcon
+import com.shvarsman.menuplanner.presentation.ui.theme.gradientStyle
 import com.shvarsman.menuplanner.presentation.utils.GroupedRow
 import com.shvarsman.menuplanner.presentation.utils.rememberDebouncedSearch
+import com.shvarsman.menuplanner.presentation.utils.rememberOptimisticDelete
+import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
@@ -100,6 +114,8 @@ fun FridgeScreen(
     val groupByCategory by viewModel.groupByCategory.collectAsStateWithLifecycle()
     val selectedIds by viewModel.selectedIds.collectAsStateWithLifecycle()
     val isSelectionMode = selectedIds.isNotEmpty()
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
 
     val (localSearchQuery, onLocalSearchQueryChange) = rememberDebouncedSearch(searchQuery) {
         viewModel.onSearchQueryChange(it)
@@ -107,8 +123,17 @@ fun FridgeScreen(
     val lazyListState = rememberLazyListState()
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
 
+    val requestDelete = rememberOptimisticDelete<FridgeItem, Long>(
+        snackbarHostState = snackbarHostState,
+        idOf = { it.id },
+        message = { item -> "«${item.product.name}» удалён" },
+        onRequestDelete = { id -> viewModel.requestDelete(id) },
+        onUndo = { id -> viewModel.undoDelete(id) }
+    )
+
     Scaffold(
         modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
                 scrollBehavior = scrollBehavior,
@@ -165,9 +190,21 @@ fun FridgeScreen(
                     IconButton(onClick = { viewModel.toggleFavoriteSelected() }) {
                         Icon(Icons.Filled.Star, contentDescription = "Избранное")
                     }
-                    IconButton(onClick = { viewModel.deleteSelected() }) {
-                        Icon(Icons.Filled.Delete, contentDescription = "Удалить")
-                    }
+                    IconButton(onClick = {
+                        val ids = selectedIds.toList()
+                        viewModel.clearSelection()
+                        viewModel.requestDeleteBulk(ids)
+                        scope.launch {
+                            val result = snackbarHostState.showSnackbar(
+                                message = "Удалено продуктов: ${ids.size}",
+                                actionLabel = "Отменить",
+                                duration = SnackbarDuration.Short
+                            )
+                            if (result == SnackbarResult.ActionPerformed) viewModel.undoDeleteBulk(
+                                ids
+                            )
+                        }
+                    }) { Icon(Icons.Filled.Delete, contentDescription = "Удалить") }
                 }
             }
         }
@@ -190,11 +227,13 @@ fun FridgeScreen(
                         isActive = selectedCategory != null
                     ) { close ->
                         DropdownMenuItem(
+                            modifier = Modifier.padding(horizontal = 16.dp),
                             text = { Text("Все категории") },
                             onClick = { viewModel.selectCategory(null); close() }
                         )
                         availableCategories.forEach { (category, count) ->
                             DropdownMenuItem(
+                                modifier = Modifier.padding(horizontal = 16.dp),
                                 text = {
                                     Text(
                                         "${category.displayName} ($count)",
@@ -220,11 +259,13 @@ fun FridgeScreen(
                     }
 
                     DropdownFilterChip(
+                        modifier = Modifier.widthIn(max = 230.dp),
                         displayText = sortOption.displayName,
                         isActive = sortOption != FridgeSortOption.NAME_ASC
                     ) { close ->
                         FridgeSortOption.entries.forEach { option ->
                             DropdownMenuItem(
+                                modifier = Modifier.padding(horizontal = 16.dp),
                                 text = { Text(option.displayName) },
                                 trailingIcon = {
                                     if (option == sortOption) Icon(
@@ -240,7 +281,8 @@ fun FridgeScreen(
                     FilterChip(
                         selected = groupByCategory,
                         onClick = { viewModel.toggleGroupByCategory() },
-                        label = { Text("По категориям") }
+                        label = { Text("По категориям") },
+                        shape = RoundedCornerShape(28.dp)
                     )
                 }
             }
@@ -283,10 +325,14 @@ fun FridgeScreen(
                                     item = row.value,
                                     isSelectionMode = isSelectionMode,
                                     isSelected = row.value.id in selectedIds,
-                                    onClick = { if (isSelectionMode) viewModel.toggleSelection(row.value.id) },
+                                    onClick = {
+                                        if (isSelectionMode) viewModel.toggleSelection(row.value.id) else viewModel.onEditClick(
+                                            row.value
+                                        )
+                                    },
                                     onLongClick = { viewModel.enterSelectionMode(row.value.id) },
                                     onEdit = { viewModel.onEditClick(row.value) },
-                                    onDelete = { viewModel.onDeleteClick(row.value) },
+                                    onDelete = { requestDelete(row.value) },
                                     onToggleFavorite = { viewModel.toggleFavorite(row.value) },
                                     onSelect = { viewModel.enterSelectionMode(row.value.id) }
                                 )
@@ -363,16 +409,27 @@ private fun FridgeItemRow(
 ) {
     var menuExpanded by remember { mutableStateOf(false) }
 
-    val dismissState = rememberSwipeToDismissBoxState(
-        confirmValueChange = { value ->
-            if (value == SwipeToDismissBoxValue.EndToStart && !isSelectionMode) {
-                onDelete()
+    val latestOnDelete = rememberUpdatedState(onDelete)
+    val latestIsSelectionMode = rememberUpdatedState(isSelectionMode)
+    val confirmValueChange = remember(item.id) {
+        { value: SwipeToDismissBoxValue ->
+            if (value == SwipeToDismissBoxValue.EndToStart && !latestIsSelectionMode.value) {
+                latestOnDelete.value()
                 true
             } else {
                 false
             }
         }
-    )
+    }
+    val density = LocalDensity.current
+    val dismissState = remember(item.id) {
+        SwipeToDismissBoxState(
+            initialValue = SwipeToDismissBoxValue.Settled,
+            density = density,
+            confirmValueChange = confirmValueChange,
+            positionalThreshold = { totalDistance -> totalDistance * 0.5f }
+        )
+    }
 
     SwipeToDismissBox(
         state = dismissState,
@@ -439,8 +496,16 @@ private fun FridgeItemRow(
                                 }
                                 DropdownMenu(
                                     expanded = menuExpanded,
-                                    onDismissRequest = { menuExpanded = false }) {
+                                    onDismissRequest = { menuExpanded = false },
+                                    modifier = Modifier
+                                        .gradientStyle()
+                                        .clip(RoundedCornerShape(28.dp)),
+                                    containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.9f),
+                                    shape = RoundedCornerShape(28.dp),
+                                    shadowElevation = 0.dp
+                                ) {
                                     DropdownMenuItem(
+                                        modifier = Modifier.padding(horizontal = 16.dp),
                                         text = { Text("Изменить") },
                                         leadingIcon = {
                                             Icon(
@@ -451,6 +516,7 @@ private fun FridgeItemRow(
                                         onClick = { menuExpanded = false; onEdit() }
                                     )
                                     DropdownMenuItem(
+                                        modifier = Modifier.padding(horizontal = 16.dp),
                                         text = { Text(if (item.isFavorite) "Убрать из избранного" else "Добавить в избранное") },
                                         leadingIcon = {
                                             Icon(
@@ -461,6 +527,27 @@ private fun FridgeItemRow(
                                         onClick = { menuExpanded = false; onToggleFavorite() }
                                     )
                                     DropdownMenuItem(
+                                        modifier = Modifier.padding(horizontal = 16.dp),
+                                        text = { Text("Удалить") },
+                                        leadingIcon = {
+                                            Icon(
+                                                Icons.Filled.Delete,
+                                                contentDescription = null
+                                            )
+                                        },
+                                        onClick = { menuExpanded = false; onDelete() },
+                                        colors = MenuItemColors(
+                                            textColor = MaterialTheme.colorScheme.error,
+                                            leadingIconColor = MaterialTheme.colorScheme.error,
+                                            trailingIconColor = MaterialTheme.colorScheme.error,
+                                            disabledTextColor = MaterialTheme.colorScheme.error,
+                                            disabledLeadingIconColor = MaterialTheme.colorScheme.error,
+                                            disabledTrailingIconColor = MaterialTheme.colorScheme.error
+                                        )
+                                    )
+                                    HorizontalDivider(Modifier.padding(horizontal = 24.dp))
+                                    DropdownMenuItem(
+                                        modifier = Modifier.padding(horizontal = 16.dp),
                                         text = { Text("Выбрать") },
                                         leadingIcon = {
                                             Icon(
@@ -469,16 +556,6 @@ private fun FridgeItemRow(
                                             )
                                         },
                                         onClick = { menuExpanded = false; onSelect() }
-                                    )
-                                    DropdownMenuItem(
-                                        text = { Text("Удалить") },
-                                        leadingIcon = {
-                                            Icon(
-                                                Icons.Filled.Delete,
-                                                contentDescription = null
-                                            )
-                                        },
-                                        onClick = { menuExpanded = false; onDelete() }
                                     )
                                 }
                             }
