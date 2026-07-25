@@ -57,7 +57,7 @@ fun ProductNameField(
         FieldLabel("Название")
         Surface(
             shape = RoundedCornerShape(28.dp),
-            color = SearchBarDefaults.colors().containerColor,
+            color = MaterialTheme.colorScheme.surface,
             modifier = Modifier.fillMaxWidth()
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -71,7 +71,11 @@ fun ProductNameField(
                         focusedContainerColor = Color.Transparent,
                         unfocusedContainerColor = Color.Transparent,
                         focusedIndicatorColor = Color.Transparent,
-                        unfocusedIndicatorColor = Color.Transparent
+                        unfocusedIndicatorColor = Color.Transparent,
+                        unfocusedPlaceholderColor = MaterialTheme.colorScheme.onSurface,
+                        focusedPlaceholderColor = MaterialTheme.colorScheme.onSurface,
+                        focusedTextColor = MaterialTheme.colorScheme.onBackground,
+                        unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
                     ),
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -103,7 +107,10 @@ fun CategoryPickerList(
                     trailingContent = {
                         RadioButton(selected = category == selectedCategory, onClick = null)
                     },
-                    colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh),
+                    colors = ListItemDefaults.colors(
+                        containerColor = MaterialTheme.colorScheme.surface,
+                        headlineColor = MaterialTheme.colorScheme.onBackground
+                    ),
                     modifier = Modifier.clickable { onCategoryChange(category) }
                 )
             }
@@ -126,7 +133,7 @@ fun MeasureUnitField(
             Surface(
                 onClick = { expanded = true },
                 shape = RoundedCornerShape(28.dp),
-                color = SearchBarDefaults.colors().containerColor,
+                color = MaterialTheme.colorScheme.surface,
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Row(
@@ -193,7 +200,11 @@ fun ProductFormFields(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column(modifier = Modifier.weight(1f)) {
-                Text("По вкусу", style = MaterialTheme.typography.bodyMedium)
+                Text(
+                    "По вкусу",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
                 Text(
                     "Без фиксированного количества — соль, специи и т.п.",
                     style = MaterialTheme.typography.bodySmall,
@@ -209,7 +220,11 @@ fun ProductFormFields(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column(modifier = Modifier.weight(1f)) {
-                Text("Всегда в наличии", style = MaterialTheme.typography.bodyMedium)
+                Text(
+                    "Всегда в наличии",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
                 Text(
                     "Вода из-под крана и т.п. — не хранится в холодильнике, не докупается",
                     style = MaterialTheme.typography.bodySmall,

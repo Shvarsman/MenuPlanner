@@ -7,6 +7,7 @@ data class Recipe(
     val photoUri: String? = null,
     val cookingMethod: CookingMethod? = null,
     val cookingTimeMinutes: Int? = null,
+    val difficulty: RecipeDifficulty = RecipeDifficulty.EASY,
     val ingredients: List<RecipeIngredient> = emptyList(),
     val steps: List<StepContentItem> = emptyList()
 )

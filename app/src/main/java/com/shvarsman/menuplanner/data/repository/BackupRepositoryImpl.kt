@@ -20,6 +20,7 @@ import com.shvarsman.menuplanner.domain.model.MeasureUnit
 import com.shvarsman.menuplanner.domain.model.MenuEntry
 import com.shvarsman.menuplanner.domain.model.Recipe
 import com.shvarsman.menuplanner.domain.model.RecipeCategory
+import com.shvarsman.menuplanner.domain.model.RecipeDifficulty
 import com.shvarsman.menuplanner.domain.model.RecipeIngredient
 import com.shvarsman.menuplanner.domain.model.ShoppingListItem
 import com.shvarsman.menuplanner.domain.model.StepContentItem
@@ -58,7 +59,11 @@ class BackupRepositoryImpl @Inject constructor(
     private val imageFileManager: ImageFileManager
 ) : BackupRepository {
 
-    override suspend fun exportBackup(destinationUri: Uri, type: BackupType, singleRecipeId: Long?): BackupResult =
+    override suspend fun exportBackup(
+        destinationUri: Uri,
+        type: BackupType,
+        singleRecipeId: Long?
+    ): BackupResult =
         withContext(Dispatchers.IO) {
             exportBackupInternal(destinationUri, type, singleRecipeId)
         }
@@ -68,7 +73,11 @@ class BackupRepositoryImpl @Inject constructor(
             importBackupInternal(sourceUri)
         }
 
-    private suspend fun exportBackupInternal(destinationUri: Uri, type: BackupType, singleRecipeId: Long?): BackupResult {
+    private suspend fun exportBackupInternal(
+        destinationUri: Uri,
+        type: BackupType,
+        singleRecipeId: Long?
+    ): BackupResult {
         val imageFilesToPack = mutableMapOf<String, String>()
         fun registerImage(uriString: String?): String? {
             if (uriString == null) return null
@@ -80,8 +89,15 @@ class BackupRepositoryImpl @Inject constructor(
             val stepDtos = steps.map { step ->
                 when (step) {
                     is StepContentItem.Text -> BackupStepDto(type = "text", text = step.content)
-                    is StepContentItem.Image -> BackupStepDto(type = "image", imageFileName = registerImage(step.url))
-                    is StepContentItem.Timer -> BackupStepDto(type = "timer", minutes = step.minutes)
+                    is StepContentItem.Image -> BackupStepDto(
+                        type = "image",
+                        imageFileName = registerImage(step.url)
+                    )
+
+                    is StepContentItem.Timer -> BackupStepDto(
+                        type = "timer",
+                        minutes = step.minutes
+                    )
                 }
             }
             return BackupRecipeDto(
@@ -98,7 +114,8 @@ class BackupRepositoryImpl @Inject constructor(
                         quantity = ingredient.quantity
                     )
                 },
-                steps = stepDtos
+                steps = stepDtos,
+                difficulty = difficulty.name,
             )
         }
 
@@ -176,11 +193,12 @@ class BackupRepositoryImpl @Inject constructor(
 
                 imageFilesToPack.forEach { (originalUriString, zipFileName) ->
                     runCatching {
-                        context.contentResolver.openInputStream(originalUriString.toUri())?.use { input ->
-                            zip.putNextEntry(ZipEntry("images/$zipFileName"))
-                            input.copyTo(zip)
-                            zip.closeEntry()
-                        }
+                        context.contentResolver.openInputStream(originalUriString.toUri())
+                            ?.use { input ->
+                                zip.putNextEntry(ZipEntry("images/$zipFileName"))
+                                input.copyTo(zip)
+                                zip.closeEntry()
+                            }
                     }
                 }
             }
@@ -204,8 +222,11 @@ class BackupRepositoryImpl @Inject constructor(
                 while (entry != null) {
                     when {
                         entry.name == "backup.json" -> {
-                            payload = backupJson.decodeFromString<BackupPayload>(zip.readBytes().decodeToString())
+                            payload = backupJson.decodeFromString<BackupPayload>(
+                                zip.readBytes().decodeToString()
+                            )
                         }
+
                         entry.name.startsWith("images/") && !entry.isDirectory -> {
                             val fileName = entry.name.removePrefix("images/")
                             val newUri = imageFileManager.persistImageBytes(zip.readBytes())
@@ -240,7 +261,12 @@ class BackupRepositoryImpl @Inject constructor(
 
             val steps = recipeDto.steps.mapNotNull { stepDto ->
                 when (stepDto.type) {
-                    "image" -> extractedImages[stepDto.imageFileName]?.let { StepContentItem.Image(url = it) }
+                    "image" -> extractedImages[stepDto.imageFileName]?.let {
+                        StepContentItem.Image(
+                            url = it
+                        )
+                    }
+
                     "timer" -> StepContentItem.Timer(minutes = stepDto.minutes ?: 5)
                     else -> StepContentItem.Text(content = stepDto.text ?: "")
                 }
@@ -258,7 +284,9 @@ class BackupRepositoryImpl @Inject constructor(
                     },
                     cookingTimeMinutes = recipeDto.cookingTimeMinutes,
                     ingredients = ingredients,
-                    steps = steps
+                    steps = steps,
+                    difficulty = RecipeDifficulty.entries.firstOrNull { it.name == recipeDto.difficulty }
+                        ?: RecipeDifficulty.EASY,
                 )
             )
             recipeIdByTitle[recipeDto.title] = newRecipeId
@@ -273,14 +301,28 @@ class BackupRepositoryImpl @Inject constructor(
                 defaultUnit = MeasureUnit.valueOf(dto.unit)
             )
             val unit = MeasureUnit.valueOf(dto.unit)
-            val existing = currentFridgeItems.firstOrNull { it.product.id == product.id && it.unit == unit }
+            val existing =
+                currentFridgeItems.firstOrNull { it.product.id == product.id && it.unit == unit }
             if (existing != null) {
                 val updated = existing.copy(quantity = existing.quantity + dto.quantity)
                 fridgeRepository.updateItem(updated)
                 currentFridgeItems[currentFridgeItems.indexOf(existing)] = updated
             } else {
-                val newId = fridgeRepository.addItem(FridgeItem(product = product, unit = unit, quantity = dto.quantity))
-                currentFridgeItems.add(FridgeItem(id = newId, product = product, unit = unit, quantity = dto.quantity))
+                val newId = fridgeRepository.addItem(
+                    FridgeItem(
+                        product = product,
+                        unit = unit,
+                        quantity = dto.quantity
+                    )
+                )
+                currentFridgeItems.add(
+                    FridgeItem(
+                        id = newId,
+                        product = product,
+                        unit = unit,
+                        quantity = dto.quantity
+                    )
+                )
             }
         }
 
@@ -302,10 +344,21 @@ class BackupRepositoryImpl @Inject constructor(
                 currentShoppingItems[currentShoppingItems.indexOf(existing)] = updated
             } else {
                 val newId = shoppingListRepository.addItem(
-                    ShoppingListItem(product = product, unit = unit, quantity = dto.quantity, isChecked = dto.isChecked)
+                    ShoppingListItem(
+                        product = product,
+                        unit = unit,
+                        quantity = dto.quantity,
+                        isChecked = dto.isChecked
+                    )
                 )
                 currentShoppingItems.add(
-                    ShoppingListItem(id = newId, product = product, unit = unit, quantity = dto.quantity, isChecked = dto.isChecked)
+                    ShoppingListItem(
+                        id = newId,
+                        product = product,
+                        unit = unit,
+                        quantity = dto.quantity,
+                        isChecked = dto.isChecked
+                    )
                 )
             }
         }

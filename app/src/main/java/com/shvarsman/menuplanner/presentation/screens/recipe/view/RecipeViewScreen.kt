@@ -14,6 +14,7 @@ import androidx.compose.material.icons.filled.Kitchen
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.filled.Speed
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -99,9 +100,11 @@ fun RecipeViewScreen(
         }
     ) { padding ->
         if (state.isLoading) {
-            Box(Modifier
-                .fillMaxSize()
-                .padding(padding), contentAlignment = Alignment.Center) {
+            Box(
+                Modifier
+                    .fillMaxSize()
+                    .padding(padding), contentAlignment = Alignment.Center
+            ) {
                 CircularProgressIndicator()
             }
             return@Scaffold
@@ -109,9 +112,11 @@ fun RecipeViewScreen(
 
         val recipe = state.recipe
         if (recipe == null) {
-            Box(Modifier
-                .fillMaxSize()
-                .padding(padding), contentAlignment = Alignment.Center) {
+            Box(
+                Modifier
+                    .fillMaxSize()
+                    .padding(padding), contentAlignment = Alignment.Center
+            ) {
                 Text("Рецепт не найден")
             }
             return@Scaffold
@@ -176,6 +181,18 @@ fun RecipeViewScreen(
                                 label = { Text(formatCookingTime(minutes)) }
                             )
                         }
+                        AssistChip(
+                            onClick = {},
+                            enabled = false,
+                            leadingIcon = {
+                                Icon(
+                                    Icons.Filled.Speed,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                            },
+                            label = { Text(recipe.difficulty.displayName) }
+                        )
                     }
                 }
             }

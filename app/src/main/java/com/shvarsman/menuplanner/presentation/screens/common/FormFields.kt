@@ -19,7 +19,10 @@ import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Event
 import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerColors
+import androidx.compose.material3.DatePickerDefaults
 import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.DateRangePickerDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -69,7 +72,7 @@ fun QuantityUnitField(
 
     Surface(
         shape = RoundedCornerShape(28.dp),
-        color = SearchBarDefaults.colors().containerColor,
+        color = MaterialTheme.colorScheme.surface,
         modifier = modifier.fillMaxWidth()
     ) {
         Row(
@@ -84,7 +87,9 @@ fun QuantityUnitField(
                             .let { filtered ->
                                 val firstDot = filtered.indexOf('.')
                                 if (firstDot == -1) filtered
-                                else filtered.substring(0, firstDot + 1) + filtered.substring(firstDot + 1).replace(".", "")
+                                else filtered.substring(0, firstDot + 1) + filtered.substring(
+                                    firstDot + 1
+                                ).replace(".", "")
                             }
                     )
                 },
@@ -96,7 +101,11 @@ fun QuantityUnitField(
                     focusedContainerColor = Color.Transparent,
                     unfocusedContainerColor = Color.Transparent,
                     focusedIndicatorColor = Color.Transparent,
-                    unfocusedIndicatorColor = Color.Transparent
+                    unfocusedIndicatorColor = Color.Transparent,
+                    unfocusedPlaceholderColor = MaterialTheme.colorScheme.onSurface,
+                    focusedPlaceholderColor = MaterialTheme.colorScheme.onSurface,
+                    focusedTextColor = MaterialTheme.colorScheme.onBackground,
+                    unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
                 ),
                 modifier = Modifier.weight(1f)
             )
@@ -109,7 +118,10 @@ fun QuantityUnitField(
                         .padding(horizontal = 10.dp, vertical = 12.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(selectedUnit.displayName, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(
+                        selectedUnit.displayName,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                     Spacer(Modifier.width(2.dp))
                     Icon(
                         Icons.Filled.ArrowDropDown,
@@ -118,7 +130,9 @@ fun QuantityUnitField(
                         tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
-                DropdownMenu(expanded = unitMenuExpanded, onDismissRequest = { unitMenuExpanded = false }) {
+                DropdownMenu(
+                    expanded = unitMenuExpanded,
+                    onDismissRequest = { unitMenuExpanded = false }) {
                     MeasureUnit.entries.forEach { unit ->
                         DropdownMenuItem(
                             text = { Text(unit.displayName) },
@@ -163,7 +177,7 @@ fun ExpirationDatePickerField(
         Surface(
             onClick = { showPicker = true },
             shape = RoundedCornerShape(28.dp),
-            color = SearchBarDefaults.colors().containerColor,
+            color = MaterialTheme.colorScheme.surface,
             modifier = Modifier.fillMaxWidth()
         ) {
             Row(
@@ -212,9 +226,24 @@ fun ExpirationDatePickerField(
                     showPicker = false
                 }) { Text("ОК") }
             },
-            dismissButton = { TextButton(onClick = { showPicker = false }) { Text("Отмена") } }
+            dismissButton = { TextButton(onClick = { showPicker = false }) { Text("Отмена") } },
+            colors = DatePickerDefaults.colors(
+                containerColor = MaterialTheme.colorScheme.surfaceVariant,
+            )
         ) {
-            DatePicker(state = state)
+            DatePicker(
+                state = state,
+                colors = DatePickerDefaults.colors(
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                    selectedYearContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                    selectedDayContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                    currentYearContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    selectedYearContentColor = MaterialTheme.colorScheme.primary,
+                    todayContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    dayContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    selectedDayContentColor = MaterialTheme.colorScheme.primary
+                )
+            )
         }
     }
 }

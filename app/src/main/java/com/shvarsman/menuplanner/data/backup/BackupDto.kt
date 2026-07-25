@@ -50,7 +50,8 @@ data class BackupRecipeDto(
     val cookingMethod: String? = null,
     val cookingTimeMinutes: Int? = null,
     val ingredients: List<BackupIngredientDto>,
-    val steps: List<BackupStepDto>
+    val steps: List<BackupStepDto>,
+    val difficulty: String = "EASY"
 )
 
 enum class BackupScope { FULL, RECIPES_ONLY, SINGLE_RECIPE }

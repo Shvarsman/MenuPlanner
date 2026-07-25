@@ -149,7 +149,10 @@ fun ProductPickerDialog(
                                             modifier = Modifier.size(32.dp)
                                         )
                                     },
-                                    colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh),
+                                    colors = ListItemDefaults.colors(
+                                        containerColor = MaterialTheme.colorScheme.surface,
+                                        headlineColor = MaterialTheme.colorScheme.onBackground
+                                    ),
                                     modifier = Modifier.clickable {
                                         if (product.isToTaste) {
                                             onConfirm(product, product.defaultUnit, 0.0, null)
@@ -206,9 +209,10 @@ fun ProductPickerDialog(
                                 horizontalArrangement = Arrangement.SpaceBetween
                             ) {
                                 Text(
+                                    modifier = Modifier.weight(1f),
                                     text = product.name,
                                     style = MaterialTheme.typography.titleLarge,
-                                    modifier = Modifier.weight(1f),
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis
                                 )

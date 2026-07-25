@@ -46,6 +46,9 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.PlainTooltip
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -78,12 +81,14 @@ import com.shvarsman.menuplanner.domain.model.CookingMethod
 import com.shvarsman.menuplanner.domain.model.FridgeItem
 import com.shvarsman.menuplanner.domain.model.IngredientAvailability
 import com.shvarsman.menuplanner.domain.model.RecipeCategory
+import com.shvarsman.menuplanner.domain.model.RecipeDifficulty
 import com.shvarsman.menuplanner.domain.model.RecipeIngredient
 import com.shvarsman.menuplanner.domain.model.StepContentItem
 import com.shvarsman.menuplanner.domain.model.availability
 import com.shvarsman.menuplanner.presentation.screens.common.AppBottomSheet
 import com.shvarsman.menuplanner.presentation.screens.common.DurationPickerDialog
 import com.shvarsman.menuplanner.presentation.screens.common.DurationSelectorField
+import com.shvarsman.menuplanner.presentation.screens.common.FieldLabel
 import com.shvarsman.menuplanner.presentation.screens.common.ProductPickerDialog
 import com.shvarsman.menuplanner.presentation.screens.common.SelectionTile
 import com.shvarsman.menuplanner.presentation.screens.common.SelectorField
@@ -265,6 +270,26 @@ fun RecipeEditorScreen(
                         leadingIcon = Icons.Outlined.Schedule,
                         onClick = { showDurationPickerDialog = true },
                     )
+                }
+
+                item {
+                    Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)) {
+                        FieldLabel("Сложность")
+                        SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
+                            RecipeDifficulty.entries.forEachIndexed { index, difficulty ->
+                                SegmentedButton(
+                                    selected = state.difficulty == difficulty,
+                                    onClick = { viewModel.onDifficultyChange(difficulty) },
+                                    shape = SegmentedButtonDefaults.itemShape(
+                                        index = index,
+                                        count = RecipeDifficulty.entries.size
+                                    )
+                                ) {
+                                    Text(difficulty.displayName)
+                                }
+                            }
+                        }
+                    }
                 }
 
                 // ── Ингредиенты ───────────────────────────────────────────

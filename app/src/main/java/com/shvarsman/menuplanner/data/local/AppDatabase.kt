@@ -25,7 +25,7 @@ import com.shvarsman.menuplanner.data.local.entity.ShoppingListItemEntity
         MenuEntryEntity::class,
         ShoppingListItemEntity::class
     ],
-    version = 13,
+    version = 14,
     exportSchema = false
 )
 @TypeConverters(Converters::class)

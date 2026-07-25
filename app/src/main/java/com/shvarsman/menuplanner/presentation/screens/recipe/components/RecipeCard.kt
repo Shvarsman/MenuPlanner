@@ -116,7 +116,7 @@ fun RecipeCard(
                     maxLines = 1
                 )
                 Text(
-                    text = "${recipe.ingredientCount} ингредиентов · ${recipe.stepCount} шагов",
+                    text = "${recipe.ingredientCount} ингредиентов · ${recipe.stepCount} шагов · ${recipe.difficulty.displayName}",
                     style = MaterialTheme.typography.bodySmall,
                     color = Color.White.copy(alpha = 0.85f)
                 )

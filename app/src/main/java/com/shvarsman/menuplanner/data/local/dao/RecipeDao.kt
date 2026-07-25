@@ -11,6 +11,8 @@ import androidx.room.Update
 import com.shvarsman.menuplanner.data.local.entity.ProductEntity
 import com.shvarsman.menuplanner.data.local.entity.RecipeEntity
 import com.shvarsman.menuplanner.data.local.entity.RecipeIngredientEntity
+import com.shvarsman.menuplanner.domain.model.RecipeCategory
+import com.shvarsman.menuplanner.domain.model.RecipeDifficulty
 import kotlinx.coroutines.flow.Flow
 
 data class RecipeIngredientWithProduct(
@@ -32,8 +34,9 @@ data class RecipeWithIngredients(
 data class RecipeSummaryRow(
     val id: Long,
     val title: String,
-    val category: com.shvarsman.menuplanner.domain.model.RecipeCategory,
+    val category: RecipeCategory,
     val photoUri: String?,
+    val difficulty: RecipeDifficulty,
     val ingredientCount: Int,
     val stepCount: Int
 )
@@ -42,16 +45,17 @@ data class RecipeSummaryRow(
 interface RecipeDao {
     @Query(
         """
-        SELECT
-            recipes.id,
-            recipes.title,
-            recipes.category,
-            recipes.photoUri,
-            recipes.stepCount,
-            (SELECT COUNT(*) FROM recipe_ingredients WHERE recipeId = recipes.id) AS ingredientCount
-        FROM recipes
-        ORDER BY recipes.title ASC
-        """
+    SELECT
+        recipes.id,
+        recipes.title,
+        recipes.category,
+        recipes.photoUri,
+        recipes.difficulty,
+        recipes.stepCount,
+        (SELECT COUNT(*) FROM recipe_ingredients WHERE recipeId = recipes.id) AS ingredientCount
+    FROM recipes
+    ORDER BY recipes.title ASC
+    """
     )
     fun observeSummaries(): Flow<List<RecipeSummaryRow>>
 

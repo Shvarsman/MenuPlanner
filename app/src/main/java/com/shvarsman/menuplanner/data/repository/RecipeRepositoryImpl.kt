@@ -53,6 +53,7 @@ private fun RecipeSummaryRow.toSummary() = RecipeSummary(
     title = title,
     category = category,
     photoUri = photoUri,
+    difficulty = difficulty,
     ingredientCount = ingredientCount,
     stepCount = stepCount
 )
@@ -64,6 +65,7 @@ private fun RecipeWithIngredients.toDomain() = Recipe(
     photoUri = recipe.photoUri,
     cookingMethod = recipe.cookingMethod,
     cookingTimeMinutes = recipe.cookingTimeMinutes,
+    difficulty = recipe.difficulty,
     steps = recipe.steps,
     ingredients = ingredients.map { it.toDomain() }
 )
@@ -77,7 +79,8 @@ private fun RecipeIngredientWithProduct.toDomain() = RecipeIngredient(
         defaultUnit = product.defaultUnit,
         iconKey = product.iconKey,
         isDefault = product.isDefault,
-        isToTaste = product.isToTaste
+        isToTaste = product.isToTaste,
+        isAlwaysAvailable = product.isAlwaysAvailable
     ),
     unit = ingredient.unit,
     quantity = ingredient.quantity
@@ -90,9 +93,11 @@ private fun Recipe.toEntity() = RecipeEntity(
     photoUri = photoUri,
     cookingMethod = cookingMethod,
     cookingTimeMinutes = cookingTimeMinutes,
+    difficulty = difficulty,
     steps = steps,
     stepCount = steps.count { it is StepContentItem.Text && it.content.isNotBlank() }
 )
+
 private fun RecipeIngredient.toEntity(recipeId: Long) = RecipeIngredientEntity(
     id = id,
     recipeId = recipeId,

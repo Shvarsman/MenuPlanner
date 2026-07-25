@@ -6,6 +6,7 @@ import com.shvarsman.menuplanner.domain.model.CookingMethod
 import com.shvarsman.menuplanner.domain.model.MealType
 import com.shvarsman.menuplanner.domain.model.MeasureUnit
 import com.shvarsman.menuplanner.domain.model.RecipeCategory
+import com.shvarsman.menuplanner.domain.model.RecipeDifficulty
 import com.shvarsman.menuplanner.domain.model.StepContentItem
 import java.time.DayOfWeek
 import java.time.LocalDate
@@ -61,9 +62,18 @@ class Converters {
         if (value.isBlank()) return emptyList()
         return value.split("\u241F").map { item ->
             when {
-                item.startsWith("T") -> StepContentItem.Text(item.drop(1))
-                item.startsWith("I") -> StepContentItem.Image(item.drop(1))
-                item.startsWith("M") -> StepContentItem.Timer(item.drop(1).toIntOrNull() ?: 5)
+                item.startsWith("T") -> {
+                    StepContentItem.Text(item.drop(1))
+                }
+
+                item.startsWith("I") -> {
+                    StepContentItem.Image(item.drop(1))
+                }
+
+                item.startsWith("M") -> {
+                    StepContentItem.Timer(item.drop(1).toIntOrNull() ?: 5)
+                }
+
                 else -> StepContentItem.Text(item)
             }
         }
@@ -81,4 +91,11 @@ class Converters {
 
     @TypeConverter
     fun toLocalDate(value: Long?): LocalDate? = value?.let { LocalDate.ofEpochDay(it) }
+
+    @TypeConverter
+    fun fromRecipeDifficulty(difficulty: RecipeDifficulty): String = difficulty.name
+
+    @TypeConverter
+    fun toRecipeDifficulty(value: String): RecipeDifficulty =
+        RecipeDifficulty.entries.firstOrNull { it.name == value } ?: RecipeDifficulty.EASY
 }

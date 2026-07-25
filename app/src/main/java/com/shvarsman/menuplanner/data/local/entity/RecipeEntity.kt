@@ -4,6 +4,7 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.shvarsman.menuplanner.domain.model.CookingMethod
 import com.shvarsman.menuplanner.domain.model.RecipeCategory
+import com.shvarsman.menuplanner.domain.model.RecipeDifficulty
 import com.shvarsman.menuplanner.domain.model.StepContentItem
 
 @Entity(tableName = "recipes")
@@ -14,6 +15,7 @@ data class RecipeEntity(
     val photoUri: String?,
     val cookingMethod: CookingMethod?,
     val cookingTimeMinutes: Int?,
+    val difficulty: RecipeDifficulty = RecipeDifficulty.EASY,
     val steps: List<StepContentItem>,
     val stepCount: Int
 )

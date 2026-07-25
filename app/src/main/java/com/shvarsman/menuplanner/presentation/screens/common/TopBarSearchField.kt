@@ -12,8 +12,11 @@ import androidx.compose.material3.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 
 /**
@@ -26,17 +29,18 @@ import androidx.compose.ui.unit.dp
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TopBarSearchField(
+    modifier: Modifier = Modifier,
     query: String,
     onQueryChange: (String) -> Unit,
-    placeholder: String,
-    modifier: Modifier = Modifier
+    placeholder: String
 ) {
     Surface(
+        modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(28.dp),
-        color = SearchBarDefaults.colors().containerColor,
-        modifier = modifier.fillMaxWidth()
+        color = Color.Transparent,
     ) {
         SearchBarDefaults.InputField(
+            modifier = Modifier.fillMaxWidth(),
             query = query,
             onQueryChange = onQueryChange,
             onSearch = {},
@@ -51,7 +55,18 @@ fun TopBarSearchField(
                     }
                 }
             },
-            modifier = Modifier.fillMaxWidth()
+            colors = TextFieldDefaults.colors(
+                unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                unfocusedLeadingIconColor = MaterialTheme.colorScheme.onSurface,
+                unfocusedTrailingIconColor = MaterialTheme.colorScheme.onSurface,
+                cursorColor = MaterialTheme.colorScheme.onBackground,
+                focusedTextColor = MaterialTheme.colorScheme.onBackground,
+                focusedLeadingIconColor = MaterialTheme.colorScheme.onBackground,
+                unfocusedLabelColor = MaterialTheme.colorScheme.onBackground,
+                unfocusedPlaceholderColor = MaterialTheme.colorScheme.onSurface,
+                focusedContainerColor = MaterialTheme.colorScheme.surface,
+            )
         )
     }
 }

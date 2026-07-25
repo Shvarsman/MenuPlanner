@@ -11,6 +11,7 @@ import com.shvarsman.menuplanner.domain.model.MeasureUnit
 import com.shvarsman.menuplanner.domain.model.Product
 import com.shvarsman.menuplanner.domain.model.Recipe
 import com.shvarsman.menuplanner.domain.model.RecipeCategory
+import com.shvarsman.menuplanner.domain.model.RecipeDifficulty
 import com.shvarsman.menuplanner.domain.model.RecipeIngredient
 import com.shvarsman.menuplanner.domain.model.StepContentItem
 import com.shvarsman.menuplanner.domain.repository.RecipeRepository
@@ -43,7 +44,8 @@ data class RecipeEditorState(
     val isSaving: Boolean = false,
     val isDirty: Boolean = false,
     val isSaved: Boolean = false,
-    val errorMessage: String? = null
+    val errorMessage: String? = null,
+    val difficulty: RecipeDifficulty = RecipeDifficulty.EASY,
 )
 
 @HiltViewModel
@@ -97,6 +99,7 @@ class RecipeEditorViewModel @Inject constructor(
                 current.cookingHours != base.cookingHours ||
                 current.cookingMinutes != base.cookingMinutes ||
                 current.ingredients != base.ingredients ||
+                current.difficulty != base.difficulty ||
                 current.steps != base.steps
     }
 
@@ -131,7 +134,8 @@ class RecipeEditorViewModel @Inject constructor(
                         cookingMinutes = totalMinutes % 60,
                         ingredients = recipe.ingredients,
                         steps = steps,
-                        isLoading = false
+                        isLoading = false,
+                        difficulty = recipe.difficulty,
                     )
                 } else {
                     RecipeEditorState(isLoading = false)
@@ -158,6 +162,10 @@ class RecipeEditorViewModel @Inject constructor(
 
     fun onCookingMethodChange(method: CookingMethod?) {
         updateState { it.copy(cookingMethod = method) }
+    }
+
+    fun onDifficultyChange(difficulty: RecipeDifficulty) {
+        updateState { it.copy(difficulty = difficulty) }
     }
 
     fun onCookingTimeChange(hours: Int, minutes: Int) {
@@ -347,7 +355,8 @@ class RecipeEditorViewModel @Inject constructor(
                         cookingMethod = current.cookingMethod,
                         cookingTimeMinutes = if (totalMinutes > 0) totalMinutes else null,
                         ingredients = current.ingredients,
-                        steps = stepsToSave
+                        steps = stepsToSave,
+                        difficulty = current.difficulty,
                     )
                 )
                 _state.update { it.copy(isSaving = false, isSaved = true) }
