@@ -1,4 +1,4 @@
-package com.shvarsman.menuplanner.presentation.screens.recipeeditor
+package com.shvarsman.menuplanner.presentation.screens.recipe.editor
 
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -323,19 +323,9 @@ fun RecipeEditorScreen(
         ProductPickerDialog(
             catalog = fridgeProducts,
             onDismiss = { viewModel.closeIngredientPicker() },
-            onConfirm = { product, unit, qty, _ ->
-                viewModel.addIngredient(
-                    product,
-                    unit,
-                    qty
-                )
-            },
-            onCreateProduct = { name, category, unit ->
-                viewModel.createProduct(
-                    name,
-                    category,
-                    unit
-                )
+            onConfirm = { product, unit, qty, _ -> viewModel.addIngredient(product, unit, qty) },
+            onCreateProduct = { name, category, unit, isToTaste, isAlwaysAvailable ->
+                viewModel.createProduct(name, category, unit, isToTaste, isAlwaysAvailable)
             }
         )
     }

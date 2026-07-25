@@ -9,7 +9,8 @@ data class SeedProductRow(
     val category: Category,
     val unit: MeasureUnit,
     val isToTaste: Boolean,
-    val iconKey: String
+    val iconKey: String,
+    val isAlwaysAvailable: Boolean
 )
 
 /** Разбирает CSV вида "продукт;категория;ед_измерения;по_вкусу;иконка"
@@ -19,24 +20,20 @@ data class SeedProductRow(
 object SeedProductCsvParser {
     fun parse(csvText: String): List<SeedProductRow> {
         return csvText.lineSequence()
-            .map { it.trim() }
-            .filter { it.isNotBlank() }
-            .drop(1)
+            .map { it.trim() }.filter { it.isNotBlank() }.drop(1)
             .mapNotNull { line ->
                 val parts = line.split(";")
                 if (parts.size < 3) return@mapNotNull null
                 val name = parts[0].trim()
                 if (name.isBlank()) return@mapNotNull null
-                val isToTaste = parts.getOrNull(3)?.trim() == "1"
-                val iconKey = parts.getOrNull(4)?.trim()
-                    ?.takeIf { it.isNotBlank() }
-                    ?: Product.DEFAULT_ICON_KEY
                 SeedProductRow(
                     name = name,
                     category = SeedProductMappers.mapCategory(parts[1]),
                     unit = SeedProductMappers.mapUnit(parts[2]),
-                    isToTaste = isToTaste,
-                    iconKey = iconKey
+                    isToTaste = parts.getOrNull(3)?.trim() == "1",
+                    iconKey = parts.getOrNull(4)?.trim()?.takeIf { it.isNotBlank() }
+                        ?: Product.DEFAULT_ICON_KEY,
+                    isAlwaysAvailable = parts.getOrNull(5)?.trim() == "1" // новая колонка
                 )
             }
             .toList()

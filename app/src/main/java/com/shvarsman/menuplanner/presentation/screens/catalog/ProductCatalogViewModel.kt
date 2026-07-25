@@ -39,13 +39,17 @@ class ProductCatalogViewModel @Inject constructor(
 
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery
-    fun onSearchQueryChange(query: String) { _searchQuery.value = query }
+    fun onSearchQueryChange(query: String) {
+        _searchQuery.value = query
+    }
 
     private val pendingDeleteManager = PendingDeleteManager<Long>(viewModelScope)
 
     private val _showOnlyCustom = MutableStateFlow(true)
     val showOnlyCustom: StateFlow<Boolean> = _showOnlyCustom
-    fun toggleShowOnlyCustom() { _showOnlyCustom.value = !_showOnlyCustom.value }
+    fun toggleShowOnlyCustom() {
+        _showOnlyCustom.value = !_showOnlyCustom.value
+    }
 
     private val _selectedCategory = MutableStateFlow<Category?>(null)
     val selectedCategory: StateFlow<Category?> = _selectedCategory
@@ -81,7 +85,14 @@ class ProductCatalogViewModel @Inject constructor(
     ) { list, query, category ->
         list
             .let { if (category != null) it.filter { p -> p.category == category } else it }
-            .let { if (query.isBlank()) it else it.filter { p -> p.name.contains(query, ignoreCase = true) } }
+            .let {
+                if (query.isBlank()) it else it.filter { p ->
+                    p.name.contains(
+                        query,
+                        ignoreCase = true
+                    )
+                }
+            }
     }
         .mapOnDefault { filtered ->
             CatalogListState(
@@ -97,13 +108,32 @@ class ProductCatalogViewModel @Inject constructor(
     private val _editingProduct = MutableStateFlow<Product?>(null)
     val editingProduct: StateFlow<Product?> = _editingProduct
 
-    fun startEdit(product: Product) { _editingProduct.value = product }
-    fun cancelEdit() { _editingProduct.value = null }
+    fun startEdit(product: Product) {
+        _editingProduct.value = product
+    }
 
-    fun saveEdit(name: String, category: Category, unit: MeasureUnit) {
+    fun cancelEdit() {
+        _editingProduct.value = null
+    }
+
+    fun saveEdit(
+        name: String,
+        category: Category,
+        unit: MeasureUnit,
+        isToTaste: Boolean,
+        isAlwaysAvailable: Boolean
+    ) {
         val current = _editingProduct.value ?: return
         viewModelScope.launch {
-            updateProduct(current.copy(name = name, category = category, defaultUnit = unit))
+            updateProduct(
+                current.copy(
+                    name = name,
+                    category = category,
+                    defaultUnit = unit,
+                    isToTaste = isToTaste,
+                    isAlwaysAvailable = isAlwaysAvailable
+                )
+            )
             _editingProduct.value = null
         }
     }
@@ -133,5 +163,7 @@ class ProductCatalogViewModel @Inject constructor(
         }
     }
 
-    fun cancelForceDelete() { _pendingForceDelete.value = null }
+    fun cancelForceDelete() {
+        _pendingForceDelete.value = null
+    }
 }

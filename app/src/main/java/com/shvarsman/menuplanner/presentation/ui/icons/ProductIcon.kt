@@ -1,4 +1,4 @@
-package com.shvarsman.menuplanner.presentation.screens.fridge
+package com.shvarsman.menuplanner.presentation.ui.icons
 
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
@@ -7,7 +7,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.shvarsman.menuplanner.domain.model.Product
-import com.shvarsman.menuplanner.presentation.ui.icons.CategoryIcon
 
 @Composable
 fun ProductIcon(product: Product, modifier: Modifier = Modifier.size(40.dp)) {

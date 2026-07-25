@@ -85,8 +85,10 @@ class ShoppingListViewModel @Inject constructor(
         _isPickerOpen.value = false
     }
 
-    suspend fun createProduct(name: String, category: Category, unit: MeasureUnit): Product =
-        findOrCreateProduct(name, category, unit)
+    suspend fun createProduct(
+        name: String, category: Category, unit: MeasureUnit,
+        isToTaste: Boolean, isAlwaysAvailable: Boolean
+    ): Product = findOrCreateProduct(name, category, unit, isToTaste, isAlwaysAvailable)
 
     fun addItem(
         product: Product,

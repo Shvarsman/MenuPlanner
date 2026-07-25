@@ -1,24 +1,17 @@
-package com.shvarsman.menuplanner.presentation.screens.recipe
+package com.shvarsman.menuplanner.presentation.screens.recipe.all
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ViewList
 import androidx.compose.material.icons.filled.GridView
-import androidx.compose.material.icons.filled.MenuBook
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -33,23 +26,25 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.shvarsman.menuplanner.domain.model.RecipeSummary
 import com.shvarsman.menuplanner.presentation.screens.common.CollapsingLargeTopAppBar
+import com.shvarsman.menuplanner.presentation.screens.recipe.list.RecipeListViewModel
+import com.shvarsman.menuplanner.presentation.screens.recipe.list.RecipeViewMode
+import com.shvarsman.menuplanner.presentation.screens.recipe.components.recipeGroupedItems
 import com.shvarsman.menuplanner.presentation.utils.rememberOptimisticDelete
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RecipeCategoryScreen(
+fun AllRecipesListScreen(
     onBack: () -> Unit,
     onViewRecipe: (Long) -> Unit,
     onEditRecipe: (Long) -> Unit,
-    viewModel: RecipeCategoryViewModel = hiltViewModel()
+    viewModel: RecipeListViewModel = hiltViewModel()
 ) {
-    val recipes by viewModel.recipes.collectAsStateWithLifecycle()
+    val grouped by viewModel.allRecipesGrouped.collectAsStateWithLifecycle()
     var viewMode by rememberSaveable { mutableStateOf(RecipeViewMode.PHOTO_CARDS) }
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
 
@@ -67,7 +62,7 @@ fun RecipeCategoryScreen(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             CollapsingLargeTopAppBar(
-                title = viewModel.category.displayName,
+                title = "Все рецепты",
                 scrollBehavior = scrollBehavior,
                 navigationIcon = {
                     IconButton(onClick = onBack) {
@@ -90,35 +85,21 @@ fun RecipeCategoryScreen(
                             } else {
                                 Icons.Filled.GridView
                             },
-                            contentDescription = if (viewMode == RecipeViewMode.PHOTO_CARDS) {
-                                "Отображать списком"
-                            } else {
-                                "Отображать карточками"
-                            }
+                            contentDescription = null
                         )
                     }
                 }
             )
         }
     ) { padding ->
-        if (recipes.isEmpty()) {
-            Column(
-                modifier = Modifier.fillMaxSize().padding(padding),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
+        if (grouped.isEmpty()) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding),
+                contentAlignment = Alignment.Center
             ) {
-                Icon(
-                    Icons.Filled.MenuBook,
-                    contentDescription = null,
-                    modifier = Modifier.size(64.dp),
-                    tint = MaterialTheme.colorScheme.outline
-                )
-                Spacer(Modifier.height(12.dp))
-                Text(
-                    "В этой категории пока нет рецептов.",
-                    textAlign = TextAlign.Center,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+                Text("Рецептов пока нет")
             }
         } else {
             LazyColumn(
@@ -128,23 +109,13 @@ fun RecipeCategoryScreen(
                     bottom = padding.calculateBottomPadding() + 16.dp
                 )
             ) {
-                items(recipes, key = { it.id }) { recipe ->
-                    if (viewMode == RecipeViewMode.PHOTO_CARDS) {
-                        RecipeCard(
-                            recipe = recipe,
-                            onClick = { onViewRecipe(recipe.id) },
-                            onEdit = { onEditRecipe(recipe.id) },
-                            onDelete = { requestDelete(recipe) }
-                        )
-                    } else {
-                        RecipeListRow(
-                            recipe = recipe,
-                            onClick = { onViewRecipe(recipe.id) },
-                            onEdit = { onEditRecipe(recipe.id) },
-                            onDelete = { requestDelete(recipe) }
-                        )
-                    }
-                }
+                recipeGroupedItems(
+                    grouped = grouped,
+                    viewMode = viewMode,
+                    onViewRecipe = onViewRecipe,
+                    onEditRecipe = onEditRecipe,
+                    onDelete = { requestDelete(it) }
+                )
             }
         }
     }

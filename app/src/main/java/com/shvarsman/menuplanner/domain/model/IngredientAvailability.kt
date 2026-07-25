@@ -24,19 +24,22 @@ fun RecipeIngredient.availability(
     fridgeItems: List<FridgeItem>,
     reserved: ReservedAmount? = null
 ): IngredientAvailability {
-    // "По вкусу" — количество не имеет значения, всегда считается доступным
-    if (product.isToTaste) return IngredientAvailability.AVAILABLE
+    // Вода из-под крана и т.п. — холодильник вообще не проверяем
+    if (product.isAlwaysAvailable) return IngredientAvailability.AVAILABLE
 
     val fridgeQtyInIngredientUnit = fridgeItems
         .filter { it.product.id == product.id }
         .sumOf { UnitConversion.convert(it.quantity, it.unit, unit) ?: 0.0 }
 
+    if (product.isToTaste) {
+        // Количество для "по вкусу" не имеет смысла — проверяем сам факт,
+        // что продукт вообще есть в холодильнике (хотя бы одна запись)
+        return if (fridgeItems.any { it.product.id == product.id }) IngredientAvailability.AVAILABLE
+        else IngredientAvailability.INSUFFICIENT
+    }
     val reservedInIngredientUnit = reserved
-        ?.let { UnitConversion.convert(it.amount, it.unit, unit) }
-        ?: 0.0
-
+        ?.let { UnitConversion.convert(it.amount, it.unit, unit) } ?: 0.0
     val trulyAvailable = (fridgeQtyInIngredientUnit - reservedInIngredientUnit).coerceAtLeast(0.0)
-
     return if (trulyAvailable >= quantity) IngredientAvailability.AVAILABLE
     else IngredientAvailability.INSUFFICIENT
 }

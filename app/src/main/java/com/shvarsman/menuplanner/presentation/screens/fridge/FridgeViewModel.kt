@@ -236,8 +236,10 @@ class FridgeViewModel @Inject constructor(
         viewModelScope.launch { updateFridgeItem(item.copy(isFavorite = !item.isFavorite)) }
     }
 
-    suspend fun createProduct(name: String, category: Category, unit: MeasureUnit): Product =
-        findOrCreateProduct(name, category, unit)
+    suspend fun createProduct(
+        name: String, category: Category, unit: MeasureUnit,
+        isToTaste: Boolean, isAlwaysAvailable: Boolean
+    ): Product = findOrCreateProduct(name, category, unit, isToTaste, isAlwaysAvailable)
 
     fun addItem(product: Product, unit: MeasureUnit, quantity: Double, expirationDate: LocalDate?) {
         viewModelScope.launch {

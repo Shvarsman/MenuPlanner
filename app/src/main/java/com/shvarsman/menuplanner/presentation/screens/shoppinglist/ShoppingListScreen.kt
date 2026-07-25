@@ -54,7 +54,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.shvarsman.menuplanner.domain.model.Category
 import com.shvarsman.menuplanner.domain.model.ShoppingListItem
 import com.shvarsman.menuplanner.presentation.screens.common.ProductPickerDialog
-import com.shvarsman.menuplanner.presentation.screens.fridge.ProductIcon
+import com.shvarsman.menuplanner.presentation.ui.icons.ProductIcon
 import com.shvarsman.menuplanner.presentation.ui.icons.CategoryIcon
 import com.shvarsman.menuplanner.presentation.ui.theme.AppCornerRadius
 import com.shvarsman.menuplanner.presentation.utils.rememberOptimisticDelete
@@ -171,12 +171,8 @@ fun ShoppingListScreen(viewModel: ShoppingListViewModel = hiltViewModel()) {
             catalog = catalog,
             onDismiss = { viewModel.closePicker() },
             onConfirm = { product, unit, qty, date -> viewModel.addItem(product, unit, qty, date) },
-            onCreateProduct = { name, category, unit ->
-                viewModel.createProduct(
-                    name,
-                    category,
-                    unit
-                )
+            onCreateProduct = { name, category, unit, isToTaste, isAlwaysAvailable ->
+                viewModel.createProduct(name, category, unit, isToTaste, isAlwaysAvailable)
             }
         )
     }

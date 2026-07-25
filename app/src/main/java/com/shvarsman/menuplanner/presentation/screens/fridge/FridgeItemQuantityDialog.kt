@@ -5,15 +5,12 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuAnchorType
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.ExposedDropdownMenuDefaults
-import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -28,6 +25,9 @@ import androidx.compose.ui.unit.dp
 import com.shvarsman.menuplanner.domain.model.FridgeItem
 import com.shvarsman.menuplanner.domain.model.MeasureUnit
 import com.shvarsman.menuplanner.presentation.screens.common.ExpirationDatePickerField
+import com.shvarsman.menuplanner.presentation.screens.common.FieldLabel
+import com.shvarsman.menuplanner.presentation.screens.common.QuantityUnitField
+import com.shvarsman.menuplanner.presentation.ui.icons.ProductIcon
 import java.time.LocalDate
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -39,7 +39,6 @@ fun FridgeItemQuantityDialog(
 ) {
     var quantityText by remember { mutableStateOf(item.quantity.toString()) }
     var selectedUnit by remember { mutableStateOf(item.unit) }
-    var unitMenuExpanded by remember { mutableStateOf(false) }
     var expirationDate by remember { mutableStateOf(item.expirationDate) }
 
     AlertDialog(
@@ -52,59 +51,28 @@ fun FridgeItemQuantityDialog(
             ) {
                 Text(
                     text = item.product.name,
+                    style = MaterialTheme.typography.titleLarge,
                     modifier = Modifier.weight(1f),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
                 Spacer(Modifier.width(12.dp))
-                ProductIcon(
-                    product = item.product,
-                    modifier = Modifier.size(48.dp)
-                )
+                ProductIcon(product = item.product, modifier = Modifier.size(48.dp))
             }
         },
         text = {
-            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    OutlinedTextField(
-                        value = quantityText,
-                        onValueChange = {
-                            quantityText = it.filter { c -> c.isDigit() || c == '.' }
-                        },
-                        label = { Text("Количество") },
-                        singleLine = true,
-                        modifier = Modifier.weight(1f)
-                    )
-                    Spacer(Modifier.width(8.dp))
-                    ExposedDropdownMenuBox(
-                        expanded = unitMenuExpanded,
-                        onExpandedChange = { unitMenuExpanded = it },
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        OutlinedTextField(
-                            readOnly = true,
-                            value = selectedUnit.displayName,
-                            onValueChange = {},
-                            label = { Text("Ед. изм.") },
-                            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = unitMenuExpanded) },
-                            modifier = Modifier.menuAnchor(
-                                ExposedDropdownMenuAnchorType.PrimaryNotEditable,
-                                enabled = true
-                            )
-                        )
-                        ExposedDropdownMenu(
-                            expanded = unitMenuExpanded,
-                            onDismissRequest = { unitMenuExpanded = false }) {
-                            MeasureUnit.entries.forEach { unit ->
-                                DropdownMenuItem(
-                                    text = { Text(unit.displayName) },
-                                    onClick = { selectedUnit = unit; unitMenuExpanded = false }
-                                )
-                            }
-                        }
-                    }
-                }
+            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                FieldLabel("Количество")
+                QuantityUnitField(
+                    quantityText = quantityText,
+                    onQuantityChange = { quantityText = it },
+                    selectedUnit = selectedUnit,
+                    onUnitChange = { selectedUnit = it }
+                )
 
+                Spacer(Modifier.height(8.dp))
+
+                FieldLabel("Срок годности")
                 ExpirationDatePickerField(
                     value = expirationDate,
                     onValueChange = { expirationDate = it }

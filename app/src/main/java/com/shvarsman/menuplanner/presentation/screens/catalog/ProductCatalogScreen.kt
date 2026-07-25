@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalMaterial3Api::class)
+
 package com.shvarsman.menuplanner.presentation.screens.catalog
 
 import androidx.compose.foundation.horizontalScroll
@@ -5,12 +7,13 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -22,6 +25,7 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
@@ -54,16 +58,18 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.shvarsman.menuplanner.domain.model.Category
+import com.shvarsman.menuplanner.domain.model.MeasureUnit
 import com.shvarsman.menuplanner.domain.model.Product
+import com.shvarsman.menuplanner.presentation.screens.common.AppBottomSheet
 import com.shvarsman.menuplanner.presentation.screens.common.DropdownFilterChip
+import com.shvarsman.menuplanner.presentation.screens.common.ProductFormFields
 import com.shvarsman.menuplanner.presentation.screens.common.TopBarSearchField
-import com.shvarsman.menuplanner.presentation.screens.fridge.ProductIcon
+import com.shvarsman.menuplanner.presentation.ui.icons.ProductIcon
 import com.shvarsman.menuplanner.presentation.ui.icons.CategoryIcon
 import com.shvarsman.menuplanner.presentation.utils.GroupedRow
 import com.shvarsman.menuplanner.presentation.utils.rememberDebouncedSearch
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProductCatalogScreen(
     modifier: Modifier = Modifier,
@@ -246,7 +252,7 @@ fun ProductCatalogScreen(
         EditProductBottomSheet(
             product = product,
             onDismiss = { viewModel.cancelEdit() },
-            onConfirm = { name, category, unit -> viewModel.saveEdit(name, category, unit) }
+            onConfirm = { name, category, unit, isToTaste, isAlwaysAvailable -> viewModel.saveEdit(name, category, unit, isToTaste, isAlwaysAvailable) }
         )
     }
 
@@ -331,4 +337,48 @@ private fun CatalogProductRow(product: Product, onEdit: () -> Unit, onDelete: ()
             }
         },
     )
+}
+
+@Composable
+fun EditProductBottomSheet(
+    product: Product,
+    onDismiss: () -> Unit,
+    onConfirm: (name: String, category: Category, unit: MeasureUnit, isToTaste: Boolean, isAlwaysAvailable: Boolean) -> Unit
+) {
+    var name by remember(product.id) { mutableStateOf(product.name) }
+    var category by remember(product.id) { mutableStateOf(product.category) }
+    var unit by remember(product.id) { mutableStateOf(product.defaultUnit) }
+    var isToTaste by remember(product.id) { mutableStateOf(product.isToTaste) }
+    var isAlwaysAvailable by remember(product.id) { mutableStateOf(product.isAlwaysAvailable) }
+
+    AppBottomSheet(
+        title = "Редактировать продукт",
+        fillMaxHeight = true,
+        onDismissRequest = onDismiss
+    ) { onClose ->
+        ProductFormFields(
+            name = name,
+            onNameChange = { name = it },
+            category = category,
+            onCategoryChange = { category = it },
+            unit = unit,
+            onUnitChange = { unit = it },
+            isToTaste = isToTaste,
+            onIsToTasteChange = { isToTaste = it },
+            isAlwaysAvailable = isAlwaysAvailable,
+            onIsAlwaysAvailableChange = { isAlwaysAvailable = it },
+            modifier = Modifier.weight(1f)
+        )
+
+        Spacer(Modifier.height(8.dp))
+
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+            TextButton(onClick = onClose) { Text("Отмена") }
+            Spacer(Modifier.width(8.dp))
+            Button(
+                enabled = name.isNotBlank(),
+                onClick = { onConfirm(name.trim(), category, unit, isToTaste, isAlwaysAvailable) }
+            ) { Text("Сохранить") }
+        }
+    }
 }

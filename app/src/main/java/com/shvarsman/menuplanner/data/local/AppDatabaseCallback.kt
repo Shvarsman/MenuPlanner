@@ -6,7 +6,6 @@ import android.database.sqlite.SQLiteDatabase
 import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.shvarsman.menuplanner.data.seed.SeedProductCsvParser
-import com.shvarsman.menuplanner.domain.model.Product
 
 /**
  * При первом создании файла базы данных заполняет таблицу продуктов
@@ -37,6 +36,7 @@ class AppDatabaseCallback(private val context: Context) : RoomDatabase.Callback(
                     put("iconKey", row.iconKey)
                     put("isDefault", 1)
                     put("isToTaste", if (row.isToTaste) 1 else 0)
+                    put("isAlwaysAvailable", if (row.isAlwaysAvailable) 1 else 0) // добавить
                 }
                 db.insert("products", SQLiteDatabase.CONFLICT_IGNORE, values)
             }

@@ -29,11 +29,21 @@ class ProductRepositoryImpl @Inject constructor(
 
     override suspend fun deleteProduct(id: Long) = dao.deleteById(id)
 
-    override suspend fun findOrCreate(name: String, category: Category, defaultUnit: MeasureUnit): Product {
+    override suspend fun findOrCreate(
+        name: String, category: Category, defaultUnit: MeasureUnit,
+        isToTaste: Boolean, isAlwaysAvailable: Boolean
+    ): Product {
         dao.findByName(name)?.let { return it.toDomain() }
-        // Продукты, созданные пользователем "на лету", никогда не isDefault — их можно удалять
-        val newId = dao.insert(ProductEntity(name = name, category = category, defaultUnit = defaultUnit))
-        return Product(id = newId, name = name, category = category, defaultUnit = defaultUnit)
+        val newId = dao.insert(
+            ProductEntity(
+                name = name, category = category, defaultUnit = defaultUnit,
+                isToTaste = isToTaste, isAlwaysAvailable = isAlwaysAvailable
+            )
+        )
+        return Product(
+            id = newId, name = name, category = category, defaultUnit = defaultUnit,
+            isToTaste = isToTaste, isAlwaysAvailable = isAlwaysAvailable
+        )
     }
 
     override suspend fun countUsages(productId: Long): Int = dao.countUsages(productId)
@@ -46,7 +56,8 @@ private fun ProductEntity.toDomain() = Product(
     defaultUnit = defaultUnit,
     iconKey = iconKey,
     isDefault = isDefault,
-    isToTaste = isToTaste
+    isToTaste = isToTaste,
+    isAlwaysAvailable = isAlwaysAvailable
 )
 
 private fun Product.toEntity() = ProductEntity(
@@ -56,5 +67,6 @@ private fun Product.toEntity() = ProductEntity(
     defaultUnit = defaultUnit,
     iconKey = iconKey,
     isDefault = isDefault,
-    isToTaste = isToTaste
+    isToTaste = isToTaste,
+    isAlwaysAvailable = isAlwaysAvailable
 )

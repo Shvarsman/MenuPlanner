@@ -39,13 +39,13 @@ import com.shvarsman.menuplanner.presentation.screens.catalog.ProductCatalogScre
 import com.shvarsman.menuplanner.presentation.screens.cooking.CookingScreen
 import com.shvarsman.menuplanner.presentation.screens.fridge.FridgeScreen
 import com.shvarsman.menuplanner.presentation.screens.menu.MenuScreen
-import com.shvarsman.menuplanner.presentation.screens.recipe.AllCategoriesScreen
-import com.shvarsman.menuplanner.presentation.screens.recipe.AllRecipesListScreen
-import com.shvarsman.menuplanner.presentation.screens.recipe.RecipeCategoryScreen
-import com.shvarsman.menuplanner.presentation.screens.recipe.RecipeListScreen
-import com.shvarsman.menuplanner.presentation.screens.recipe.RecipeViewScreen
-import com.shvarsman.menuplanner.presentation.screens.recipe.SuggestedRecipesScreen
-import com.shvarsman.menuplanner.presentation.screens.recipeeditor.RecipeEditorScreen
+import com.shvarsman.menuplanner.presentation.screens.recipe.category.AllCategoriesScreen
+import com.shvarsman.menuplanner.presentation.screens.recipe.all.AllRecipesListScreen
+import com.shvarsman.menuplanner.presentation.screens.recipe.category.RecipeCategoryScreen
+import com.shvarsman.menuplanner.presentation.screens.recipe.list.RecipeListScreen
+import com.shvarsman.menuplanner.presentation.screens.recipe.view.RecipeViewScreen
+import com.shvarsman.menuplanner.presentation.screens.recipe.suggested.SuggestedRecipesScreen
+import com.shvarsman.menuplanner.presentation.screens.recipe.editor.RecipeEditorScreen
 import com.shvarsman.menuplanner.presentation.screens.shoppinglist.ShoppingListScreen
 
 private data class BottomItem(

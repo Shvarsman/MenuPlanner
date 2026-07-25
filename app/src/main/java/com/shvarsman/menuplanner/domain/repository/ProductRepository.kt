@@ -14,7 +14,13 @@ interface ProductRepository {
 
     /** Возвращает существующий продукт по названию (без учёта регистра)
      * либо создаёт новый в каталоге. */
-    suspend fun findOrCreate(name: String, category: Category, defaultUnit: MeasureUnit): Product
+    suspend fun findOrCreate(
+        name: String,
+        category: Category,
+        defaultUnit: MeasureUnit,
+        isToTaste: Boolean = false,
+        isAlwaysAvailable: Boolean = false
+    ): Product
 
     /** Сколько раз продукт используется в рецептах, холодильнике и списке покупок суммарно. */
     suspend fun countUsages(productId: Long): Int

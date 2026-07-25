@@ -1,4 +1,4 @@
-package com.shvarsman.menuplanner.presentation.screens.recipe
+package com.shvarsman.menuplanner.presentation.screens.recipe.view
 
 import android.net.Uri
 import androidx.lifecycle.ViewModel

@@ -2,41 +2,28 @@ package com.shvarsman.menuplanner.presentation.screens.common
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowDropDown
-import androidx.compose.material.icons.materialIcon
 import androidx.compose.material3.Button
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.RadioButton
-import androidx.compose.material3.SearchBarDefaults
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -46,15 +33,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.shvarsman.menuplanner.domain.model.Category
 import com.shvarsman.menuplanner.domain.model.MeasureUnit
 import com.shvarsman.menuplanner.domain.model.Product
-import com.shvarsman.menuplanner.presentation.screens.fridge.ProductIcon
-import com.shvarsman.menuplanner.presentation.ui.icons.CategoryIcon
+import com.shvarsman.menuplanner.presentation.ui.icons.ProductIcon
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 
@@ -70,7 +54,11 @@ fun ProductPickerDialog(
     catalog: List<Product>,
     onDismiss: () -> Unit,
     onConfirm: (product: Product, unit: MeasureUnit, quantity: Double, expirationDate: LocalDate?) -> Unit,
-    onCreateProduct: suspend (name: String, category: Category, unit: MeasureUnit) -> Product
+    onCreateProduct: suspend (
+        name: String, category: Category, unit: MeasureUnit,
+        isToTaste: Boolean, isAlwaysAvailable: Boolean
+    ) -> Product,
+    skipQuantityForToTaste: Boolean = false
 ) {
     var step by remember { mutableStateOf(PickerStep.SELECT) }
     var query by remember { mutableStateOf("") }
@@ -82,6 +70,8 @@ fun ProductPickerDialog(
 
     var newName by remember { mutableStateOf("") }
     var newCategory by remember { mutableStateOf(Category.GROCERY) }
+    var newIsToTaste by remember { mutableStateOf(false) }
+    var newIsAlwaysAvailable by remember { mutableStateOf(false) }
     var createError by remember { mutableStateOf<String?>(null) }
     var isCreating by remember { mutableStateOf(false) }
 
@@ -162,17 +152,11 @@ fun ProductPickerDialog(
                                     colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh),
                                     modifier = Modifier.clickable {
                                         if (product.isToTaste) {
-                                            onConfirm(
-                                                product,
-                                                product.defaultUnit,
-                                                0.0,
-                                                null
-                                            )
+                                            onConfirm(product, product.defaultUnit, 0.0, null)
                                         } else {
                                             selectedProduct = product
                                             selectedUnit = product.defaultUnit
                                             quantityText = "1"
-                                            expirationDate = null
                                             step = PickerStep.QUANTITY
                                         }
                                     }
@@ -183,114 +167,27 @@ fun ProductPickerDialog(
                 }
 
                 PickerStep.CREATE -> {
-                    Column(
-                        modifier = Modifier.weight(1f),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Column {
-                            Text(
-                                text = "Название",
-                                style = MaterialTheme.typography.labelLarge,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.padding(start = 16.dp, bottom = 8.dp)
-                            )
-                            Surface(
-                                shape = RoundedCornerShape(28.dp),
-                                color = SearchBarDefaults.colors().containerColor,
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    TextField(
-                                        value = newName,
-                                        onValueChange = { newName = it; createError = null },
-                                        placeholder = { Text("Например, Арбуз") },
-                                        singleLine = true,
-                                        isError = createError != null,
-                                        colors = TextFieldDefaults.colors(
-                                            focusedContainerColor = Color.Transparent,
-                                            unfocusedContainerColor = Color.Transparent,
-                                            focusedIndicatorColor = Color.Transparent,
-                                            unfocusedIndicatorColor = Color.Transparent
-                                        ),
-                                        modifier = Modifier.fillMaxWidth()
-                                    )
-                                }
-                            }
-                        }
-                        Spacer(Modifier.height(8.dp))
+                    ProductFormFields(
+                        name = newName,
+                        onNameChange = { newName = it; createError = null },
+                        category = newCategory,
+                        onCategoryChange = { newCategory = it },
+                        unit = selectedUnit,
+                        onUnitChange = { selectedUnit = it },
+                        isToTaste = newIsToTaste,
+                        onIsToTasteChange = { newIsToTaste = it },
+                        isAlwaysAvailable = newIsAlwaysAvailable,
+                        onIsAlwaysAvailableChange = { newIsAlwaysAvailable = it },
+                        nameError = createError != null,
+                        modifier = Modifier.weight(1f)
+                    )
+                    createError?.let {
                         Text(
-                            text = "Категория",
-                            style = MaterialTheme.typography.labelLarge,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.padding(start = 16.dp)
+                            text = it,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.error,
+                            modifier = Modifier.padding(start = 16.dp, top = 4.dp)
                         )
-                        LazyColumn(modifier = Modifier
-                            .weight(1f)
-                            .clip(RoundedCornerShape(28.dp))) {
-                            items(Category.entries.toTypedArray()) { category ->
-                                ListItem(
-                                    headlineContent = { Text(category.displayName) },
-                                    leadingContent = {
-                                        CategoryIcon(
-                                            modifier = Modifier.size(24.dp),
-                                            category = category,
-                                        )
-                                    },
-                                    trailingContent = {
-                                        RadioButton(
-                                            selected = category == newCategory,
-                                            onClick = null
-                                        )
-                                    },
-                                    colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh),
-                                    modifier = Modifier.clickable { newCategory = category }
-                                )
-                            }
-                        }
-                        Spacer(Modifier.height(8.dp))
-                        Text(
-                            text = "Единица измерения по умолчанию",
-                            style = MaterialTheme.typography.labelLarge,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.padding(start = 16.dp)
-                        )
-                        Box {
-                            Surface(
-                                onClick = { unitMenuExpanded = true },
-                                shape = RoundedCornerShape(28.dp),
-                                color = SearchBarDefaults.colors().containerColor,
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                Row(
-                                    modifier = Modifier.padding(
-                                        start = 16.dp,
-                                        end = 16.dp,
-                                        top = 14.dp,
-                                        bottom = 14.dp
-                                    ),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Text(selectedUnit.displayName, modifier = Modifier.weight(1f))
-                                    Icon(
-                                        Icons.Filled.ArrowDropDown,
-                                        contentDescription = null,
-                                        modifier = Modifier.size(20.dp)
-                                    )
-                                }
-                            }
-                            DropdownMenu(
-                                expanded = unitMenuExpanded,
-                                onDismissRequest = { unitMenuExpanded = false }) {
-                                MeasureUnit.entries.forEach { unit ->
-                                    DropdownMenuItem(
-                                        text = { Text(unit.displayName) },
-                                        onClick = { selectedUnit = unit; unitMenuExpanded = false }
-                                    )
-                                }
-                            }
-                        }
                     }
                 }
 
@@ -322,83 +219,14 @@ fun ProductPickerDialog(
                                 )
                             }
                         }
-                        Text(
-                            text = "Количество",
-                            style = MaterialTheme.typography.labelMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.padding(start = 16.dp)
+                        FieldLabel("Количество")
+                        QuantityUnitField(
+                            quantityText = quantityText,
+                            onQuantityChange = { quantityText = it },
+                            selectedUnit = selectedUnit,
+                            onUnitChange = { selectedUnit = it },
+                            isError = quantityText.isNotEmpty() && parsedQuantity == null
                         )
-                        Surface(
-                            shape = RoundedCornerShape(28.dp),
-                            color = SearchBarDefaults.colors().containerColor,
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Row(
-                                modifier = Modifier.padding(start = 16.dp, end = 8.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                TextField(
-                                    value = quantityText,
-                                    onValueChange = {
-                                        quantityText = it.filter { c -> c.isDigit() || c == '.' }
-                                            .let { filtered ->
-                                                val firstDot = filtered.indexOf('.')
-                                                if (firstDot == -1) filtered
-                                                else filtered.substring(
-                                                    0,
-                                                    firstDot + 1
-                                                ) + filtered.substring(firstDot + 1)
-                                                    .replace(".", "")
-                                            }
-                                    },
-                                    placeholder = { Text("Количество") },
-                                    singleLine = true,
-                                    isError = quantityText.isNotEmpty() && parsedQuantity == null,
-                                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                                    colors = TextFieldDefaults.colors(
-                                        focusedContainerColor = Color.Transparent,
-                                        unfocusedContainerColor = Color.Transparent,
-                                        focusedIndicatorColor = Color.Transparent,
-                                        unfocusedIndicatorColor = Color.Transparent
-                                    ),
-                                    modifier = Modifier.weight(1f)
-                                )
-
-                                Box {
-                                    Row(
-                                        modifier = Modifier
-                                            .clip(RoundedCornerShape(20.dp))
-                                            .clickable { unitMenuExpanded = true }
-                                            .padding(horizontal = 10.dp, vertical = 12.dp),
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        Text(
-                                            selectedUnit.displayName,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                                        )
-                                        Spacer(Modifier.width(2.dp))
-                                        Icon(
-                                            Icons.Filled.ArrowDropDown,
-                                            contentDescription = "Единица измерения",
-                                            modifier = Modifier.size(20.dp),
-                                            tint = MaterialTheme.colorScheme.onSurfaceVariant
-                                        )
-                                    }
-                                    DropdownMenu(
-                                        expanded = unitMenuExpanded,
-                                        onDismissRequest = { unitMenuExpanded = false }) {
-                                        MeasureUnit.entries.forEach { unit ->
-                                            DropdownMenuItem(
-                                                text = { Text(unit.displayName) },
-                                                onClick = {
-                                                    selectedUnit = unit; unitMenuExpanded = false
-                                                }
-                                            )
-                                        }
-                                    }
-                                }
-                            }
-                        }
                         Spacer(Modifier.height(8.dp))
                         ExpirationDatePickerField(
                             value = expirationDate,
@@ -445,8 +273,7 @@ fun ProductPickerDialog(
                         isCreating = true
                         coroutineScope.launch {
                             try {
-                                val created =
-                                    onCreateProduct(newName.trim(), newCategory, selectedUnit)
+                                val created = onCreateProduct(newName.trim(), newCategory, selectedUnit, newIsToTaste, newIsAlwaysAvailable)
                                 selectedProduct = created
                                 quantityText = "1"
                                 expirationDate = null

@@ -9,8 +9,17 @@ import javax.inject.Inject
 class FindOrCreateProductUseCase @Inject constructor(
     private val repository: ProductRepository
 ) {
-    suspend operator fun invoke(name: String, category: Category, defaultUnit: MeasureUnit): Product {
+    suspend operator fun invoke(
+        name: String, category: Category, defaultUnit: MeasureUnit,
+        isToTaste: Boolean = false, isAlwaysAvailable: Boolean = false
+    ): Product {
         require(name.isNotBlank()) { "Название продукта не может быть пустым" }
-        return repository.findOrCreate(name.trim(), category, defaultUnit)
+        return repository.findOrCreate(
+            name.trim(),
+            category,
+            defaultUnit,
+            isToTaste,
+            isAlwaysAvailable
+        )
     }
 }

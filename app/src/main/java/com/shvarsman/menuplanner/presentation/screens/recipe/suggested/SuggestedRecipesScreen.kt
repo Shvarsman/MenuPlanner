@@ -1,5 +1,6 @@
-package com.shvarsman.menuplanner.presentation.screens.recipe
+package com.shvarsman.menuplanner.presentation.screens.recipe.suggested
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -35,6 +36,9 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.shvarsman.menuplanner.domain.model.RecipeSummary
 import com.shvarsman.menuplanner.presentation.screens.common.CollapsingLargeTopAppBar
+import com.shvarsman.menuplanner.presentation.screens.recipe.list.RecipeListViewModel
+import com.shvarsman.menuplanner.presentation.screens.recipe.list.RecipeViewMode
+import com.shvarsman.menuplanner.presentation.screens.recipe.components.recipeGroupedItems
 import com.shvarsman.menuplanner.presentation.utils.rememberOptimisticDelete
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -99,7 +103,7 @@ fun SuggestedRecipesScreen(
                     .fillMaxSize()
                     .padding(padding),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = androidx.compose.foundation.layout.Arrangement.Center
+                verticalArrangement = Arrangement.Center
             ) {
                 Icon(
                     Icons.Filled.RestaurantMenu,

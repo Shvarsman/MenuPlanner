@@ -30,7 +30,15 @@ class AssignRecipeToMenuUseCase @Inject constructor(
             )
 
             recipe.ingredients.forEach { ingredient ->
-                if (ingredient.product.isToTaste) return@forEach // специи/соль и т.п. никогда не докупаются автоматически
+                if (ingredient.product.isAlwaysAvailable) return@forEach // вода и т.п. — никогда не докупается
+
+                if (ingredient.product.isToTaste) {
+                    val hasAny = fridgeSnapshot.any { it.product.id == ingredient.product.id }
+                    if (!hasAny) {
+                        addToShoppingList(ingredient.product, ingredient.product.defaultUnit, 1.0)
+                    }
+                    return@forEach
+                }
 
                 val fridgeQty = fridgeSnapshot
                     .filter { it.product.id == ingredient.product.id }

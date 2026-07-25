@@ -86,6 +86,7 @@ import com.shvarsman.menuplanner.presentation.screens.common.DropdownFilterChip
 import com.shvarsman.menuplanner.presentation.screens.common.ProductPickerDialog
 import com.shvarsman.menuplanner.presentation.screens.common.TopBarSearchField
 import com.shvarsman.menuplanner.presentation.ui.icons.CategoryIcon
+import com.shvarsman.menuplanner.presentation.ui.icons.ProductIcon
 import com.shvarsman.menuplanner.presentation.ui.theme.gradientStyle
 import com.shvarsman.menuplanner.presentation.utils.GroupedRow
 import com.shvarsman.menuplanner.presentation.utils.rememberDebouncedSearch
@@ -349,12 +350,8 @@ fun FridgeScreen(
             catalog = catalog,
             onDismiss = { viewModel.closeAddPicker() },
             onConfirm = { product, unit, qty, date -> viewModel.addItem(product, unit, qty, date) },
-            onCreateProduct = { name, category, unit ->
-                viewModel.createProduct(
-                    name,
-                    category,
-                    unit
-                )
+            onCreateProduct = { name, category, unit, isToTaste, isAlwaysAvailable ->
+                viewModel.createProduct(name, category, unit, isToTaste, isAlwaysAvailable)
             }
         )
     }
@@ -473,11 +470,13 @@ private fun FridgeItemRow(
             },
             trailingContent = {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        text = "${formatQty(item.quantity)} ${item.unit.displayName}",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+                    if (!item.product.isToTaste) {
+                        Text(
+                            text = "${formatQty(item.quantity)} ${item.unit.displayName}",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                     Spacer(Modifier.width(8.dp))
                     if (!isSelectionMode) {
                         Row(verticalAlignment = Alignment.CenterVertically) {

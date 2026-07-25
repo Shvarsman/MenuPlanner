@@ -15,7 +15,7 @@ class CompleteCookingUseCase @Inject constructor(
         val fridgeSnapshot = fridgeRepository.observeItems().first()
 
         recipe.ingredients.forEach { ingredient ->
-            if (ingredient.product.isToTaste) return@forEach // специи и т.п. не списываются поштучно
+            if (ingredient.product.isToTaste || ingredient.product.isAlwaysAvailable) return@forEach
 
             var remainingToConsume = ingredient.quantity
 

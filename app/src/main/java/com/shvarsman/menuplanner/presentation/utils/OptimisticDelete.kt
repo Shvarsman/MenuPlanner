@@ -1,5 +1,10 @@
 package com.shvarsman.menuplanner.presentation.utils
 
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -35,5 +40,28 @@ class PendingDeleteManager<Id>(private val scope: CoroutineScope) {
     fun undo(id: Id) {
         jobs.remove(id)?.cancel()
         _pendingIds.value -= id
+    }
+}
+
+@Composable
+fun <T, Id> rememberOptimisticDelete(
+    snackbarHostState: SnackbarHostState,
+    idOf: (T) -> Id,
+    message: (T) -> String,
+    onRequestDelete: (Id) -> Unit,
+    onUndo: (Id) -> Unit
+): (T) -> Unit {
+    val scope = rememberCoroutineScope()
+    return { item ->
+        val id = idOf(item)
+        onRequestDelete(id)
+        scope.launch {
+            val result = snackbarHostState.showSnackbar(
+                message = message(item),
+                actionLabel = "Отменить",
+                duration = SnackbarDuration.Short
+            )
+            if (result == SnackbarResult.ActionPerformed) onUndo(id)
+        }
     }
 }

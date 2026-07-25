@@ -1,4 +1,4 @@
-package com.shvarsman.menuplanner.presentation.screens.recipe
+package com.shvarsman.menuplanner.presentation.screens.recipe.category
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel

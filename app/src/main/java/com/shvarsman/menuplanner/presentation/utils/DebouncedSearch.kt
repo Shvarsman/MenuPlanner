@@ -1,3 +1,5 @@
+@file:OptIn(FlowPreview::class)
+
 package com.shvarsman.menuplanner.presentation.utils
 
 import androidx.compose.runtime.Composable
@@ -8,16 +10,18 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
+import kotlin.time.Duration.Companion.milliseconds
 
 private const val SEARCH_DEBOUNCE_MS = 300L
 
 fun <T> Flow<T>.debounceSearch(): Flow<T> =
-    debounce(SEARCH_DEBOUNCE_MS).distinctUntilChanged()
+    debounce(SEARCH_DEBOUNCE_MS.milliseconds).distinctUntilChanged()
 
 fun <T, R> Flow<T>.mapOnDefault(transform: suspend (T) -> R): Flow<R> =
     map(transform).flowOn(Dispatchers.Default)

@@ -1,4 +1,4 @@
-package com.shvarsman.menuplanner.presentation.screens.recipe
+package com.shvarsman.menuplanner.presentation.screens.recipe.components
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
@@ -15,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.shvarsman.menuplanner.domain.model.RecipeCategory
 import com.shvarsman.menuplanner.domain.model.RecipeSummary
+import com.shvarsman.menuplanner.presentation.screens.recipe.list.RecipeViewMode
 import com.shvarsman.menuplanner.presentation.ui.icons.RecipeCategoryIcon
 
 /**

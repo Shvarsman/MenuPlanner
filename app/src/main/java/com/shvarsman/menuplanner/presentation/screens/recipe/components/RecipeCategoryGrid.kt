@@ -1,4 +1,4 @@
-package com.shvarsman.menuplanner.presentation.screens.recipe
+package com.shvarsman.menuplanner.presentation.screens.recipe.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -28,9 +27,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.shvarsman.menuplanner.domain.model.RecipeCategory
-import com.shvarsman.menuplanner.presentation.ui.icons.CategoryIcon
 import com.shvarsman.menuplanner.presentation.ui.icons.RecipeCategoryIcon
-import com.shvarsman.menuplanner.presentation.ui.icons.icon
 
 /**
  * Карусель категорий рецептов (M3 HorizontalMultiBrowseCarousel) + кнопка

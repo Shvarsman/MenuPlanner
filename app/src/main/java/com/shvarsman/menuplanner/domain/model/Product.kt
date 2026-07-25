@@ -7,7 +7,8 @@ data class Product(
     val defaultUnit: MeasureUnit,
     val iconKey: String = DEFAULT_ICON_KEY,
     val isDefault: Boolean = false,
-    val isToTaste: Boolean = false
+    val isToTaste: Boolean = false,
+    val isAlwaysAvailable: Boolean = false
 ) {
     companion object {
         const val DEFAULT_ICON_KEY = "default"

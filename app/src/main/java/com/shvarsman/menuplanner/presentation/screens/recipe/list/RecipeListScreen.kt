@@ -1,4 +1,4 @@
-package com.shvarsman.menuplanner.presentation.screens.recipe
+package com.shvarsman.menuplanner.presentation.screens.recipe.list
 
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -52,6 +52,9 @@ import com.shvarsman.menuplanner.domain.model.RecipeCategory
 import com.shvarsman.menuplanner.domain.model.RecipeSummary
 import com.shvarsman.menuplanner.presentation.screens.common.DropdownFilterChip
 import com.shvarsman.menuplanner.presentation.screens.common.TopBarSearchField
+import com.shvarsman.menuplanner.presentation.screens.recipe.components.RecipeCarouselSection
+import com.shvarsman.menuplanner.presentation.screens.recipe.components.RecipeCategoryCarousel
+import com.shvarsman.menuplanner.presentation.screens.recipe.components.recipeGroupedItems
 import com.shvarsman.menuplanner.presentation.ui.icons.RecipeCategoryIcon
 import com.shvarsman.menuplanner.presentation.utils.rememberDebouncedSearch
 import com.shvarsman.menuplanner.presentation.utils.rememberOptimisticDelete

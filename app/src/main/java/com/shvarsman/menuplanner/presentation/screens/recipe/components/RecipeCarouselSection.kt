@@ -1,4 +1,4 @@
-package com.shvarsman.menuplanner.presentation.screens.recipe
+package com.shvarsman.menuplanner.presentation.screens.recipe.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable

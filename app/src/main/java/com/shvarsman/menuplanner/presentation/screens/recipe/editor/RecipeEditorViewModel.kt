@@ -1,4 +1,4 @@
-package com.shvarsman.menuplanner.presentation.screens.recipeeditor
+package com.shvarsman.menuplanner.presentation.screens.recipe.editor
 
 import android.net.Uri
 import androidx.lifecycle.ViewModel
@@ -181,8 +181,10 @@ class RecipeEditorViewModel @Inject constructor(
         _isIngredientPickerOpen.value = false
     }
 
-    suspend fun createProduct(name: String, category: Category, unit: MeasureUnit): Product =
-        findOrCreateProduct(name, category, unit)
+    suspend fun createProduct(
+        name: String, category: Category, unit: MeasureUnit,
+        isToTaste: Boolean, isAlwaysAvailable: Boolean
+    ): Product = findOrCreateProduct(name, category, unit, isToTaste, isAlwaysAvailable)
 
     fun addIngredient(product: Product, unit: MeasureUnit, quantity: Double) {
         updateState { current ->
