@@ -46,6 +46,7 @@ data class RecipeEditorState(
     val isSaved: Boolean = false,
     val errorMessage: String? = null,
     val difficulty: RecipeDifficulty = RecipeDifficulty.EASY,
+    val description: String = "",
 )
 
 @HiltViewModel
@@ -100,6 +101,7 @@ class RecipeEditorViewModel @Inject constructor(
                 current.cookingMinutes != base.cookingMinutes ||
                 current.ingredients != base.ingredients ||
                 current.difficulty != base.difficulty ||
+                current.description != base.description ||
                 current.steps != base.steps
     }
 
@@ -136,6 +138,7 @@ class RecipeEditorViewModel @Inject constructor(
                         steps = steps,
                         isLoading = false,
                         difficulty = recipe.difficulty,
+                        description = recipe.description,
                     )
                 } else {
                     RecipeEditorState(isLoading = false)
@@ -170,6 +173,10 @@ class RecipeEditorViewModel @Inject constructor(
 
     fun onCookingTimeChange(hours: Int, minutes: Int) {
         updateState { it.copy(cookingHours = hours, cookingMinutes = minutes) }
+    }
+
+    fun onDescriptionChange(value: String) {
+        updateState { it.copy(description = value) }
     }
 
     fun onCoverPhotoSelected(uri: Uri) {
@@ -357,6 +364,7 @@ class RecipeEditorViewModel @Inject constructor(
                         ingredients = current.ingredients,
                         steps = stepsToSave,
                         difficulty = current.difficulty,
+                        description = current.description,
                     )
                 )
                 _state.update { it.copy(isSaving = false, isSaved = true) }

@@ -6,6 +6,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -243,6 +244,28 @@ fun ExpirationDatePickerField(
                     dayContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
                     selectedDayContentColor = MaterialTheme.colorScheme.primary
                 )
+            )
+        }
+    }
+}
+
+@Composable
+fun ReadOnlyField(
+    label: String,
+    modifier: Modifier = Modifier,
+    content: @Composable RowScope.() -> Unit
+) {
+    Column(modifier = modifier) {
+        FieldLabel(label)
+        Surface(
+            shape = RoundedCornerShape(28.dp),
+            color = SearchBarDefaults.colors().containerColor,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Row(
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                content = content
             )
         }
     }

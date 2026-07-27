@@ -8,6 +8,7 @@ data class Recipe(
     val cookingMethod: CookingMethod? = null,
     val cookingTimeMinutes: Int? = null,
     val difficulty: RecipeDifficulty = RecipeDifficulty.EASY,
+    val description: String = "",
     val ingredients: List<RecipeIngredient> = emptyList(),
     val steps: List<StepContentItem> = emptyList()
 )

@@ -23,3 +23,7 @@
 
 # Hilt references optional errorprone annotations not on the classpath.
 -dontwarn com.google.errorprone.annotations.CanIgnoreReturnValue
+
+# Игнорировать отсутствующие классы Android XR / ARCore
+-dontwarn com.android.extensions.xr.**
+-dontwarn com.google.androidxr.**

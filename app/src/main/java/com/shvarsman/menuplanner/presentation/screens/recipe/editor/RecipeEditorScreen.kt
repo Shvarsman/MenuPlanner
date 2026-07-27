@@ -292,7 +292,31 @@ fun RecipeEditorScreen(
                     }
                 }
 
-                // ── Ингредиенты ───────────────────────────────────────────
+                item {
+                    Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)) {
+                        FieldLabel("Описание")
+                        Surface(
+                            shape = RoundedCornerShape(28.dp),
+                            color = androidx.compose.material3.SearchBarDefaults.colors().containerColor,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            TextField(
+                                value = state.description,
+                                onValueChange = viewModel::onDescriptionChange,
+                                placeholder = { Text("Коротко опишите рецепт") },
+                                minLines = 3,
+                                colors = TextFieldDefaults.colors(
+                                    focusedContainerColor = Color.Transparent,
+                                    unfocusedContainerColor = Color.Transparent,
+                                    focusedIndicatorColor = Color.Transparent,
+                                    unfocusedIndicatorColor = Color.Transparent
+                                ),
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                        }
+                    }
+                }
+
                 item {
                     Row(
                         modifier = Modifier

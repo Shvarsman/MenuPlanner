@@ -2,6 +2,7 @@
 
 package com.shvarsman.menuplanner.presentation.screens.catalog
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -29,10 +30,12 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
@@ -51,6 +54,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -66,6 +71,7 @@ import com.shvarsman.menuplanner.presentation.screens.common.ProductFormFields
 import com.shvarsman.menuplanner.presentation.screens.common.TopBarSearchField
 import com.shvarsman.menuplanner.presentation.ui.icons.ProductIcon
 import com.shvarsman.menuplanner.presentation.ui.icons.CategoryIcon
+import com.shvarsman.menuplanner.presentation.ui.theme.gradientStyle
 import com.shvarsman.menuplanner.presentation.utils.GroupedRow
 import com.shvarsman.menuplanner.presentation.utils.rememberDebouncedSearch
 import kotlinx.coroutines.launch
@@ -113,7 +119,16 @@ fun ProductCatalogScreen(
             TopAppBar(
                 scrollBehavior = scrollBehavior,
                 navigationIcon = {
-                    IconButton(onClick = onBack) {
+                    IconButton(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(28.dp))
+                            .background(
+                                MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.9f),
+                                RoundedCornerShape(28.dp)
+                            )
+                            .gradientStyle(shape = RoundedCornerShape(28.dp)),
+                        onClick = onBack
+                    ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Назад"
@@ -150,13 +165,21 @@ fun ProductCatalogScreen(
                     selected = showOnlyCustom,
                     onClick = { viewModel.toggleShowOnlyCustom() },
                     label = { Text("Мои продукты") },
-                    shape = RoundedCornerShape(28.dp)
+                    shape = RoundedCornerShape(28.dp),
+                    colors = FilterChipDefaults.filterChipColors(
+                        selectedContainerColor = MaterialTheme.colorScheme.surface,
+                        selectedLabelColor = MaterialTheme.colorScheme.onSurface
+                    )
                 )
                 FilterChip(
                     selected = !showOnlyCustom,
                     onClick = { viewModel.toggleShowOnlyCustom() },
                     label = { Text("Все") },
-                    shape = RoundedCornerShape(28.dp)
+                    shape = RoundedCornerShape(28.dp),
+                    colors = FilterChipDefaults.filterChipColors(
+                        selectedContainerColor = MaterialTheme.colorScheme.surface,
+                        selectedLabelColor = MaterialTheme.colorScheme.onSurface
+                    )
                 )
                 DropdownFilterChip(
                     displayText = selectedCategory?.displayName ?: "Категория",
@@ -252,7 +275,15 @@ fun ProductCatalogScreen(
         EditProductBottomSheet(
             product = product,
             onDismiss = { viewModel.cancelEdit() },
-            onConfirm = { name, category, unit, isToTaste, isAlwaysAvailable -> viewModel.saveEdit(name, category, unit, isToTaste, isAlwaysAvailable) }
+            onConfirm = { name, category, unit, isToTaste, isAlwaysAvailable ->
+                viewModel.saveEdit(
+                    name,
+                    category,
+                    unit,
+                    isToTaste,
+                    isAlwaysAvailable
+                )
+            }
         )
     }
 
@@ -336,6 +367,10 @@ private fun CatalogProductRow(product: Product, onEdit: () -> Unit, onDelete: ()
                 }
             }
         },
+        colors = ListItemDefaults.colors(
+            containerColor = MaterialTheme.colorScheme.background,
+            headlineColor = MaterialTheme.colorScheme.onBackground
+        )
     )
 }
 

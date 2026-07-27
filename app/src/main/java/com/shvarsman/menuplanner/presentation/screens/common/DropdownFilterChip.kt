@@ -1,7 +1,5 @@
 package com.shvarsman.menuplanner.presentation.screens.common
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.heightIn
@@ -24,8 +22,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -63,7 +59,11 @@ fun DropdownFilterChip(
                     modifier = Modifier.size(FilterChipDefaults.IconSize)
                 )
             },
-            shape = shape
+            shape = shape,
+            colors = FilterChipDefaults.filterChipColors(
+                selectedContainerColor = MaterialTheme.colorScheme.surface,
+                selectedLabelColor = MaterialTheme.colorScheme.onSurface
+            )
         )
         DropdownMenu(
             modifier = modifier
@@ -72,7 +72,7 @@ fun DropdownFilterChip(
                 .gradientStyle(),
             expanded = expanded,
             onDismissRequest = { expanded = false },
-            containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.9f),
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.9f),
             shape = RoundedCornerShape(28.dp),
             shadowElevation = 0.dp
         ) {

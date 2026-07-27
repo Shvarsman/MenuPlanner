@@ -66,6 +66,7 @@ private fun RecipeWithIngredients.toDomain() = Recipe(
     cookingMethod = recipe.cookingMethod,
     cookingTimeMinutes = recipe.cookingTimeMinutes,
     difficulty = recipe.difficulty,
+    description = recipe.description,
     steps = recipe.steps,
     ingredients = ingredients.map { it.toDomain() }
 )
@@ -94,6 +95,7 @@ private fun Recipe.toEntity() = RecipeEntity(
     cookingMethod = cookingMethod,
     cookingTimeMinutes = cookingTimeMinutes,
     difficulty = difficulty,
+    description = description,
     steps = steps,
     stepCount = steps.count { it is StepContentItem.Text && it.content.isNotBlank() }
 )

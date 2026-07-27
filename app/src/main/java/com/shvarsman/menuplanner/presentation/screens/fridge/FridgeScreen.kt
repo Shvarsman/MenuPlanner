@@ -44,11 +44,13 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuItemColors
 import androidx.compose.material3.Scaffold
@@ -73,6 +75,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextAlign
@@ -283,7 +286,11 @@ fun FridgeScreen(
                         selected = groupByCategory,
                         onClick = { viewModel.toggleGroupByCategory() },
                         label = { Text("По категориям") },
-                        shape = RoundedCornerShape(28.dp)
+                        shape = RoundedCornerShape(28.dp),
+                        colors = FilterChipDefaults.filterChipColors(
+                            selectedContainerColor = MaterialTheme.colorScheme.surface,
+                            selectedLabelColor = MaterialTheme.colorScheme.onSurface
+                        )
                     )
                 }
             }
@@ -302,8 +309,7 @@ fun FridgeScreen(
                 else -> {
                     LazyColumn(
                         state = lazyListState,
-                        modifier = Modifier.fillMaxSize(),
-                        contentPadding = PaddingValues(bottom = padding.calculateBottomPadding() + 16.dp)
+                        modifier = Modifier.fillMaxSize()
                     ) {
                         items(
                             items = listState.rows,
@@ -385,7 +391,7 @@ private fun CategoryHeader(modifier: Modifier = Modifier, category: Category) {
         Text(
             category.displayName,
             style = MaterialTheme.typography.titleSmall,
-            color = MaterialTheme.colorScheme.primary
+            color = MaterialTheme.colorScheme.onBackground
         )
         HorizontalDivider(modifier = Modifier.weight(1f))
     }
@@ -435,7 +441,7 @@ private fun FridgeItemRow(
             Row(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(MaterialTheme.colorScheme.errorContainer)
+                    .background(MaterialTheme.colorScheme.error)
                     .padding(horizontal = 20.dp),
                 horizontalArrangement = Arrangement.End,
                 verticalAlignment = Alignment.CenterVertically
@@ -443,7 +449,7 @@ private fun FridgeItemRow(
                 Icon(
                     Icons.Filled.Delete,
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onErrorContainer
+                    tint = MaterialTheme.colorScheme.onError
                 )
             }
         }
@@ -497,9 +503,9 @@ private fun FridgeItemRow(
                                     expanded = menuExpanded,
                                     onDismissRequest = { menuExpanded = false },
                                     modifier = Modifier
-                                        .gradientStyle()
-                                        .clip(RoundedCornerShape(28.dp)),
-                                    containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.9f),
+                                        .clip(RoundedCornerShape(28.dp))
+                                        .gradientStyle(),
+                                    containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.9f),
                                     shape = RoundedCornerShape(28.dp),
                                     shadowElevation = 0.dp
                                 ) {
@@ -561,7 +567,11 @@ private fun FridgeItemRow(
                         }
                     }
                 }
-            }
+            },
+            colors = ListItemDefaults.colors(
+                containerColor = MaterialTheme.colorScheme.background,
+                headlineColor = MaterialTheme.colorScheme.onBackground
+            )
         )
     }
 }
@@ -600,7 +610,7 @@ private fun EmptyFridgeState(modifier: Modifier = Modifier) {
         Text(
             text = "В холодильнике пока пусто.\nДобавьте первый продукт.",
             textAlign = TextAlign.Center,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            color = MaterialTheme.colorScheme.onBackground
         )
     }
 }

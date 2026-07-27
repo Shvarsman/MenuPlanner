@@ -1,5 +1,6 @@
 package com.shvarsman.menuplanner.presentation.screens.common
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -18,6 +19,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
@@ -33,6 +35,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.shvarsman.menuplanner.domain.model.Category
@@ -138,6 +141,7 @@ fun ProductPickerDialog(
                             modifier = Modifier
                                 .weight(1f)
                                 .clip(RoundedCornerShape(28.dp))
+                                .background(MaterialTheme.colorScheme.surface)
                         ) {
                             items(filtered, key = { it.id }) { product ->
                                 ListItem(
@@ -150,8 +154,8 @@ fun ProductPickerDialog(
                                         )
                                     },
                                     colors = ListItemDefaults.colors(
-                                        containerColor = MaterialTheme.colorScheme.surface,
-                                        headlineColor = MaterialTheme.colorScheme.onBackground
+                                        containerColor = Color.Transparent,
+                                        headlineColor = MaterialTheme.colorScheme.onSurface
                                     ),
                                     modifier = Modifier.clickable {
                                         if (product.isToTaste) {

@@ -26,6 +26,7 @@ android {
         release {
             isMinifyEnabled = true
             isShrinkResources = true
+            signingConfig = signingConfigs.getByName("debug")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -46,7 +47,7 @@ android {
 dependencies {
     implementation(libs.material3)
     coreLibraryDesugaring(libs.desugar.jdk.libs)
-
+    implementation(libs.androidx.compose.runtime.tracing)
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.compose.material3)

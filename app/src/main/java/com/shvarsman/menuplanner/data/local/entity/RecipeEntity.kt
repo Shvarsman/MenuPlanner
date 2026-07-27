@@ -16,6 +16,7 @@ data class RecipeEntity(
     val cookingMethod: CookingMethod?,
     val cookingTimeMinutes: Int?,
     val difficulty: RecipeDifficulty = RecipeDifficulty.EASY,
+    val description: String = "",
     val steps: List<StepContentItem>,
     val stepCount: Int
 )

@@ -198,9 +198,15 @@ fun MenuScreen(
                             )
                         }
                     },
-                    expandedHeight = TopAppBarDefaults.TopAppBarExpandedHeight
+                    expandedHeight = TopAppBarDefaults.TopAppBarExpandedHeight,
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.background,
+                        scrolledContainerColor = MaterialTheme.colorScheme.background
+                    )
                 )
-            }
+
+            },
+
         ) { padding ->
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),

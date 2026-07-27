@@ -4,11 +4,15 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material.icons.filled.Kitchen
@@ -18,13 +22,17 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
@@ -39,14 +47,15 @@ import com.shvarsman.menuplanner.presentation.screens.catalog.ProductCatalogScre
 import com.shvarsman.menuplanner.presentation.screens.cooking.CookingScreen
 import com.shvarsman.menuplanner.presentation.screens.fridge.FridgeScreen
 import com.shvarsman.menuplanner.presentation.screens.menu.MenuScreen
-import com.shvarsman.menuplanner.presentation.screens.recipe.category.AllCategoriesScreen
 import com.shvarsman.menuplanner.presentation.screens.recipe.all.AllRecipesListScreen
+import com.shvarsman.menuplanner.presentation.screens.recipe.category.AllCategoriesScreen
 import com.shvarsman.menuplanner.presentation.screens.recipe.category.RecipeCategoryScreen
-import com.shvarsman.menuplanner.presentation.screens.recipe.list.RecipeListScreen
-import com.shvarsman.menuplanner.presentation.screens.recipe.view.RecipeViewScreen
-import com.shvarsman.menuplanner.presentation.screens.recipe.suggested.SuggestedRecipesScreen
 import com.shvarsman.menuplanner.presentation.screens.recipe.editor.RecipeEditorScreen
+import com.shvarsman.menuplanner.presentation.screens.recipe.list.RecipeListScreen
+import com.shvarsman.menuplanner.presentation.screens.recipe.suggested.SuggestedRecipesScreen
+import com.shvarsman.menuplanner.presentation.screens.recipe.view.RecipeViewScreen
 import com.shvarsman.menuplanner.presentation.screens.shoppinglist.ShoppingListScreen
+import com.shvarsman.menuplanner.presentation.ui.theme.gradientStyle
 
 private data class BottomItem(
     val destination: Destination,
@@ -217,28 +226,47 @@ private fun MainTabsScreen(rootNavController: NavHostController) {
     val currentDestination = navBackStackEntry?.destination
 
     Scaffold(
-        contentWindowInsets = WindowInsets.navigationBars,
+        contentWindowInsets = WindowInsets(0),
         bottomBar = {
-            NavigationBar {
-                bottomItems.forEach { item ->
-                    val selected = currentDestination?.hierarchy?.any {
-                        it.route == item.destination.route
-                    } == true
+            val shape = RoundedCornerShape(28.dp)
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .navigationBarsPadding()
+                    .padding(horizontal = 16.dp, vertical = 12.dp)
+                    .clip(shape)
+                    .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.9f), shape)
+                    .gradientStyle(shape = shape)
+            ) {
+                NavigationBar(
+                    containerColor = Color.Transparent,
+                    windowInsets = WindowInsets(0, 0, 0, 0)
+                ) {
+                    bottomItems.forEach { item ->
+                        val selected = currentDestination?.hierarchy?.any {
+                            it.route == item.destination.route
+                        } == true
 
-                    NavigationBarItem(
-                        selected = selected,
-                        onClick = {
-                            childNavController.navigate(item.destination.route) {
-                                popUpTo(childNavController.graph.findStartDestination().id) {
-                                    saveState = true
+                        NavigationBarItem(
+                            selected = selected,
+                            onClick = {
+                                childNavController.navigate(item.destination.route) {
+                                    popUpTo(childNavController.graph.findStartDestination().id) {
+                                        saveState = true
+                                    }
+                                    launchSingleTop = true
+                                    restoreState = true
                                 }
-                                launchSingleTop = true
-                                restoreState = true
-                            }
-                        },
-                        icon = { Icon(imageVector = item.icon, contentDescription = item.label) },
-                        label = { Text(item.label) }
-                    )
+                            },
+                            icon = { Icon(imageVector = item.icon, contentDescription = item.label) },
+                            label = { Text(item.label) },
+                            colors = NavigationBarItemDefaults.colors(
+                                indicatorColor = Color.Transparent,
+                                selectedIconColor = MaterialTheme.colorScheme.primary,
+                                selectedTextColor = MaterialTheme.colorScheme.primary
+                            )
+                        )
+                    }
                 }
             }
         }

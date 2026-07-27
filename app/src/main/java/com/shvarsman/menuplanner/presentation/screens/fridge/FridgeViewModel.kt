@@ -1,5 +1,6 @@
 package com.shvarsman.menuplanner.presentation.screens.fridge
 
+import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.shvarsman.menuplanner.domain.model.Category
@@ -41,6 +42,7 @@ enum class FridgeSortOption(val displayName: String) {
     FAVORITES_FIRST("Сначала избранное")
 }
 
+@Immutable
 data class FridgeListState(
     val rows: List<FridgeListRow> = emptyList(),
     val isEmpty: Boolean = true

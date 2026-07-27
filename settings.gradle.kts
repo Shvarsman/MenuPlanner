@@ -24,4 +24,3 @@ dependencyResolutionManagement {
 
 rootProject.name = "Menu Planner"
 include(":app")
-include(":baselineprofile")
