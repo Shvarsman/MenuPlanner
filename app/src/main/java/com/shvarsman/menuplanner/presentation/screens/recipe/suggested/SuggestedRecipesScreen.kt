@@ -1,5 +1,6 @@
 package com.shvarsman.menuplanner.presentation.screens.recipe.suggested
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -29,6 +30,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -39,6 +41,8 @@ import com.shvarsman.menuplanner.presentation.screens.common.CollapsingLargeTopA
 import com.shvarsman.menuplanner.presentation.screens.recipe.list.RecipeListViewModel
 import com.shvarsman.menuplanner.presentation.screens.recipe.list.RecipeViewMode
 import com.shvarsman.menuplanner.presentation.screens.recipe.components.recipeGroupedItems
+import com.shvarsman.menuplanner.presentation.ui.theme.CornerShape
+import com.shvarsman.menuplanner.presentation.ui.theme.gradientStyle
 import com.shvarsman.menuplanner.presentation.utils.rememberOptimisticDelete
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -70,12 +74,30 @@ fun SuggestedRecipesScreen(
                 title = "Можно приготовить",
                 scrollBehavior = scrollBehavior,
                 navigationIcon = {
-                    IconButton(onClick = onBack) {
+                    IconButton(
+                        modifier = Modifier
+                            .padding(horizontal = 16.dp)
+                            .clip(CornerShape)
+                            .background(
+                                MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.9f),
+                                CornerShape
+                            )
+                            .gradientStyle(shape = CornerShape),
+                        onClick = onBack
+                    ) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад")
                     }
                 },
                 actions = {
                     IconButton(
+                        modifier = Modifier
+                            .padding(end = 16.dp)
+                            .clip(CornerShape)
+                            .background(
+                                MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.9f),
+                                CornerShape
+                            )
+                            .gradientStyle(shape = CornerShape),
                         onClick = {
                             viewMode = if (viewMode == RecipeViewMode.PHOTO_CARDS) {
                                 RecipeViewMode.LIST
@@ -114,7 +136,7 @@ fun SuggestedRecipesScreen(
                 Text(
                     "Пока нет рецептов, для которых хватает продуктов в холодильнике",
                     textAlign = TextAlign.Center,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    color = MaterialTheme.colorScheme.onBackground,
                     modifier = Modifier.padding(horizontal = 32.dp, vertical = 12.dp)
                 )
             }

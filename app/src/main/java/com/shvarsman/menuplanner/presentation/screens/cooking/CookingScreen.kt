@@ -20,7 +20,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import coil3.compose.AsyncImage
 import com.shvarsman.menuplanner.presentation.screens.common.rememberSizedImageRequest
-import com.shvarsman.menuplanner.presentation.ui.theme.AppCornerRadius
+import com.shvarsman.menuplanner.presentation.ui.theme.CornerShape
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -112,7 +112,7 @@ fun CookingScreen(
                             .fillMaxWidth()
                             .padding(horizontal = 16.dp)
                             .height(200.dp)
-                            .clip(RoundedCornerShape(AppCornerRadius))
+                            .clip(CornerShape)
                     )
                     Spacer(Modifier.height(12.dp))
                 }

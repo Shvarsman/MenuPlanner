@@ -28,7 +28,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
 import com.shvarsman.menuplanner.domain.model.StepContentItem
-import com.shvarsman.menuplanner.presentation.ui.theme.AppCornerRadius
+import com.shvarsman.menuplanner.presentation.ui.theme.CornerShape
 import kotlinx.coroutines.launch
 
 sealed interface RenderedStep {
@@ -248,7 +248,7 @@ private fun StepImageContent(
             contentScale = ContentScale.FillWidth,
             modifier = Modifier
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(AppCornerRadius))
+                .clip(CornerShape)
         )
         IconButton(
             onClick = onDeleteClick,
@@ -278,7 +278,7 @@ private fun StepTimerRow(
     Card(
         onClick = onClick,
         modifier = modifier,
-        shape = RoundedCornerShape(AppCornerRadius),
+        shape = CornerShape,
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.secondaryContainer
         ),

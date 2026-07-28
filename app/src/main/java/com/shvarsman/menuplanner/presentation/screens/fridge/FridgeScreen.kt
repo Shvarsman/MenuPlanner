@@ -66,6 +66,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -86,10 +87,13 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.shvarsman.menuplanner.domain.model.Category
 import com.shvarsman.menuplanner.domain.model.FridgeItem
 import com.shvarsman.menuplanner.presentation.screens.common.DropdownFilterChip
+import com.shvarsman.menuplanner.presentation.screens.common.GlassFab
 import com.shvarsman.menuplanner.presentation.screens.common.ProductPickerDialog
 import com.shvarsman.menuplanner.presentation.screens.common.TopBarSearchField
 import com.shvarsman.menuplanner.presentation.ui.icons.CategoryIcon
 import com.shvarsman.menuplanner.presentation.ui.icons.ProductIcon
+import com.shvarsman.menuplanner.presentation.ui.theme.CornerShape
+import com.shvarsman.menuplanner.presentation.ui.theme.FloatingBottomBarClearance
 import com.shvarsman.menuplanner.presentation.ui.theme.gradientStyle
 import com.shvarsman.menuplanner.presentation.utils.GroupedRow
 import com.shvarsman.menuplanner.presentation.utils.rememberDebouncedSearch
@@ -103,6 +107,7 @@ import java.time.format.DateTimeFormatter
 fun FridgeScreen(
     modifier: Modifier = Modifier,
     onOpenCatalog: () -> Unit,
+    onSelectionModeChange: (Boolean) -> Unit = {},
     viewModel: FridgeViewModel = hiltViewModel()
 ) {
     val listState by viewModel.listState.collectAsStateWithLifecycle()
@@ -117,7 +122,12 @@ fun FridgeScreen(
     val sortOption by viewModel.sortOption.collectAsStateWithLifecycle()
     val groupByCategory by viewModel.groupByCategory.collectAsStateWithLifecycle()
     val selectedIds by viewModel.selectedIds.collectAsStateWithLifecycle()
+
     val isSelectionMode = selectedIds.isNotEmpty()
+    LaunchedEffect(isSelectionMode) {
+        onSelectionModeChange(isSelectionMode)
+    }
+
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
 
@@ -146,6 +156,7 @@ fun FridgeScreen(
                         Text("Выбрано: ${selectedIds.size}")
                     } else {
                         TopBarSearchField(
+                            modifier = Modifier.padding(end = 8.dp),
                             query = localSearchQuery,
                             onQueryChange = onLocalSearchQueryChange,
                             placeholder = "Поиск в холодильнике"
@@ -154,18 +165,35 @@ fun FridgeScreen(
                 },
                 navigationIcon = {
                     if (isSelectionMode) {
-                        IconButton(onClick = { viewModel.clearSelection() }) {
+                        IconButton(
+                            onClick = { viewModel.clearSelection() },
+                            modifier = Modifier
+                                .padding(start = 16.dp)
+                                .clip(RoundedCornerShape(28.dp))
+                                .background(
+                                    MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.9f),
+                                    RoundedCornerShape(28.dp)
+                                )
+                                .gradientStyle(shape = RoundedCornerShape(28.dp)),
+                        ) {
                             Icon(Icons.Filled.Close, contentDescription = "Закрыть выбор")
                         }
                     }
                 },
                 actions = {
                     if (!isSelectionMode) {
-                        IconButton(onClick = onOpenCatalog) {
-                            Icon(
-                                Icons.AutoMirrored.Filled.ListAlt,
-                                contentDescription = "Все продукты"
-                            )
+                        IconButton(
+                            onClick = onOpenCatalog,
+                            modifier = Modifier
+                                .padding(end = 16.dp)
+                                .clip(CornerShape)
+                                .background(
+                                    MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.9f),
+                                    CornerShape
+                                )
+                                .gradientStyle(shape = CornerShape),
+                        ) {
+                            Icon(Icons.AutoMirrored.Filled.ListAlt, contentDescription = "Все продукты")
                         }
                     }
                 },
@@ -177,7 +205,10 @@ fun FridgeScreen(
         },
         floatingActionButton = {
             if (!isSelectionMode) {
-                FloatingActionButton(onClick = { viewModel.openAddPicker() }) {
+                GlassFab(
+                    onClick = { viewModel.openAddPicker() },
+                    modifier = Modifier.padding(bottom = FloatingBottomBarClearance)
+                ) {
                     Icon(Icons.Filled.Add, contentDescription = "Добавить продукт")
                 }
             }
@@ -286,7 +317,7 @@ fun FridgeScreen(
                         selected = groupByCategory,
                         onClick = { viewModel.toggleGroupByCategory() },
                         label = { Text("По категориям") },
-                        shape = RoundedCornerShape(28.dp),
+                        shape = CornerShape,
                         colors = FilterChipDefaults.filterChipColors(
                             selectedContainerColor = MaterialTheme.colorScheme.surface,
                             selectedLabelColor = MaterialTheme.colorScheme.onSurface
@@ -309,7 +340,11 @@ fun FridgeScreen(
                 else -> {
                     LazyColumn(
                         state = lazyListState,
-                        modifier = Modifier.fillMaxSize()
+                        modifier = Modifier.fillMaxSize(),
+                        contentPadding = PaddingValues(
+                            bottom = padding.calculateBottomPadding() +
+                                    (if (isSelectionMode) 16.dp else FloatingBottomBarClearance)
+                        )
                     ) {
                         items(
                             items = listState.rows,
@@ -503,10 +538,10 @@ private fun FridgeItemRow(
                                     expanded = menuExpanded,
                                     onDismissRequest = { menuExpanded = false },
                                     modifier = Modifier
-                                        .clip(RoundedCornerShape(28.dp))
+                                        .clip(CornerShape)
                                         .gradientStyle(),
                                     containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.9f),
-                                    shape = RoundedCornerShape(28.dp),
+                                    shape = CornerShape,
                                     shadowElevation = 0.dp
                                 ) {
                                     DropdownMenuItem(

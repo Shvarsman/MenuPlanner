@@ -13,7 +13,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.shvarsman.menuplanner.domain.model.CookingMethod
-import com.shvarsman.menuplanner.presentation.ui.theme.AppCornerRadius
+import com.shvarsman.menuplanner.presentation.ui.theme.CornerShape
 
 @Composable
 fun CookingMethodPickerDialog(
@@ -39,7 +39,7 @@ fun CookingMethodPickerDialog(
                     leadingIcon = { Icon(Icons.Filled.Search, contentDescription = null) },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(AppCornerRadius)
+                    shape = CornerShape
                 )
                 if (current != null) {
                     TextButton(

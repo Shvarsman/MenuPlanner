@@ -56,7 +56,7 @@ import com.shvarsman.menuplanner.domain.model.ShoppingListItem
 import com.shvarsman.menuplanner.presentation.screens.common.ProductPickerDialog
 import com.shvarsman.menuplanner.presentation.ui.icons.ProductIcon
 import com.shvarsman.menuplanner.presentation.ui.icons.CategoryIcon
-import com.shvarsman.menuplanner.presentation.ui.theme.AppCornerRadius
+import com.shvarsman.menuplanner.presentation.ui.theme.CornerShape
 import com.shvarsman.menuplanner.presentation.utils.rememberOptimisticDelete
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -241,7 +241,7 @@ private fun ShoppingItemRow(item: ShoppingListItem, onToggle: () -> Unit, onRemo
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 4.dp),
-        shape = RoundedCornerShape(AppCornerRadius)
+        shape = CornerShape
     ) {
         Row(
             modifier = Modifier

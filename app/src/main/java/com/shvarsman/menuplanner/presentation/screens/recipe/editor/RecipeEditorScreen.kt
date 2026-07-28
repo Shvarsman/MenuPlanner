@@ -99,7 +99,7 @@ import com.shvarsman.menuplanner.presentation.screens.common.rememberSizedImageR
 import com.shvarsman.menuplanner.presentation.ui.icons.CookingMethodIcon
 import com.shvarsman.menuplanner.presentation.ui.icons.RecipeCategoryIcon
 import com.shvarsman.menuplanner.presentation.ui.icons.icon
-import com.shvarsman.menuplanner.presentation.ui.theme.AppCornerRadius
+import com.shvarsman.menuplanner.presentation.ui.theme.CornerShape
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -452,7 +452,7 @@ fun RecipeEditorScreen(
                     }
                 },
                 singleLine = true,
-                shape = RoundedCornerShape(AppCornerRadius),
+                shape = CornerShape,
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = MaterialTheme.colorScheme.primary,
                     unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant
@@ -635,7 +635,7 @@ private fun CoverPhotoPicker(
         modifier = modifier
             .fillMaxWidth()
             .height(180.dp)
-            .clip(RoundedCornerShape(AppCornerRadius)),
+            .clip(CornerShape),
         color = MaterialTheme.colorScheme.surfaceVariant
     ) {
         Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {

@@ -1,5 +1,6 @@
 package com.shvarsman.menuplanner.presentation.screens.recipe.list
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -15,6 +16,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material.icons.automirrored.filled.Sort
@@ -42,6 +44,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -51,11 +54,15 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.shvarsman.menuplanner.domain.model.RecipeCategory
 import com.shvarsman.menuplanner.domain.model.RecipeSummary
 import com.shvarsman.menuplanner.presentation.screens.common.DropdownFilterChip
+import com.shvarsman.menuplanner.presentation.screens.common.GlassFab
 import com.shvarsman.menuplanner.presentation.screens.common.TopBarSearchField
 import com.shvarsman.menuplanner.presentation.screens.recipe.components.RecipeCarouselSection
 import com.shvarsman.menuplanner.presentation.screens.recipe.components.RecipeCategoryCarousel
 import com.shvarsman.menuplanner.presentation.screens.recipe.components.recipeGroupedItems
 import com.shvarsman.menuplanner.presentation.ui.icons.RecipeCategoryIcon
+import com.shvarsman.menuplanner.presentation.ui.theme.CornerShape
+import com.shvarsman.menuplanner.presentation.ui.theme.FloatingBottomBarClearance
+import com.shvarsman.menuplanner.presentation.ui.theme.gradientStyle
 import com.shvarsman.menuplanner.presentation.utils.rememberDebouncedSearch
 import com.shvarsman.menuplanner.presentation.utils.rememberOptimisticDelete
 
@@ -99,22 +106,28 @@ fun RecipeListScreen(
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         snackbarHost = { SnackbarHost(snackbarHostState) },
-        contentWindowInsets = WindowInsets(0),
         topBar = {
             TopAppBar(
                 scrollBehavior = scrollBehavior,
                 title = {
                     TopBarSearchField(
+                        modifier = Modifier.padding(end = 16.dp),
                         query = localSearchQuery,
                         onQueryChange = onLocalSearchQueryChange,
                         placeholder = "Поиск рецептов"
                     )
                 },
                 actions = {
-                    // Переключатель вида — только когда реально отображается список
-                    // (результаты поиска/фильтра), а не на экране с каруселями
                     if (isFiltering) {
                         IconButton(
+                            modifier = Modifier
+                                .padding(end = 16.dp)
+                                .clip(CornerShape)
+                                .background(
+                                    MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.9f),
+                                    CornerShape
+                                )
+                                .gradientStyle(shape = CornerShape),
                             onClick = {
                                 viewMode = if (viewMode == RecipeViewMode.PHOTO_CARDS) {
                                     RecipeViewMode.LIST
@@ -145,8 +158,11 @@ fun RecipeListScreen(
             )
         },
         floatingActionButton = {
-            FloatingActionButton(onClick = onAddRecipe) {
-                Icon(Icons.Filled.Add, contentDescription = "Добавить рецепт")
+            GlassFab(
+                onClick = onAddRecipe,
+                modifier = Modifier.padding(bottom = FloatingBottomBarClearance)
+            ) {
+                Icon(Icons.Filled.Add, contentDescription = "Добавить продукт")
             }
         }
     ) { padding ->
@@ -240,7 +256,7 @@ fun RecipeListScreen(
                             Text(
                                 "Ничего не найдено",
                                 textAlign = TextAlign.Center,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                                color = MaterialTheme.colorScheme.onBackground
                             )
                         }
                     }
@@ -295,7 +311,7 @@ fun RecipeListScreen(
                             Text(
                                 "Рецептов пока нет.\nДобавьте свой первый рецепт.",
                                 textAlign = TextAlign.Center,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                                color = MaterialTheme.colorScheme.onBackground
                             )
                         }
                     }

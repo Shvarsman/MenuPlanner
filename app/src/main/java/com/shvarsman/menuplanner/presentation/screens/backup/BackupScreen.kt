@@ -18,7 +18,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.shvarsman.menuplanner.domain.repository.BackupType
-import com.shvarsman.menuplanner.presentation.ui.theme.AppCornerRadius
+import com.shvarsman.menuplanner.presentation.ui.theme.CornerShape
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -80,7 +80,7 @@ fun BackupScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Card(shape = RoundedCornerShape(AppCornerRadius)) {
+            Card(shape = CornerShape) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text(
                         text = "Полное копирование",
@@ -110,7 +110,7 @@ fun BackupScreen(
                 }
             }
 
-            Card(shape = RoundedCornerShape(AppCornerRadius)) {
+            Card(shape = CornerShape) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text(
                         text = "Только рецепты",
@@ -141,7 +141,7 @@ fun BackupScreen(
                 }
             }
 
-            Card(shape = RoundedCornerShape(AppCornerRadius)) {
+            Card(shape = CornerShape) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text(
                         text = "Восстановление",

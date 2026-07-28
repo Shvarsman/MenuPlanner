@@ -28,6 +28,9 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -225,47 +228,63 @@ private fun MainTabsScreen(rootNavController: NavHostController) {
     val navBackStackEntry by childNavController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
 
+    var hideBottomBar by remember { mutableStateOf(false) }
+
+    val selectedIndex = bottomItems.indexOfFirst { item ->
+        currentDestination?.hierarchy?.any { it.route == item.destination.route } == true
+    }.coerceAtLeast(0)
+
     Scaffold(
         contentWindowInsets = WindowInsets(0),
         bottomBar = {
-            val shape = RoundedCornerShape(28.dp)
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .navigationBarsPadding()
-                    .padding(horizontal = 16.dp, vertical = 12.dp)
-                    .clip(shape)
-                    .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.9f), shape)
-                    .gradientStyle(shape = shape)
-            ) {
-                NavigationBar(
-                    containerColor = Color.Transparent,
-                    windowInsets = WindowInsets(0, 0, 0, 0)
-                ) {
-                    bottomItems.forEach { item ->
-                        val selected = currentDestination?.hierarchy?.any {
-                            it.route == item.destination.route
-                        } == true
-
-                        NavigationBarItem(
-                            selected = selected,
-                            onClick = {
-                                childNavController.navigate(item.destination.route) {
-                                    popUpTo(childNavController.graph.findStartDestination().id) {
-                                        saveState = true
-                                    }
-                                    launchSingleTop = true
-                                    restoreState = true
-                                }
-                            },
-                            icon = { Icon(imageVector = item.icon, contentDescription = item.label) },
-                            label = { Text(item.label) },
-                            colors = NavigationBarItemDefaults.colors(
-                                indicatorColor = Color.Transparent,
-                                selectedIconColor = MaterialTheme.colorScheme.primary,
-                                selectedTextColor = MaterialTheme.colorScheme.primary
-                            )
+            if (!hideBottomBar) {
+                val shape = RoundedCornerShape(28.dp)
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .navigationBarsPadding()
+                        .padding(horizontal = 16.dp, vertical = 12.dp)
+                        .clip(shape)
+                        .background(
+                            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.9f),
+                            shape
                         )
+                        .gradientStyle(shape = shape)
+                ) {
+                    NavigationBar(
+                        containerColor = Color.Transparent,
+                        windowInsets = WindowInsets(0, 0, 0, 0)
+                    ) {
+                        bottomItems.forEach { item ->
+                            val selected = currentDestination?.hierarchy?.any {
+                                it.route == item.destination.route
+                            } == true
+
+                            NavigationBarItem(
+                                selected = selected,
+                                onClick = {
+                                    childNavController.navigate(item.destination.route) {
+                                        popUpTo(childNavController.graph.findStartDestination().id) {
+                                            saveState = true
+                                        }
+                                        launchSingleTop = true
+                                        restoreState = true
+                                    }
+                                },
+                                icon = {
+                                    Icon(
+                                        imageVector = item.icon,
+                                        contentDescription = item.label
+                                    )
+                                },
+                                label = { Text(item.label) },
+                                colors = NavigationBarItemDefaults.colors(
+                                    indicatorColor = Color.Transparent,
+                                    selectedIconColor = MaterialTheme.colorScheme.primary,
+                                    selectedTextColor = MaterialTheme.colorScheme.primary
+                                )
+                            )
+                        }
                     }
                 }
             }
@@ -274,9 +293,7 @@ private fun MainTabsScreen(rootNavController: NavHostController) {
         NavHost(
             navController = childNavController,
             startDestination = Destination.Menu.route,
-            modifier = Modifier
-                .padding(innerPadding)
-                .consumeWindowInsets(innerPadding)
+            modifier = Modifier.fillMaxSize()
         ) {
             composable(Destination.Menu.route) {
                 MenuScreen(
@@ -298,7 +315,10 @@ private fun MainTabsScreen(rootNavController: NavHostController) {
             }
 
             composable(Destination.Fridge.route) {
-                FridgeScreen(onOpenCatalog = { rootNavController.navigate(Destination.ProductCatalog.route) })
+                FridgeScreen(
+                    onOpenCatalog = { rootNavController.navigate(Destination.ProductCatalog.route) },
+                    onSelectionModeChange = { hideBottomBar = it }
+                )
             }
 
             composable(Destination.Recipes.route) {

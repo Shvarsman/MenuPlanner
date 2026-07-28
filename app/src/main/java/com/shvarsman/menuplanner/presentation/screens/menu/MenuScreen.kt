@@ -76,7 +76,7 @@ import com.shvarsman.menuplanner.domain.model.UnitConversion
 import com.shvarsman.menuplanner.domain.model.availability
 import com.shvarsman.menuplanner.presentation.screens.common.AppBottomSheet
 import com.shvarsman.menuplanner.presentation.screens.common.rememberSizedImageRequest
-import com.shvarsman.menuplanner.presentation.ui.theme.AppCornerRadius
+import com.shvarsman.menuplanner.presentation.ui.theme.CornerShape
 import com.shvarsman.menuplanner.presentation.ui.theme.molleFont
 import com.shvarsman.menuplanner.presentation.utils.rememberDebouncedSearch
 import com.shvarsman.menuplanner.presentation.utils.rememberOptimisticDelete
@@ -275,7 +275,7 @@ private fun DayCard(
 
     Card(
         modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(AppCornerRadius)
+        shape = CornerShape
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(
@@ -352,7 +352,7 @@ private fun MenuEntryCard(
     Card(
         onClick = onView,
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(AppCornerRadius)
+        shape = CornerShape
     ) {
         Row(
             modifier = Modifier
@@ -370,8 +370,8 @@ private fun MenuEntryCard(
                         .aspectRatio(1f)
                         .clip(
                             RoundedCornerShape(
-                                topEnd = AppCornerRadius,
-                                bottomEnd = AppCornerRadius
+                                topEnd = 28.dp,
+                                bottomEnd = 28.dp
                             )
                         )
                 )
@@ -382,8 +382,8 @@ private fun MenuEntryCard(
                         .aspectRatio(1f)
                         .clip(
                             RoundedCornerShape(
-                                topStart = AppCornerRadius,
-                                bottomStart = AppCornerRadius
+                                topStart = 28.dp,
+                                bottomStart = 28.dp
                             )
                         ),
                     contentAlignment = Alignment.Center
@@ -485,7 +485,7 @@ private fun RecipePickerDialog(
                 }
             },
             singleLine = true,
-            shape = RoundedCornerShape(AppCornerRadius),
+            shape = CornerShape,
             modifier = Modifier.fillMaxWidth()
         )
 
@@ -553,7 +553,7 @@ private fun RecipePickerCard(
 
     Card(
         modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(AppCornerRadius)
+        shape = CornerShape
     ) {
         Column {
             Row(
@@ -579,8 +579,8 @@ private fun RecipePickerCard(
                             .aspectRatio(1f)
                             .clip(
                                 RoundedCornerShape(
-                                    topEnd = AppCornerRadius,
-                                    bottomEnd = AppCornerRadius
+                                    topEnd = 28.dp,
+                                    bottomEnd = 28.dp
                                 )
                             )
                     )
@@ -591,8 +591,8 @@ private fun RecipePickerCard(
                             .aspectRatio(1f)
                             .clip(
                                 RoundedCornerShape(
-                                    topStart = AppCornerRadius,
-                                    bottomStart = AppCornerRadius
+                                    topStart = 28.dp,
+                                    bottomStart = 28.dp
                                 )
                             ),
                         contentAlignment = Alignment.Center

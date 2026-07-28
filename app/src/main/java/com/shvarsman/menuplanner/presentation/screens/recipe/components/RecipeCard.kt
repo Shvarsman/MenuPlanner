@@ -32,7 +32,7 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.shvarsman.menuplanner.domain.model.RecipeSummary
 import com.shvarsman.menuplanner.presentation.screens.common.rememberSizedImageRequest
-import com.shvarsman.menuplanner.presentation.ui.theme.AppCornerRadius
+import com.shvarsman.menuplanner.presentation.ui.theme.CornerShape
 
 private val CardImageHeight = 160.dp
 
@@ -49,7 +49,7 @@ fun RecipeCard(
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 4.dp),
         onClick = onClick,
-        shape = RoundedCornerShape(AppCornerRadius)
+        shape = CornerShape
     ) {
         BoxWithConstraints(
             modifier = Modifier

@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
@@ -27,27 +28,26 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
+import com.shvarsman.menuplanner.presentation.ui.theme.CornerShape
 import com.shvarsman.menuplanner.presentation.ui.theme.gradientStyle
 
 @Composable
 fun TopBarSearchField(
+    modifier: Modifier = Modifier,
     query: String,
     onQueryChange: (String) -> Unit,
     placeholder: String,
-    modifier: Modifier = Modifier
 ) {
-    val shape = RoundedCornerShape(28.dp)
-
     Row(
         modifier = modifier
             .fillMaxWidth()
             .height(48.dp)
-            .clip(shape)
-            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.9f), shape)
-            .gradientStyle(shape = shape)
-            .padding(horizontal = 12.dp),
+            .clip(CornerShape)
+            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.9f), CornerShape)
+            .gradientStyle(shape = CornerShape),
         verticalAlignment = Alignment.CenterVertically
     ) {
+        Spacer(Modifier.width(16.dp))
         Icon(
             imageVector = Icons.Filled.Search,
             contentDescription = null,
@@ -65,7 +65,7 @@ fun TopBarSearchField(
                     color = MaterialTheme.colorScheme.onSurface,
                     fontSize = MaterialTheme.typography.bodyMedium.fontSize
                 ),
-                cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+                cursorBrush = SolidColor(MaterialTheme.colorScheme.onSurface),
                 modifier = Modifier.fillMaxWidth()
             ) { innerTextField ->
                 if (query.isEmpty()) {

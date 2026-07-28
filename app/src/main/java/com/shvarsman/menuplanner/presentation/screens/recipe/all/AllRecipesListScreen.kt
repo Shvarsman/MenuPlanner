@@ -1,5 +1,6 @@
 package com.shvarsman.menuplanner.presentation.screens.recipe.all
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -12,6 +13,7 @@ import androidx.compose.material.icons.filled.GridView
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -25,6 +27,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -34,6 +37,8 @@ import com.shvarsman.menuplanner.presentation.screens.common.CollapsingLargeTopA
 import com.shvarsman.menuplanner.presentation.screens.recipe.list.RecipeListViewModel
 import com.shvarsman.menuplanner.presentation.screens.recipe.list.RecipeViewMode
 import com.shvarsman.menuplanner.presentation.screens.recipe.components.recipeGroupedItems
+import com.shvarsman.menuplanner.presentation.ui.theme.CornerShape
+import com.shvarsman.menuplanner.presentation.ui.theme.gradientStyle
 import com.shvarsman.menuplanner.presentation.utils.rememberOptimisticDelete
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -65,12 +70,30 @@ fun AllRecipesListScreen(
                 title = "Все рецепты",
                 scrollBehavior = scrollBehavior,
                 navigationIcon = {
-                    IconButton(onClick = onBack) {
+                    IconButton(
+                        modifier = Modifier
+                            .padding(horizontal = 16.dp)
+                            .clip(CornerShape)
+                            .background(
+                                MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.9f),
+                                CornerShape
+                            )
+                            .gradientStyle(shape = CornerShape),
+                        onClick = onBack
+                    ) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад")
                     }
                 },
                 actions = {
                     IconButton(
+                        modifier = Modifier
+                            .padding(end = 16.dp)
+                            .clip(CornerShape)
+                            .background(
+                                MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.9f),
+                                CornerShape
+                            )
+                            .gradientStyle(shape = CornerShape),
                         onClick = {
                             viewMode = if (viewMode == RecipeViewMode.PHOTO_CARDS) {
                                 RecipeViewMode.LIST
@@ -88,9 +111,12 @@ fun AllRecipesListScreen(
                             contentDescription = null
                         )
                     }
-                }
+                },
+
             )
-        }
+        },
+
+
     ) { padding ->
         if (grouped.isEmpty()) {
             Box(

@@ -2,6 +2,7 @@ package com.shvarsman.menuplanner.presentation.ui.theme
 
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.dynamicDarkColorScheme
@@ -41,7 +42,8 @@ private val darkScheme = darkColorScheme(
     onError = OnError
 )
 
-val AppCornerRadius = 28.dp
+val CornerShape = RoundedCornerShape(28.dp)
+val FloatingBottomBarClearance = 96.dp
 
 @Composable
 fun MenuPlannerTheme(

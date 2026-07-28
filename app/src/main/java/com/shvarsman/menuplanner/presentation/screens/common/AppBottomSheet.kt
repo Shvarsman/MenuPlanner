@@ -32,7 +32,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.shvarsman.menuplanner.presentation.ui.theme.AppCornerRadius
+import com.shvarsman.menuplanner.presentation.ui.theme.CornerShape
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -101,7 +101,7 @@ fun SelectionTile(
             .fillMaxWidth()
             .defaultMinSize(minHeight = minHeight),
         onClick = onClick,
-        shape = RoundedCornerShape(AppCornerRadius),
+        shape = CornerShape,
         color = if (isSelected) {
             MaterialTheme.colorScheme.primaryContainer
         } else if (useTransparentUnselected) {

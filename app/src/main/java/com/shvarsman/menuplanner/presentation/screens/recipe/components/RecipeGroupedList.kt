@@ -44,7 +44,7 @@ fun LazyListScope.recipeGroupedItems(
                 Text(
                     category.displayName,
                     style = MaterialTheme.typography.titleSmall,
-                    color = MaterialTheme.colorScheme.primary
+                    color = MaterialTheme.colorScheme.onBackground
                 )
                 HorizontalDivider(modifier = Modifier.weight(1f))
             }

@@ -24,7 +24,7 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.shvarsman.menuplanner.domain.model.RecipeSummary
 import com.shvarsman.menuplanner.presentation.screens.common.rememberSizedImageRequest
-import com.shvarsman.menuplanner.presentation.ui.theme.AppCornerRadius
+import com.shvarsman.menuplanner.presentation.ui.theme.CornerShape
 
 /**
  * Компактная строка рецепта в стиле M3 "Lists" — квадратная миниатюра слева
@@ -41,7 +41,7 @@ fun RecipeListRow(
 ) {
     Surface(
         onClick = onClick,
-        shape = RoundedCornerShape(AppCornerRadius),
+        shape = CornerShape,
         color = MaterialTheme.colorScheme.surface
     ) {
         ListItem(
@@ -53,7 +53,7 @@ fun RecipeListRow(
                 Box(
                     modifier = Modifier
                         .size(56.dp)
-                        .clip(RoundedCornerShape(AppCornerRadius))
+                        .clip(CornerShape)
                 ) {
                     if (recipe.photoUri != null) {
                         AsyncImage(

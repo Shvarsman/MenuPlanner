@@ -71,6 +71,7 @@ import com.shvarsman.menuplanner.presentation.screens.common.ProductFormFields
 import com.shvarsman.menuplanner.presentation.screens.common.TopBarSearchField
 import com.shvarsman.menuplanner.presentation.ui.icons.ProductIcon
 import com.shvarsman.menuplanner.presentation.ui.icons.CategoryIcon
+import com.shvarsman.menuplanner.presentation.ui.theme.CornerShape
 import com.shvarsman.menuplanner.presentation.ui.theme.gradientStyle
 import com.shvarsman.menuplanner.presentation.utils.GroupedRow
 import com.shvarsman.menuplanner.presentation.utils.rememberDebouncedSearch
@@ -121,12 +122,13 @@ fun ProductCatalogScreen(
                 navigationIcon = {
                     IconButton(
                         modifier = Modifier
-                            .clip(RoundedCornerShape(28.dp))
+                            .padding(start = 16.dp)
+                            .clip(CornerShape)
                             .background(
                                 MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.9f),
-                                RoundedCornerShape(28.dp)
+                                CornerShape
                             )
-                            .gradientStyle(shape = RoundedCornerShape(28.dp)),
+                            .gradientStyle(shape = CornerShape),
                         onClick = onBack
                     ) {
                         Icon(
@@ -137,6 +139,7 @@ fun ProductCatalogScreen(
                 },
                 title = {
                     TopBarSearchField(
+                        modifier = Modifier.padding(end = 16.dp, start = 8.dp),
                         query = localSearchQuery,
                         onQueryChange = onLocalSearchQueryChange,
                         placeholder = "Поиск продуктов"
@@ -165,7 +168,7 @@ fun ProductCatalogScreen(
                     selected = showOnlyCustom,
                     onClick = { viewModel.toggleShowOnlyCustom() },
                     label = { Text("Мои продукты") },
-                    shape = RoundedCornerShape(28.dp),
+                    shape = CornerShape,
                     colors = FilterChipDefaults.filterChipColors(
                         selectedContainerColor = MaterialTheme.colorScheme.surface,
                         selectedLabelColor = MaterialTheme.colorScheme.onSurface
@@ -175,7 +178,7 @@ fun ProductCatalogScreen(
                     selected = !showOnlyCustom,
                     onClick = { viewModel.toggleShowOnlyCustom() },
                     label = { Text("Все") },
-                    shape = RoundedCornerShape(28.dp),
+                    shape = CornerShape,
                     colors = FilterChipDefaults.filterChipColors(
                         selectedContainerColor = MaterialTheme.colorScheme.surface,
                         selectedLabelColor = MaterialTheme.colorScheme.onSurface
@@ -232,7 +235,7 @@ fun ProductCatalogScreen(
                         else if (showOnlyCustom) "Вы ещё не добавили свои продукты"
                         else "Каталог продуктов пуст.\nПродукты появятся здесь после добавления\nв холодильник, рецепт или список покупок.",
                         textAlign = TextAlign.Center,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        color = MaterialTheme.colorScheme.onBackground,
                         modifier = Modifier.padding(horizontal = 32.dp)
                     )
                 }
