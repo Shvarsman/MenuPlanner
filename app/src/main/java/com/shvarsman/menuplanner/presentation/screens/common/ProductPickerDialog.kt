@@ -19,7 +19,6 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
@@ -61,15 +60,13 @@ fun ProductPickerDialog(
         name: String, category: Category, unit: MeasureUnit,
         isToTaste: Boolean, isAlwaysAvailable: Boolean
     ) -> Product,
-    skipQuantityForToTaste: Boolean = false,
-    showExpirationDate: Boolean = true // добавить
+    showExpirationDate: Boolean = true
 ) {
     var step by remember { mutableStateOf(PickerStep.SELECT) }
     var query by remember { mutableStateOf("") }
     var selectedProduct by remember { mutableStateOf<Product?>(null) }
     var quantityText by remember { mutableStateOf("1") }
     var selectedUnit by remember { mutableStateOf(MeasureUnit.PIECE) }
-    var unitMenuExpanded by remember { mutableStateOf(false) }
     var expirationDate by remember { mutableStateOf<LocalDate?>(null) }
 
     var newName by remember { mutableStateOf("") }
