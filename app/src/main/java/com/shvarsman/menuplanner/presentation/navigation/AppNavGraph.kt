@@ -230,10 +230,6 @@ private fun MainTabsScreen(rootNavController: NavHostController) {
 
     var hideBottomBar by remember { mutableStateOf(false) }
 
-    val selectedIndex = bottomItems.indexOfFirst { item ->
-        currentDestination?.hierarchy?.any { it.route == item.destination.route } == true
-    }.coerceAtLeast(0)
-
     Scaffold(
         contentWindowInsets = WindowInsets(0),
         bottomBar = {
