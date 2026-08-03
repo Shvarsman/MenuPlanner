@@ -1,5 +1,6 @@
 package com.shvarsman.menuplanner.presentation.screens.menu
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -16,29 +17,29 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Restaurant
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.SettingsBackupRestore
+import androidx.compose.material.icons.filled.Speed
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CenterAlignedTopAppBar
-import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalDrawerSheet
-import androidx.compose.material3.ModalNavigationDrawer
-import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -47,13 +48,11 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -77,13 +76,14 @@ import com.shvarsman.menuplanner.domain.model.availability
 import com.shvarsman.menuplanner.presentation.screens.common.AppBottomSheet
 import com.shvarsman.menuplanner.presentation.screens.common.rememberSizedImageRequest
 import com.shvarsman.menuplanner.presentation.ui.theme.CornerShape
+import com.shvarsman.menuplanner.presentation.ui.theme.FloatingBottomBarClearance
 import com.shvarsman.menuplanner.presentation.ui.theme.molleFont
 import com.shvarsman.menuplanner.presentation.utils.rememberDebouncedSearch
 import com.shvarsman.menuplanner.presentation.utils.rememberOptimisticDelete
-import kotlinx.coroutines.launch
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.format.TextStyle
+import java.time.temporal.TemporalAdjusters
 import java.util.Locale
 
 private val weekDays = listOf(
@@ -123,9 +123,6 @@ fun MenuScreen(
         onUndo = { id -> viewModel.undoDeleteEntry(id) }
     )
 
-    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
-    val scope = rememberCoroutineScope()
-
     LaunchedEffect(navigateToCooking) {
         navigateToCooking?.let { (recipeId, menuEntryId) ->
             onNavigateToCooking(recipeId, menuEntryId)
@@ -133,100 +130,57 @@ fun MenuScreen(
         }
     }
 
-    val entriesByKey = remember(weekMenu) {
-        weekMenu.groupBy { it.dayOfWeek to it.mealType }
-    }
+    val entriesByKey = remember(weekMenu) { weekMenu.groupBy { it.dayOfWeek to it.mealType } }
 
-    ModalNavigationDrawer(
-        drawerState = drawerState,
-        drawerContent = {
-            ModalDrawerSheet {
-                Spacer(Modifier.height(12.dp))
-                Text(
-                    text = "Выбор дня недели",
-                    modifier = Modifier.padding(16.dp),
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold
-                )
-                HorizontalDivider()
-                Spacer(Modifier.height(8.dp))
-
-                weekDays.forEach { day ->
-                    val isToday = day == LocalDate.now().dayOfWeek
-                    val dayName = day.getDisplayName(TextStyle.FULL, Locale.forLanguageTag("ru"))
-                        .replaceFirstChar { it.uppercase() }
-                    val label = if (isToday) "$dayName (Сегодня)" else dayName
-
-                    NavigationDrawerItem(
-                        label = { Text(label) },
-                        selected = day == selectedDay,
-                        onClick = {
-                            viewModel.selectDay(day)
-                            scope.launch { drawerState.close() }
-                        },
-                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp)
-                    )
-                }
-            }
-        }
-    ) {
-        Scaffold(
-            modifier = modifier,
-            snackbarHost = { SnackbarHost(snackbarHostState) },
-            topBar = {
-                CenterAlignedTopAppBar(
-                    title = {
-                        Text(
-                            text = "Coolinar",
-                            fontSize = 24.sp,
-                            fontFamily = molleFont
+    Scaffold(
+        modifier = modifier,
+        snackbarHost = { SnackbarHost(snackbarHostState) },
+        topBar = {
+            CenterAlignedTopAppBar(
+                title = { Text("Coolinar", fontSize = 24.sp, fontFamily = molleFont) },
+                actions = {
+                    IconButton(onClick = onOpenBackup) {
+                        Icon(
+                            Icons.Filled.SettingsBackupRestore,
+                            contentDescription = "Резервное копирование"
                         )
-                    },
-                    navigationIcon = {
-                        IconButton(onClick = { scope.launch { drawerState.open() } }) {
-                            Icon(
-                                imageVector = Icons.Default.Menu,
-                                contentDescription = "Открыть выбор дней"
-                            )
-                        }
-                    },
-                    actions = {
-                        IconButton(onClick = onOpenBackup) {
-                            Icon(
-                                imageVector = Icons.Filled.SettingsBackupRestore,
-                                contentDescription = "Резервное копирование"
-                            )
-                        }
-                    },
-                    expandedHeight = TopAppBarDefaults.TopAppBarExpandedHeight,
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.background,
-                        scrolledContainerColor = MaterialTheme.colorScheme.background
-                    )
+                    }
+                },
+                expandedHeight = TopAppBarDefaults.TopAppBarExpandedHeight,
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.background,
+                    scrolledContainerColor = MaterialTheme.colorScheme.background
                 )
-
-            },
-
-        ) { padding ->
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(
-                    top = padding.calculateTopPadding(),
-                    bottom = padding.calculateBottomPadding(),
-                    start = 16.dp, end = 16.dp
-                ),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                item(key = selectedDay.name) {
-                    DayCard(
-                        day = selectedDay,
-                        entriesByMeal = mealTypes.associateWith { meal ->
-                            entriesByKey[selectedDay to meal].orEmpty()
-                        },
-                        onAddMeal = { meal -> viewModel.openRecipePicker(selectedDay, meal) },
-                        onRemoveEntry = { requestDelete(it) },
-                        onCookEntry = { viewModel.onCookClick(it) },
-                        onViewEntry = { entry -> onViewRecipe(entry.recipeId) }
+            )
+        }
+    ) { padding ->
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(
+                top = padding.calculateTopPadding(),
+                bottom = padding.calculateBottomPadding() + FloatingBottomBarClearance
+            )
+        ) {
+            item(key = "day_selector") {
+                WeekDaySelector(
+                    selectedDay = selectedDay,
+                    onDaySelected = { viewModel.selectDay(it) },
+                    modifier = Modifier.padding(vertical = 16.dp)
+                )
+            }
+            mealTypes.forEach { meal ->
+                item(key = "${selectedDay.name}_${meal.name}") {
+                    MealSectionCard(
+                        modifier = Modifier.padding(horizontal = 16.dp),
+                        meal = meal,
+                        entries = entriesByKey[selectedDay to meal].orEmpty(),
+                        recipes = recipes,
+                        fridgeItems = fridgeItems,
+                        reservedQuantities = reservedQuantities,
+                        onAdd = { viewModel.openRecipePicker(selectedDay, meal) },
+                        onRemove = { requestDelete(it) },
+                        onCook = { viewModel.onCookClick(it) },
+                        onView = { entry -> onViewRecipe(entry.recipeId) }
                     )
                 }
             }
@@ -259,83 +213,65 @@ fun MenuScreen(
 }
 
 @Composable
-private fun DayCard(
+private fun MealSectionCard(
     modifier: Modifier = Modifier,
-    day: DayOfWeek,
-    entriesByMeal: Map<MealType, List<MenuEntry>>,
-    onAddMeal: (MealType) -> Unit,
-    onRemoveEntry: (MenuEntry) -> Unit,
-    onCookEntry: (MenuEntry) -> Unit,
-    onViewEntry: (MenuEntry) -> Unit
-) {
-    val isToday = day == LocalDate.now().dayOfWeek
-    val dayName = day.getDisplayName(TextStyle.FULL, Locale.forLanguageTag("ru"))
-        .replaceFirstChar { it.uppercase() }
-    val titleText = if (isToday) "$dayName (Сегодня)" else dayName
-
-    Card(
-        modifier = modifier.fillMaxWidth(),
-        shape = CornerShape
-    ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text(
-                text = titleText,
-                style = MaterialTheme.typography.titleLarge
-            )
-            Spacer(Modifier.height(8.dp))
-            mealTypes.forEach { meal ->
-                MealRow(
-                    meal = meal,
-                    entries = entriesByMeal[meal].orEmpty(),
-                    onAdd = { onAddMeal(meal) },
-                    onRemove = onRemoveEntry,
-                    onCook = onCookEntry,
-                    onView = onViewEntry
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun MealRow(
     meal: MealType,
     entries: List<MenuEntry>,
+    recipes: List<Recipe>,
+    fridgeItems: List<FridgeItem>,
+    reservedQuantities: Map<ReservedKey, ReservedAmount>,
     onAdd: () -> Unit,
     onRemove: (MenuEntry) -> Unit,
     onCook: (MenuEntry) -> Unit,
     onView: (MenuEntry) -> Unit
 ) {
-    Column(modifier = Modifier.padding(vertical = 4.dp)) {
+    Column(modifier = modifier.fillMaxWidth()) {
         Row(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                meal.displayName,
-                style = MaterialTheme.typography.labelLarge,
-                color = MaterialTheme.colorScheme.primary
+                text = meal.displayName,
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurface
             )
             IconButton(onClick = onAdd) {
-                Icon(Icons.Filled.Add, contentDescription = "Добавить блюдо")
+                Icon(
+                    Icons.Filled.Add,
+                    contentDescription = "Добавить блюдо на «${meal.displayName}»"
+                )
             }
         }
-        if (entries.isEmpty()) {
-            Text(
-                "Не запланировано",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        } else {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                entries.forEach { entry ->
-                    MenuEntryCard(
-                        entry = entry,
-                        onRemove = { onRemove(entry) },
-                        onCook = { onCook(entry) },
-                        onView = { onView(entry) }
+
+        Surface(
+            shape = CornerShape,
+            color = MaterialTheme.colorScheme.surfaceContainerLow,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                if (entries.isEmpty()) {
+                    Text(
+                        "Не запланировано",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
+                } else {
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        entries.forEach { entry ->
+                            val recipe = recipes.firstOrNull { it.id == entry.recipeId }
+                            MenuEntryCard(
+                                entry = entry,
+                                recipe = recipe,
+                                fridgeItems = fridgeItems,
+                                reservedQuantities = reservedQuantities,
+                                onRemove = { onRemove(entry) },
+                                onCook = { onCook(entry) },
+                                onView = { onView(entry) }
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -344,88 +280,138 @@ private fun MealRow(
 
 @Composable
 private fun MenuEntryCard(
+    modifier: Modifier = Modifier,
     entry: MenuEntry,
+    recipe: Recipe?,
+    fridgeItems: List<FridgeItem>,
+    reservedQuantities: Map<ReservedKey, ReservedAmount>,
     onRemove: () -> Unit,
     onCook: () -> Unit,
     onView: () -> Unit
 ) {
+    val allAvailable = remember(recipe, fridgeItems, reservedQuantities) {
+        recipe != null && recipe.ingredients.isNotEmpty() && recipe.ingredients.all { ingredient ->
+            val reserved = reservedQuantities[
+                ReservedKey(ingredient.product.id, UnitConversion.canonicalUnit(ingredient.unit))
+            ]
+            ingredient.availability(fridgeItems, reserved) == IngredientAvailability.AVAILABLE
+        }
+    }
+
     Card(
         onClick = onView,
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth(),
         shape = CornerShape
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(88.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            if (entry.recipePhotoUri != null) {
-                AsyncImage(
-                    model = rememberSizedImageRequest(entry.recipePhotoUri, 88.dp, 88.dp),
-                    contentDescription = entry.recipeTitle,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .fillMaxHeight()
-                        .aspectRatio(1f)
-                        .clip(
-                            RoundedCornerShape(
-                                topEnd = 28.dp,
-                                bottomEnd = 28.dp
+        Column {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(88.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                if (entry.recipePhotoUri != null) {
+                    AsyncImage(
+                        model = rememberSizedImageRequest(entry.recipePhotoUri, 88.dp, 88.dp),
+                        contentDescription = entry.recipeTitle,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .fillMaxHeight()
+                            .aspectRatio(1f)
+                            .clip(
+                                RoundedCornerShape(
+                                    topEnd = 28.dp,
+                                    bottomEnd = 28.dp
+                                )
                             )
-                        )
-                )
-            } else {
-                Box(
-                    modifier = Modifier
-                        .fillMaxHeight()
-                        .aspectRatio(1f)
-                        .clip(
-                            RoundedCornerShape(
-                                topStart = 28.dp,
-                                bottomStart = 28.dp
-                            )
-                        ),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Surface(
-                        color = MaterialTheme.colorScheme.secondaryContainer,
-                        modifier = Modifier.fillMaxSize()
+                    )
+                } else {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxHeight()
+                            .aspectRatio(1f)
+                            .clip(
+                                RoundedCornerShape(
+                                    topStart = 28.dp,
+                                    bottomStart = 28.dp
+                                )
+                            ),
+                        contentAlignment = Alignment.Center
                     ) {
-                        Box(
-                            contentAlignment = Alignment.Center,
+                        Surface(
+                            color = MaterialTheme.colorScheme.secondaryContainer,
                             modifier = Modifier.fillMaxSize()
                         ) {
-                            Icon(
-                                Icons.Filled.Restaurant,
-                                contentDescription = null,
-                                modifier = Modifier.size(32.dp),
-                                tint = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.6f)
-                            )
+                            Box(
+                                contentAlignment = Alignment.Center,
+                                modifier = Modifier.fillMaxSize()
+                            ) {
+                                Icon(
+                                    Icons.Filled.Restaurant,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(32.dp),
+                                    tint = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.6f)
+                                )
+                            }
                         }
                     }
                 }
-            }
 
-            Text(
-                entry.recipeTitle,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Medium,
-                maxLines = 2,
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(horizontal = 12.dp)
-            )
 
-            IconButton(onClick = onCook) {
-                Icon(
-                    Icons.Filled.Restaurant,
-                    contentDescription = "Приготовить",
-                    tint = MaterialTheme.colorScheme.primary
-                )
-            }
-            IconButton(onClick = onRemove) {
-                Icon(Icons.Filled.Close, contentDescription = "Убрать из меню")
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(horizontal = 12.dp)
+                ) {
+                    Text(
+                        entry.recipeTitle,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Medium,
+                        maxLines = 2
+                    )
+                    if (recipe != null) {
+                        Spacer(Modifier.height(4.dp))
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(6.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                Icons.Filled.Speed,
+                                contentDescription = null,
+                                modifier = Modifier.size(14.dp),
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Text(
+                                recipe.difficulty.displayName,
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            if (recipe.ingredients.isNotEmpty()) {
+                                Icon(
+                                    if (allAvailable) Icons.Filled.Restaurant else Icons.Filled.Warning,
+                                    contentDescription = if (allAvailable) "Все продукты есть" else "Не хватает продуктов",
+                                    modifier = Modifier.size(14.dp),
+                                    tint = if (allAvailable) {
+                                        MaterialTheme.colorScheme.primary
+                                    } else {
+                                        MaterialTheme.colorScheme.error
+                                    }
+                                )
+                            }
+                        }
+                    }
+                }
+
+                IconButton(onClick = onCook) {
+                    Icon(
+                        Icons.Filled.Restaurant,
+                        contentDescription = "Приготовить",
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
+                IconButton(onClick = onRemove) {
+                    Icon(Icons.Filled.Close, contentDescription = "Убрать из меню")
+                }
             }
         }
     }
@@ -609,7 +595,9 @@ private fun RecipePickerCard(
                                     imageVector = Icons.AutoMirrored.Filled.MenuBook,
                                     contentDescription = null,
                                     modifier = Modifier.size(32.dp),
-                                    tint = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.6f)
+                                    tint = MaterialTheme.colorScheme.onSecondaryContainer.copy(
+                                        alpha = 0.6f
+                                    )
                                 )
                             }
                         }
@@ -635,7 +623,13 @@ private fun RecipePickerCard(
             }
 
             if (isExpanded && hasIngredients) {
-                Column(modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 12.dp)) {
+                Column(
+                    modifier = Modifier.padding(
+                        start = 16.dp,
+                        end = 16.dp,
+                        bottom = 12.dp
+                    )
+                ) {
                     HorizontalDivider(modifier = Modifier.padding(bottom = 8.dp))
                     recipe.ingredients.forEach { ingredient ->
                         val reserved = reservedQuantities[
@@ -653,6 +647,82 @@ private fun RecipePickerCard(
                             text = "${ingredient.product.name} — ${formatQty(ingredient.quantity)} ${ingredient.unit.displayName}",
                             style = MaterialTheme.typography.bodySmall,
                             color = color
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun WeekDaySelector(
+    selectedDay: DayOfWeek,
+    onDaySelected: (DayOfWeek) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val weekStart =
+        remember { LocalDate.now().with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)) }
+    val today = remember { LocalDate.now().dayOfWeek }
+
+    LazyRow(
+        modifier = modifier.fillMaxWidth(),
+        contentPadding = PaddingValues(horizontal = 16.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        itemsIndexed(weekDays) { index, day ->
+            val date = weekStart.plusDays(index.toLong())
+            val isSelected = day == selectedDay
+            val isToday = day == today
+
+            Surface(
+                onClick = { onDaySelected(day) },
+                shape = RoundedCornerShape(16.dp),
+                color = if (isSelected) {
+                    MaterialTheme.colorScheme.primary
+                } else {
+                    MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                },
+                modifier = Modifier.width(56.dp)
+            ) {
+                Column(
+                    modifier = Modifier.padding(vertical = 10.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = day.getDisplayName(TextStyle.SHORT, Locale.forLanguageTag("ru"))
+                            .replaceFirstChar { it.uppercase() },
+                        style = MaterialTheme.typography.labelMedium,
+                        color = if (isSelected) {
+                            MaterialTheme.colorScheme.onPrimary
+                        } else {
+                            MaterialTheme.colorScheme.onSurfaceVariant
+                        }
+                    )
+                    Spacer(Modifier.height(2.dp))
+                    Text(
+                        text = date.dayOfMonth.toString(),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = if (isToday) FontWeight.Bold else FontWeight.Normal,
+                        color = if (isSelected) {
+                            MaterialTheme.colorScheme.onPrimary
+                        } else {
+                            MaterialTheme.colorScheme.onSurface
+                        }
+                    )
+                    if (isToday) {
+                        Spacer(Modifier.height(3.dp))
+                        Box(
+                            modifier = Modifier
+                                .size(4.dp)
+                                .background(
+                                    if (isSelected) {
+                                        MaterialTheme.colorScheme.onPrimary
+                                    } else {
+                                        MaterialTheme.colorScheme.primary
+                                    },
+                                    CircleShape
+                                )
                         )
                     }
                 }

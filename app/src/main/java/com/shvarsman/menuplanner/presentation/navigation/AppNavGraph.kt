@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -33,6 +34,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
@@ -58,6 +60,7 @@ import com.shvarsman.menuplanner.presentation.screens.recipe.list.RecipeListScre
 import com.shvarsman.menuplanner.presentation.screens.recipe.suggested.SuggestedRecipesScreen
 import com.shvarsman.menuplanner.presentation.screens.recipe.view.RecipeViewScreen
 import com.shvarsman.menuplanner.presentation.screens.shoppinglist.ShoppingListScreen
+import com.shvarsman.menuplanner.presentation.ui.theme.CornerShape
 import com.shvarsman.menuplanner.presentation.ui.theme.gradientStyle
 
 private data class BottomItem(
@@ -238,52 +241,64 @@ private fun MainTabsScreen(rootNavController: NavHostController) {
         contentWindowInsets = WindowInsets(0),
         bottomBar = {
             if (!hideBottomBar) {
-                val shape = RoundedCornerShape(28.dp)
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .navigationBarsPadding()
-                        .padding(horizontal = 16.dp, vertical = 12.dp)
-                        .clip(shape)
                         .background(
-                            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.9f),
-                            shape
-                        )
-                        .gradientStyle(shape = shape)
-                ) {
-                    NavigationBar(
-                        containerColor = Color.Transparent,
-                        windowInsets = WindowInsets(0, 0, 0, 0)
-                    ) {
-                        bottomItems.forEach { item ->
-                            val selected = currentDestination?.hierarchy?.any {
-                                it.route == item.destination.route
-                            } == true
-
-                            NavigationBarItem(
-                                selected = selected,
-                                onClick = {
-                                    childNavController.navigate(item.destination.route) {
-                                        popUpTo(childNavController.graph.findStartDestination().id) {
-                                            saveState = true
-                                        }
-                                        launchSingleTop = true
-                                        restoreState = true
-                                    }
-                                },
-                                icon = {
-                                    Icon(
-                                        imageVector = item.icon,
-                                        contentDescription = item.label
-                                    )
-                                },
-                                label = { Text(item.label) },
-                                colors = NavigationBarItemDefaults.colors(
-                                    indicatorColor = Color.Transparent,
-                                    selectedIconColor = MaterialTheme.colorScheme.primary,
-                                    selectedTextColor = MaterialTheme.colorScheme.primary
+                            Brush.verticalGradient(
+                                colors = listOf(
+                                    Color.Transparent,
+                                    MaterialTheme.colorScheme.background.copy(alpha = 0.9f)
                                 )
                             )
+                        )
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .navigationBarsPadding()
+                            .padding(horizontal = 16.dp, vertical = 12.dp)
+                            .clip(CornerShape)
+                            .background(
+                                MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.9f),
+                                CornerShape
+                            )
+                            .gradientStyle()
+                    ) {
+                        NavigationBar(
+                            containerColor = Color.Transparent,
+                            windowInsets = WindowInsets(0, 0, 0, 0)
+                        ) {
+                            bottomItems.forEach { item ->
+                                val selected = currentDestination?.hierarchy?.any {
+                                    it.route == item.destination.route
+                                } == true
+
+                                NavigationBarItem(
+                                    selected = selected,
+                                    onClick = {
+                                        childNavController.navigate(item.destination.route) {
+                                            popUpTo(childNavController.graph.findStartDestination().id) {
+                                                saveState = true
+                                            }
+                                            launchSingleTop = true
+                                            restoreState = true
+                                        }
+                                    },
+                                    icon = {
+                                        Icon(
+                                            imageVector = item.icon,
+                                            contentDescription = item.label
+                                        )
+                                    },
+                                    label = { Text(item.label) },
+                                    colors = NavigationBarItemDefaults.colors(
+                                        indicatorColor = Color.Transparent,
+                                        selectedIconColor = MaterialTheme.colorScheme.primary,
+                                        selectedTextColor = MaterialTheme.colorScheme.primary
+                                    )
+                                )
+                            }
                         }
                     }
                 }

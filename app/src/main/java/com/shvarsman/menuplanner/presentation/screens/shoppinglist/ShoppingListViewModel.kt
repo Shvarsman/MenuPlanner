@@ -10,10 +10,12 @@ import com.shvarsman.menuplanner.domain.usecase.product.FindOrCreateProductUseCa
 import com.shvarsman.menuplanner.domain.usecase.product.GetAllProductsUseCase
 import com.shvarsman.menuplanner.domain.usecase.shoppinglist.AddToShoppingListUseCase
 import com.shvarsman.menuplanner.domain.usecase.shoppinglist.GetShoppingListUseCase
-import com.shvarsman.menuplanner.domain.usecase.shoppinglist.MoveCheckedItemsToFridgeUseCase
+import com.shvarsman.menuplanner.domain.usecase.shoppinglist.MoveItemsToFridgeUseCase
 import com.shvarsman.menuplanner.domain.usecase.shoppinglist.RemoveShoppingItemUseCase
 import com.shvarsman.menuplanner.domain.usecase.shoppinglist.ToggleShoppingItemUseCase
+import com.shvarsman.menuplanner.domain.usecase.shoppinglist.UpdateShoppingItemUseCase
 import com.shvarsman.menuplanner.presentation.utils.PendingDeleteManager
+import com.shvarsman.menuplanner.presentation.utils.debounceSearch
 import com.shvarsman.menuplanner.presentation.utils.mapOnDefault
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -25,6 +27,13 @@ import kotlinx.coroutines.launch
 import java.time.LocalDate
 import javax.inject.Inject
 
+enum class ShoppingSortOption(val displayName: String) {
+    NAME_ASC("По алфавиту (А-Я)"),
+    NAME_DESC("По алфавиту (Я-А)"),
+    QUANTITY_ASC("По количеству (меньше→больше)"),
+    QUANTITY_DESC("По количеству (больше→меньше)")
+}
+
 @HiltViewModel
 class ShoppingListViewModel @Inject constructor(
     getShoppingList: GetShoppingListUseCase,
@@ -33,7 +42,8 @@ class ShoppingListViewModel @Inject constructor(
     private val toggleShoppingItem: ToggleShoppingItemUseCase,
     private val removeShoppingItem: RemoveShoppingItemUseCase,
     private val findOrCreateProduct: FindOrCreateProductUseCase,
-    private val moveCheckedItemsToFridge: MoveCheckedItemsToFridgeUseCase
+    private val moveItemsToFridge: MoveItemsToFridgeUseCase,
+    private val updateShoppingItem: UpdateShoppingItemUseCase
 ) : ViewModel() {
 
     private val pendingDeleteManager = PendingDeleteManager<Long>(viewModelScope)
@@ -55,7 +65,59 @@ class ShoppingListViewModel @Inject constructor(
         pendingDeleteManager.undo(id)
     }
 
-    val groupedUnchecked: StateFlow<Map<Category, List<ShoppingListItem>>> = items
+    // ── Поиск / фильтр / сортировка ──────────────────────────────────
+    private val _searchQuery = MutableStateFlow("")
+    val searchQuery: StateFlow<String> = _searchQuery
+    fun onSearchQueryChange(query: String) {
+        _searchQuery.value = query
+    }
+
+    private val _selectedCategory = MutableStateFlow<Category?>(null)
+    val selectedCategory: StateFlow<Category?> = _selectedCategory
+    fun selectCategory(category: Category?) {
+        _selectedCategory.value = if (_selectedCategory.value == category) null else category
+    }
+
+    private val _sortOption = MutableStateFlow(ShoppingSortOption.NAME_ASC)
+    val sortOption: StateFlow<ShoppingSortOption> = _sortOption
+    fun selectSortOption(option: ShoppingSortOption) {
+        _sortOption.value = option
+    }
+
+    val availableCategories: StateFlow<List<Pair<Category, Int>>> = items
+        .mapOnDefault { list ->
+            list.groupingBy { it.product.category }.eachCount()
+                .toList()
+                .sortedBy { (category, _) -> category.ordinal }
+        }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    private val filteredItems: StateFlow<List<ShoppingListItem>> = combine(
+        items, _searchQuery.debounceSearch(), _selectedCategory, _sortOption
+    ) { list, query, category, sort ->
+        list
+            .let { if (category != null) it.filter { i -> i.product.category == category } else it }
+            .let {
+                if (query.isBlank()) it else it.filter { i ->
+                    i.product.name.contains(
+                        query,
+                        ignoreCase = true
+                    )
+                }
+            }
+            .let { filtered ->
+                when (sort) {
+                    ShoppingSortOption.NAME_ASC -> filtered.sortedBy { it.product.name.lowercase() }
+                    ShoppingSortOption.NAME_DESC -> filtered.sortedByDescending { it.product.name.lowercase() }
+                    ShoppingSortOption.QUANTITY_ASC -> filtered.sortedBy { it.quantity }
+                    ShoppingSortOption.QUANTITY_DESC -> filtered.sortedByDescending { it.quantity }
+                }
+            }
+    }
+        .mapOnDefault { it }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    val groupedUnchecked: StateFlow<Map<Category, List<ShoppingListItem>>> = filteredItems
         .mapOnDefault { list ->
             list.filter { !it.isChecked }
                 .groupBy { it.product.category }
@@ -63,10 +125,11 @@ class ShoppingListViewModel @Inject constructor(
         }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyMap())
 
-    val checkedItems: StateFlow<List<ShoppingListItem>> = items
+    val checkedItems: StateFlow<List<ShoppingListItem>> = filteredItems
         .mapOnDefault { list -> list.filter { it.isChecked } }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
+    // hasCheckedItems — по ВСЕМ товарам, не только видимым после фильтра/поиска
     val hasCheckedItems: StateFlow<Boolean> = items
         .mapOnDefault { list -> list.any { it.isChecked } }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
@@ -76,7 +139,6 @@ class ShoppingListViewModel @Inject constructor(
 
     private val _isPickerOpen = MutableStateFlow(false)
     val isPickerOpen: StateFlow<Boolean> = _isPickerOpen
-
     fun openPicker() {
         _isPickerOpen.value = true
     }
@@ -96,6 +158,8 @@ class ShoppingListViewModel @Inject constructor(
         quantity: Double,
         expirationDate: LocalDate? = null
     ) {
+        // expirationDate тут всегда null — диалог добавления в списке покупок
+        // сознательно не запрашивает срок годности (см. ProductPickerDialog(showExpirationDate = false))
         viewModelScope.launch {
             addToShoppingList(product, unit, quantity, expirationDate)
             closePicker()
@@ -106,12 +170,41 @@ class ShoppingListViewModel @Inject constructor(
         viewModelScope.launch { toggleShoppingItem(item.id, !item.isChecked) }
     }
 
-    fun removeItem(item: ShoppingListItem) {
-        viewModelScope.launch { removeShoppingItem(item.id) }
+    // ── Редактирование количества по долгому нажатию ─────────────────
+    private val _editingItem = MutableStateFlow<ShoppingListItem?>(null)
+    val editingItem: StateFlow<ShoppingListItem?> = _editingItem
+
+    fun startEdit(item: ShoppingListItem) {
+        _editingItem.value = item
     }
 
-    /** Переносит отмеченные позиции в холодильник и убирает их из списка покупок. */
-    fun moveCheckedToFridge() {
-        viewModelScope.launch { moveCheckedItemsToFridge() }
+    fun cancelEdit() {
+        _editingItem.value = null
+    }
+
+    fun confirmEdit(unit: MeasureUnit, quantity: Double) {
+        val current = _editingItem.value ?: return
+        viewModelScope.launch {
+            updateShoppingItem(current.copy(unit = unit, quantity = quantity))
+            _editingItem.value = null
+        }
+    }
+
+    // ── Перенос отмеченного в холодильник — только подтверждение, без даты ──
+    private val _showMoveConfirmation = MutableStateFlow(false)
+    val showMoveConfirmation: StateFlow<Boolean> = _showMoveConfirmation
+
+    fun requestMoveCheckedToFridge() {
+        if (items.value.any { it.isChecked }) _showMoveConfirmation.value = true
+    }
+
+    fun cancelMoveToFridge() {
+        _showMoveConfirmation.value = false
+    }
+
+    fun confirmMoveCheckedToFridge() {
+        val ids = items.value.filter { it.isChecked }.map { it.id }.toSet()
+        _showMoveConfirmation.value = false
+        viewModelScope.launch { moveItemsToFridge(ids) } // без expirationDates — все null, дата задаётся позже в холодильнике
     }
 }

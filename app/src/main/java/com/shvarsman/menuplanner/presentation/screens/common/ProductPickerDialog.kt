@@ -61,7 +61,8 @@ fun ProductPickerDialog(
         name: String, category: Category, unit: MeasureUnit,
         isToTaste: Boolean, isAlwaysAvailable: Boolean
     ) -> Product,
-    skipQuantityForToTaste: Boolean = false
+    skipQuantityForToTaste: Boolean = false,
+    showExpirationDate: Boolean = true // добавить
 ) {
     var step by remember { mutableStateOf(PickerStep.SELECT) }
     var query by remember { mutableStateOf("") }
@@ -235,12 +236,14 @@ fun ProductPickerDialog(
                             onUnitChange = { selectedUnit = it },
                             isError = quantityText.isNotEmpty() && parsedQuantity == null
                         )
-                        Spacer(Modifier.height(8.dp))
-                        ExpirationDatePickerField(
-                            value = expirationDate,
-                            onValueChange = { expirationDate = it },
-                            label = "Срок годности"
-                        )
+                        if (showExpirationDate) {
+                            Spacer(Modifier.height(8.dp))
+                            ExpirationDatePickerField(
+                                value = expirationDate,
+                                onValueChange = { expirationDate = it },
+                                label = "Срок годности"
+                            )
+                        }
                     }
                 }
             }
