@@ -6,16 +6,16 @@
 # kotlinx.serialization DTOs used for backup JSON.
 -keepattributes *Annotation*, InnerClasses
 -dontnote kotlinx.serialization.AnnotationsKt
--keep,includedescriptorclasses class com.shvarsman.menuplanner.data.backup.**$$serializer { *; }
--keepclassmembers class com.shvarsman.menuplanner.data.backup.** {
+-keep,includedescriptorclasses class com.shvarsman.coolinar.data.backup.**$$serializer { *; }
+-keepclassmembers class com.shvarsman.coolinar.data.backup.** {
     *** Companion;
 }
--keepclasseswithmembers class com.shvarsman.menuplanner.data.backup.** {
+-keepclasseswithmembers class com.shvarsman.coolinar.data.backup.** {
     kotlinx.serialization.KSerializer serializer(...);
 }
 
 # Enums persisted by Room / backup via name / valueOf.
--keepclassmembers enum com.shvarsman.menuplanner.domain.model.** {
+-keepclassmembers enum com.shvarsman.coolinar.domain.model.** {
     public static **[] values();
     public static ** valueOf(java.lang.String);
     **[] $VALUES;

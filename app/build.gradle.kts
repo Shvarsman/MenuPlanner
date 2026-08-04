@@ -7,13 +7,13 @@ plugins {
 }
 
 android {
-    namespace = "com.shvarsman.menuplanner"
+    namespace = "com.shvarsman.coolinar"
     compileSdk {
         version = release(37)
     }
 
     defaultConfig {
-        applicationId = "com.shvarsman.menuplanner"
+        applicationId = "com.shvarsman.coolinar"
         minSdk = 24
         targetSdk = 37
         versionCode = 1

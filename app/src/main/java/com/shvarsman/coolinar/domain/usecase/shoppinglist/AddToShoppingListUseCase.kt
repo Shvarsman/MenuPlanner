@@ -1,0 +1,46 @@
+package com.shvarsman.coolinar.domain.usecase.shoppinglist
+
+import com.shvarsman.coolinar.domain.model.MeasureUnit
+import com.shvarsman.coolinar.domain.model.Product
+import com.shvarsman.coolinar.domain.model.ShoppingListItem
+import com.shvarsman.coolinar.domain.model.UnitConversion
+import com.shvarsman.coolinar.domain.repository.ShoppingListRepository
+import kotlinx.coroutines.flow.first
+import java.time.LocalDate
+import javax.inject.Inject
+
+class AddToShoppingListUseCase @Inject constructor(
+    private val repository: ShoppingListRepository
+) {
+    suspend operator fun invoke(
+        product: Product,
+        unit: MeasureUnit,
+        quantity: Double,
+        expirationDate: LocalDate? = null
+    ) {
+        val currentItems = repository.observeItems().first()
+        val existing = currentItems.firstOrNull {
+            it.product.id == product.id && !it.isChecked &&
+                    UnitConversion.convert(quantity, unit, it.unit) != null
+        }
+
+        if (existing != null) {
+            val convertedQuantity = UnitConversion.convert(quantity, unit, existing.unit)!!
+            repository.updateItem(
+                existing.copy(
+                    quantity = existing.quantity + convertedQuantity,
+                    expirationDate = expirationDate ?: existing.expirationDate
+                )
+            )
+            return
+        }
+        repository.addItem(
+            ShoppingListItem(
+                product = product,
+                unit = unit,
+                quantity = quantity,
+                expirationDate = expirationDate
+            )
+        )
+    }
+}

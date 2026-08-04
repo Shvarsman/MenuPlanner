@@ -1,0 +1,322 @@
+package com.shvarsman.coolinar.presentation.screens.common
+
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.relocation.BringIntoViewRequester
+import androidx.compose.foundation.relocation.bringIntoViewRequester
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Timer
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import coil3.compose.AsyncImage
+import com.shvarsman.coolinar.domain.model.StepContentItem
+import com.shvarsman.coolinar.presentation.ui.theme.CornerShape
+import kotlinx.coroutines.launch
+
+sealed interface RenderedStep {
+    data class Text(
+        val originalIndex: Int,
+        val stepNumber: Int,
+        val item: StepContentItem.Text
+    ) : RenderedStep
+
+    data class ImageGroup(
+        val startIndex: Int,
+        val urls: List<String>
+    ) : RenderedStep
+
+    data class TimerItem(
+        val originalIndex: Int,
+        val minutes: Int
+    ) : RenderedStep
+}
+
+fun buildRenderedSteps(steps: List<StepContentItem>): List<RenderedStep> {
+    val result = mutableListOf<RenderedStep>()
+    var stepNum = 0
+    var i = 0
+    while (i < steps.size) {
+        when (val item = steps[i]) {
+            is StepContentItem.Text -> {
+                stepNum++
+                result.add(RenderedStep.Text(i, stepNum, item))
+                i++
+            }
+
+            is StepContentItem.Image -> {
+                val imageUrls = mutableListOf<String>()
+                val startIndex = i
+                while (i < steps.size && steps[i] is StepContentItem.Image) {
+                    imageUrls.add((steps[i] as StepContentItem.Image).url)
+                    i++
+                }
+                result.add(RenderedStep.ImageGroup(startIndex, imageUrls))
+            }
+
+            is StepContentItem.Timer -> {
+                result.add(RenderedStep.TimerItem(i, item.minutes))
+                i++
+            }
+        }
+    }
+    return result
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+fun LazyListScope.StepContent(
+    renderedSteps: List<RenderedStep>,
+    focusRequestIndex: Int?,
+    onDeleteImageClick: (index: Int) -> Unit,
+    onTextChange: (index: Int, text: String) -> Unit,
+    onNext: (currentIndex: Int) -> Unit,
+    onFocusConsumed: () -> Unit,
+    onTimerClick: (index: Int) -> Unit,
+    onDeleteTimerClick: (index: Int) -> Unit
+) {
+    renderedSteps.forEach { step ->
+        when (step) {
+            is RenderedStep.ImageGroup -> {
+                item(key = "images_${step.startIndex}") {
+                    StepImageGroup(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 4.dp),
+                        imageUrls = step.urls,
+                        onDeleteImageClick = { imageIndex ->
+                            onDeleteImageClick(step.startIndex + imageIndex)
+                        }
+                    )
+                }
+            }
+
+            is RenderedStep.Text -> {
+                item(key = "text_${step.originalIndex}") {
+                    StepTextBlock(
+                        stepNumber = step.stepNumber,
+                        text = step.item.content,
+                        shouldRequestFocus = focusRequestIndex == step.originalIndex,
+                        onTextChange = { onTextChange(step.originalIndex, it) },
+                        onNext = { onNext(step.originalIndex) },
+                        onFocusConsumed = onFocusConsumed
+                    )
+                }
+            }
+
+            is RenderedStep.TimerItem -> {
+                item(key = "timer_${step.originalIndex}") {
+                    StepTimerRow(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 4.dp),
+                        minutes = step.minutes,
+                        onClick = { onTimerClick(step.originalIndex) },
+                        onDelete = { onDeleteTimerClick(step.originalIndex) }
+                    )
+                }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+private fun StepTextBlock(
+    stepNumber: Int,
+    text: String,
+    shouldRequestFocus: Boolean,
+    onTextChange: (String) -> Unit,
+    onNext: () -> Unit,
+    onFocusConsumed: () -> Unit
+) {
+    val focusRequester = remember { FocusRequester() }
+    val bringIntoViewRequester = remember { BringIntoViewRequester() }
+    val coroutineScope = rememberCoroutineScope()
+
+    LaunchedEffect(shouldRequestFocus) {
+        if (shouldRequestFocus) {
+            focusRequester.requestFocus()
+            bringIntoViewRequester.bringIntoView()
+            onFocusConsumed()
+        }
+    }
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 8.dp, vertical = 2.dp)
+            .bringIntoViewRequester(bringIntoViewRequester),
+        verticalAlignment = Alignment.Top
+    ) {
+        Surface(
+            modifier = Modifier
+                .padding(top = 16.dp, start = 8.dp, end = 4.dp)
+                .size(24.dp),
+            shape = MaterialTheme.shapes.small,
+            color = MaterialTheme.colorScheme.primaryContainer
+        ) {
+            Box(contentAlignment = Alignment.Center) {
+                Text(
+                    text = "$stepNumber",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                )
+            }
+        }
+
+        TextField(
+            modifier = Modifier
+                .weight(1f)
+                .focusRequester(focusRequester)
+                .onFocusChanged { state ->
+                    if (state.isFocused) {
+                        coroutineScope.launch { bringIntoViewRequester.bringIntoView() }
+                    }
+                },
+            value = text,
+            onValueChange = onTextChange,
+            colors = TextFieldDefaults.colors(
+                focusedContainerColor = Color.Transparent,
+                unfocusedContainerColor = Color.Transparent,
+                focusedIndicatorColor = Color.Transparent,
+                unfocusedIndicatorColor = Color.Transparent,
+            ),
+            textStyle = TextStyle(
+                fontSize = 16.sp,
+                color = MaterialTheme.colorScheme.onSurface
+            ),
+            placeholder = {
+                Text(
+                    text = "Опишите шаг...",
+                    fontSize = 16.sp,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
+                )
+            },
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+            keyboardActions = KeyboardActions(onNext = { onNext() })
+        )
+    }
+}
+
+@Composable
+private fun StepImageGroup(
+    modifier: Modifier = Modifier,
+    imageUrls: List<String>,
+    onDeleteImageClick: (Int) -> Unit
+) {
+    Row(
+        modifier = modifier,
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        imageUrls.forEachIndexed { index, url ->
+            StepImageContent(
+                modifier = Modifier.weight(1f),
+                imageUrl = url,
+                onDeleteClick = { onDeleteImageClick(index) }
+            )
+        }
+    }
+}
+
+@Composable
+private fun StepImageContent(
+    modifier: Modifier = Modifier,
+    imageUrl: String,
+    onDeleteClick: () -> Unit
+) {
+    Box(modifier = modifier) {
+        AsyncImage(
+            model = rememberSizedImageRequest(imageUrl, 400.dp, 240.dp),
+            contentDescription = null,
+            contentScale = ContentScale.FillWidth,
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(CornerShape)
+        )
+        IconButton(
+            onClick = onDeleteClick,
+            modifier = Modifier.align(Alignment.TopEnd)
+        ) {
+            Icon(
+                imageVector = Icons.Default.Close,
+                contentDescription = "Удалить фото",
+                tint = MaterialTheme.colorScheme.onSurface
+            )
+        }
+    }
+}
+
+/**
+ * Строка таймера в списке шагов редактора: иконка + подпись, крупное значение
+ * в формате ММ:00, справа — кнопка удаления. Тап по всей строке открывает
+ * TimerMinutesPickerDialog для изменения длительности.
+ */
+@Composable
+private fun StepTimerRow(
+    minutes: Int,
+    onClick: () -> Unit,
+    onDelete: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        onClick = onClick,
+        modifier = modifier,
+        shape = CornerShape,
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.secondaryContainer
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 10.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = Icons.Filled.Timer,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSecondaryContainer
+            )
+            Spacer(Modifier.width(12.dp))
+            Text(
+                text = "Таймер",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSecondaryContainer,
+                modifier = Modifier.weight(1f)
+            )
+            Text(
+                text = "%02d:00".format(minutes),
+                style = MaterialTheme.typography.titleLarge.copy(
+                    fontWeight = FontWeight.SemiBold,
+                    fontFeatureSettings = "tnum"
+                ),
+                color = MaterialTheme.colorScheme.onSecondaryContainer
+            )
+            Spacer(Modifier.width(4.dp))
+            IconButton(onClick = onDelete) {
+                Icon(
+                    imageVector = Icons.Default.Close,
+                    contentDescription = "Удалить таймер",
+                    tint = MaterialTheme.colorScheme.onSecondaryContainer
+                )
+            }
+        }
+    }
+}
