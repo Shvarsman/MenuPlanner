@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalCoroutinesApi::class)
+
 package com.shvarsman.coolinar.presentation.screens.home
 
 import androidx.lifecycle.ViewModel
@@ -10,6 +12,7 @@ import com.shvarsman.coolinar.domain.model.Recipe
 import com.shvarsman.coolinar.domain.model.RecipeSummary
 import com.shvarsman.coolinar.domain.model.ReservedAmount
 import com.shvarsman.coolinar.domain.model.ReservedKey
+import com.shvarsman.coolinar.domain.model.UnitConversion
 import com.shvarsman.coolinar.domain.model.availability
 import com.shvarsman.coolinar.domain.model.computeReservedAmounts
 import com.shvarsman.coolinar.domain.usecase.fridge.GetFridgeItemsUseCase
@@ -23,27 +26,34 @@ import com.shvarsman.coolinar.presentation.utils.PendingDeleteManager
 import com.shvarsman.coolinar.presentation.utils.debounceSearch
 import com.shvarsman.coolinar.presentation.utils.mapOnDefault
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.time.DayOfWeek
 import java.time.LocalDate
+import java.time.temporal.TemporalAdjusters
 import javax.inject.Inject
+
+data class MenuSlot(val weekStart: LocalDate, val dayOfWeek: DayOfWeek, val mealType: MealType)
 
 data class MenuUiState(
     val weekMenu: List<MenuEntry> = emptyList(),
     val recipes: List<Recipe> = emptyList(),
     val fridgeItems: List<FridgeItem> = emptyList(),
     val reservedQuantities: Map<ReservedKey, ReservedAmount> = emptyMap(),
-    val pickerTarget: Pair<DayOfWeek, MealType>? = null,
+    val pickerTarget: MenuSlot? = null,
     val insufficientDialogEntry: MenuEntry? = null,
     val navigateToCooking: Pair<Long, Long>? = null,
     val recipeSearchQuery: String = "",
     val filteredPickerRecipes: List<Recipe> = emptyList(),
     val selectedDay: DayOfWeek = LocalDate.now().dayOfWeek,
+    val selectedWeekOffset: Int = 0,
     val suggestedRecipes: List<RecipeSummary> = emptyList(),
     val expiringFridgeItems: List<FridgeItem> = emptyList(),
     val weeklyPlannedCount: Int = 0,
@@ -62,7 +72,6 @@ class MenuViewModel @Inject constructor(
     private val removeMenuEntry: RemoveMenuEntryUseCase
 ) : ViewModel() {
 
-    private val weekMenuFlow = getWeekMenu()
     private val recipesFlow = getRecipes()
     private val fridgeItemsFlow = getFridgeItems()
     private val recipeSummariesFlow = getRecipeSummaries()
@@ -73,18 +82,33 @@ class MenuViewModel @Inject constructor(
     ) { summaries, shopping -> summaries to shopping }
 
     private val _recipeSearchQuery = MutableStateFlow("")
-    private val _pickerTarget = MutableStateFlow<Pair<DayOfWeek, MealType>?>(null)
+    private val _pickerTarget = MutableStateFlow<MenuSlot?>(null)
     private val _insufficientDialogEntry = MutableStateFlow<MenuEntry?>(null)
     private val _navigateToCooking = MutableStateFlow<Pair<Long, Long>?>(null)
     private val _selectedDay = MutableStateFlow<DayOfWeek>(LocalDate.now().dayOfWeek)
+    private val _selectedWeekOffset = MutableStateFlow(0)
+
+    // Меню недели, которую сейчас листает пользователь на WeekMenuScreen (текущая/следующая)
+    private val selectedWeekMenuFlow: Flow<List<MenuEntry>> =
+        _selectedWeekOffset.flatMapLatest { offset -> getWeekMenu(weekStartFor(offset)) }
+
+    // Всегда следующая неделя — по ней считается прогресс на главном экране
+    private val nextWeekMenuFlow: Flow<List<MenuEntry>> = getWeekMenu(weekStartFor(1))
 
     private val pendingDeleteManager = PendingDeleteManager<Long>(viewModelScope)
 
+    private val visibleMenusFlow = combine(
+        selectedWeekMenuFlow,
+        nextWeekMenuFlow,
+        pendingDeleteManager.pendingIds
+    ) { selected, next, pendingIds ->
+        selected.filter { it.id !in pendingIds } to next.filter { it.id !in pendingIds }
+    }
+
     private val coreMenuData = combine(
-        weekMenuFlow, recipesFlow, fridgeItemsFlow, pendingDeleteManager.pendingIds, extrasFlow
-    ) { menu, recipes, fridge, pendingIds, extras ->
+        visibleMenusFlow, recipesFlow, fridgeItemsFlow, extrasFlow
+    ) { (visibleMenu, visibleNextWeekMenu), recipes, fridge, extras ->
         val (summaries, shoppingItems) = extras
-        val visibleMenu = menu.filter { it.id !in pendingIds }
 
         val suggestedIds = recipes
             .filter { r -> r.ingredients.isNotEmpty() && r.ingredients.all { it.availability(fridge) == IngredientAvailability.AVAILABLE } }
@@ -97,7 +121,8 @@ class MenuViewModel @Inject constructor(
             .filter { it.expirationDate != null && !it.expirationDate.isAfter(expiringCutoff) }
             .sortedBy { it.expirationDate }
 
-        val filledSlots = visibleMenu.map { it.dayOfWeek to it.mealType }.distinct().size
+        val filledSlotsNextWeek =
+            visibleNextWeekMenu.map { it.dayOfWeek to it.mealType }.distinct().size
 
         CoreMenuData(
             weekMenu = visibleMenu,
@@ -106,7 +131,7 @@ class MenuViewModel @Inject constructor(
             reservedQuantities = computeReservedAmounts(visibleMenu, recipes),
             suggestedRecipes = suggested,
             expiringFridgeItems = expiring,
-            weeklyPlannedCount = filledSlots,
+            weeklyPlannedCount = filledSlotsNextWeek,
             shoppingListCount = shoppingItems.size
         )
     }.mapOnDefault { it }
@@ -116,9 +141,12 @@ class MenuViewModel @Inject constructor(
         _pickerTarget,
         _insufficientDialogEntry,
         _navigateToCooking,
-        combine(_recipeSearchQuery.debounceSearch(), _selectedDay) { query, day -> query to day }
-    ) { core, picker, dialog, nav, queryAndDay ->
-        val (query, selectedDay) = queryAndDay
+        combine(
+            _recipeSearchQuery.debounceSearch(),
+            _selectedDay,
+            _selectedWeekOffset
+        ) { query, day, weekOffset -> Triple(query, day, weekOffset) }
+    ) { core, picker, dialog, nav, (query, selectedDay, weekOffset) ->
         val filtered = if (query.isBlank()) core.recipes
         else core.recipes.filter { it.title.contains(query, ignoreCase = true) }
 
@@ -133,6 +161,7 @@ class MenuViewModel @Inject constructor(
             recipeSearchQuery = query,
             filteredPickerRecipes = filtered,
             selectedDay = selectedDay,
+            selectedWeekOffset = weekOffset,
             suggestedRecipes = core.suggestedRecipes,
             expiringFridgeItems = core.expiringFridgeItems,
             weeklyPlannedCount = core.weeklyPlannedCount,
@@ -146,8 +175,12 @@ class MenuViewModel @Inject constructor(
         _selectedDay.value = day
     }
 
+    fun selectWeek(offset: Int) {
+        _selectedWeekOffset.value = offset
+    }
+
     fun openRecipePicker(day: DayOfWeek, meal: MealType) {
-        _pickerTarget.value = day to meal
+        _pickerTarget.value = MenuSlot(weekStartFor(_selectedWeekOffset.value), day, meal)
     }
 
     fun closeRecipePicker() {
@@ -158,7 +191,7 @@ class MenuViewModel @Inject constructor(
     fun assignRecipe(recipe: Recipe) {
         val target = _pickerTarget.value ?: return
         viewModelScope.launch {
-            assignRecipeToMenu(target.first, target.second, recipe)
+            assignRecipeToMenu(target.weekStart, target.dayOfWeek, target.mealType, recipe)
             closeRecipePicker()
         }
     }
@@ -174,8 +207,15 @@ class MenuViewModel @Inject constructor(
     fun onCookClick(entry: MenuEntry) {
         val recipe = uiState.value.recipes.firstOrNull { it.id == entry.recipeId } ?: return
 
+        val reservedFromEarlierEntries = computeReservedAmounts(
+            uiState.value.weekMenu.filter { it.id < entry.id },
+            uiState.value.recipes
+        )
+
         val allAvailable = recipe.ingredients.all { ingredient ->
-            ingredient.availability(uiState.value.fridgeItems) == IngredientAvailability.AVAILABLE
+            val canonical = UnitConversion.canonicalUnit(ingredient.unit)
+            val reserved = reservedFromEarlierEntries[ReservedKey(ingredient.product.id, canonical)]
+            ingredient.availability(uiState.value.fridgeItems, reserved) == IngredientAvailability.AVAILABLE
         }
 
         if (allAvailable) {
@@ -213,4 +253,9 @@ class MenuViewModel @Inject constructor(
         val weeklyPlannedCount: Int,
         val shoppingListCount: Int
     )
+
+    private fun weekStartFor(offset: Int): LocalDate =
+        LocalDate.now().with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
+            .plusWeeks(offset.toLong())
+
 }

@@ -1,10 +1,11 @@
 package com.shvarsman.coolinar.domain.model
 
 import java.time.DayOfWeek
+import java.time.LocalDate
 
-/** Запись меню: какой рецепт назначен на день недели и приём пищи. */
 data class MenuEntry(
     val id: Long = 0,
+    val weekStartDate: LocalDate,
     val dayOfWeek: DayOfWeek,
     val mealType: MealType,
     val recipeId: Long,

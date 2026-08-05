@@ -21,6 +21,7 @@ data class BackupShoppingItemDto(
 
 @Serializable
 data class BackupMenuEntryDto(
+    val weekOffset: Int = 0,
     val dayOfWeek: String,
     val mealType: String,
     val recipeTitle: String // связываем с рецептом по названию, т.к. id рецептов не переносятся между установками

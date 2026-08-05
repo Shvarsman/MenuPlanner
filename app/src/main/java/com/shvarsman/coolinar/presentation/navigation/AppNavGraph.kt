@@ -49,6 +49,7 @@ import com.shvarsman.coolinar.presentation.screens.catalog.ProductCatalogScreen
 import com.shvarsman.coolinar.presentation.screens.cooking.CookingScreen
 import com.shvarsman.coolinar.presentation.screens.fridge.FridgeScreen
 import com.shvarsman.coolinar.presentation.screens.home.HomeScreen
+import com.shvarsman.coolinar.presentation.screens.home.WeekMenuScreen
 import com.shvarsman.coolinar.presentation.screens.recipe.all.AllRecipesListScreen
 import com.shvarsman.coolinar.presentation.screens.recipe.category.AllCategoriesScreen
 import com.shvarsman.coolinar.presentation.screens.recipe.category.RecipeCategoryScreen
@@ -218,6 +219,25 @@ fun AppNavGraph() {
                     }
                 )
             }
+
+            composable(Destination.WeekMenu.route) {
+                WeekMenuScreen(
+                    onBack = { rootNavController.popBackStack() },
+                    onCreateRecipe = {
+                        rootNavController.navigate(
+                            Destination.RecipeEditor.createRoute(Destination.RecipeEditor.NEW_RECIPE_ID)
+                        )
+                    },
+                    onNavigateToCooking = { recipeId, menuEntryId ->
+                        rootNavController.navigate(
+                            Destination.Cooking.createRoute(recipeId, menuEntryId)
+                        )
+                    },
+                    onViewRecipe = { recipeId ->
+                        rootNavController.navigate(Destination.RecipeView.createRoute(recipeId))
+                    }
+                )
+            }
         }
     }
 }
@@ -307,20 +327,11 @@ private fun MainTabsScreen(rootNavController: NavHostController) {
         ) {
             composable(Destination.Home.route) {
                 HomeScreen(
-                    onCreateRecipe = {
-                        rootNavController.navigate(
-                            Destination.RecipeEditor.createRoute(Destination.RecipeEditor.NEW_RECIPE_ID)
-                        )
-                    },
-                    onNavigateToCooking = { recipeId, menuEntryId ->
-                        rootNavController.navigate(
-                            Destination.Cooking.createRoute(recipeId, menuEntryId)
-                        )
-                    },
                     onViewRecipe = { recipeId ->
                         rootNavController.navigate(Destination.RecipeView.createRoute(recipeId))
                     },
                     onOpenBackup = { rootNavController.navigate(Destination.Backup.route) },
+                    onOpenWeekMenu = { rootNavController.navigate(Destination.WeekMenu.route) },
                     onOpenFridge = {
                         childNavController.navigate(Destination.Fridge.route) {
                             popUpTo(childNavController.graph.findStartDestination().id) {

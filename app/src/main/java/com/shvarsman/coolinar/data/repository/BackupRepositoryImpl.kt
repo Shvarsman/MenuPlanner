@@ -39,6 +39,8 @@ import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import java.io.BufferedOutputStream
 import java.time.DayOfWeek
+import java.time.LocalDate
+import java.time.temporal.TemporalAdjusters
 import java.util.UUID
 import java.util.zip.ZipEntry
 import java.util.zip.ZipInputStream
@@ -163,9 +165,14 @@ class BackupRepositoryImpl @Inject constructor(
                     )
                 }
 
-                val menuEntries = menuRepository.observeWeekMenu().first()
+                val thisWeekStart =
+                    LocalDate.now().with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
+                val menuEntries = (0..1).flatMap { offset ->
+                    menuRepository.observeWeekMenu(thisWeekStart.plusWeeks(offset.toLong())).first()
+                }
                 val menuDtos = menuEntries.map {
                     BackupMenuEntryDto(
+                        weekOffset = if (it.weekStartDate == thisWeekStart) 0 else 1,
                         dayOfWeek = it.dayOfWeek.name,
                         mealType = it.mealType.name,
                         recipeTitle = it.recipeTitle
@@ -362,10 +369,13 @@ class BackupRepositoryImpl @Inject constructor(
         }
 
         // Меню — восстанавливаем только записи, для которых рецепт найден среди только что импортированных
+        val importWeekStart =
+            LocalDate.now().with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
         data.menuEntries.forEach { dto ->
             val recipeId = recipeIdByTitle[dto.recipeTitle] ?: return@forEach
             menuRepository.addEntry(
                 MenuEntry(
+                    weekStartDate = importWeekStart.plusWeeks(dto.weekOffset.toLong()),
                     dayOfWeek = DayOfWeek.valueOf(dto.dayOfWeek),
                     mealType = MealType.valueOf(dto.mealType),
                     recipeId = recipeId

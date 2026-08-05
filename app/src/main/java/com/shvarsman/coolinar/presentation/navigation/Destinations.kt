@@ -38,4 +38,6 @@ sealed class Destination(val route: String) {
     object SuggestedRecipes : Destination("suggested_recipes")
 
     object AllRecipesList : Destination("all_recipes_list")
+
+    object WeekMenu : Destination("week_menu")
 }

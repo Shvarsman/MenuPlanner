@@ -22,6 +22,8 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.time.DayOfWeek
+import java.time.LocalDate
+import java.time.temporal.TemporalAdjusters
 import javax.inject.Inject
 
 data class RecipeViewState(
@@ -105,8 +107,10 @@ class RecipeViewViewModel @Inject constructor(
 
     fun confirmAddToMenu(day: DayOfWeek, mealType: MealType) {
         val recipe = _rawRecipe.value ?: return
+        val currentWeekStart =
+            LocalDate.now().with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
         viewModelScope.launch {
-            assignRecipeToMenu(day, mealType, recipe)
+            assignRecipeToMenu(currentWeekStart, day, mealType, recipe)
             _isAddToMenuSheetOpen.value = false
             _menuAddedEvent.value += 1
         }

@@ -25,7 +25,7 @@ import com.shvarsman.coolinar.data.local.entity.ShoppingListItemEntity
         MenuEntryEntity::class,
         ShoppingListItemEntity::class
     ],
-    version = 15,
+    version = 16,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
