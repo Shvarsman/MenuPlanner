@@ -19,6 +19,7 @@ import com.shvarsman.coolinar.domain.usecase.fridge.GetFridgeItemsUseCase
 import com.shvarsman.coolinar.domain.usecase.menu.AssignRecipeToMenuUseCase
 import com.shvarsman.coolinar.domain.usecase.menu.GetWeekMenuUseCase
 import com.shvarsman.coolinar.domain.usecase.menu.RemoveMenuEntryUseCase
+import com.shvarsman.coolinar.domain.usecase.preferences.GetDisplayNameUseCase
 import com.shvarsman.coolinar.domain.usecase.recipe.GetRecipeSummariesUseCase
 import com.shvarsman.coolinar.domain.usecase.recipe.GetRecipesUseCase
 import com.shvarsman.coolinar.domain.usecase.shoppinglist.GetShoppingListUseCase
@@ -58,9 +59,9 @@ data class MenuUiState(
     val expiringFridgeItems: List<FridgeItem> = emptyList(),
     val weeklyPlannedCount: Int = 0,
     val weeklyTotalCount: Int = DayOfWeek.entries.size * MealType.entries.size,
-    val shoppingListCount: Int = 0
+    val shoppingListCount: Int = 0,
+    val userName: String? = null
 )
-
 @HiltViewModel
 class MenuViewModel @Inject constructor(
     getWeekMenu: GetWeekMenuUseCase,
@@ -68,6 +69,7 @@ class MenuViewModel @Inject constructor(
     getRecipeSummaries: GetRecipeSummariesUseCase,
     getFridgeItems: GetFridgeItemsUseCase,
     getShoppingList: GetShoppingListUseCase,
+    getDisplayName: GetDisplayNameUseCase,
     private val assignRecipeToMenu: AssignRecipeToMenuUseCase,
     private val removeMenuEntry: RemoveMenuEntryUseCase
 ) : ViewModel() {
@@ -78,8 +80,9 @@ class MenuViewModel @Inject constructor(
     private val shoppingListFlow = getShoppingList()
     private val extrasFlow = combine(
         recipeSummariesFlow,
-        shoppingListFlow
-    ) { summaries, shopping -> summaries to shopping }
+        shoppingListFlow,
+        getDisplayName()
+    ) { summaries, shopping, userName -> Triple(summaries, shopping, userName) }
 
     private val _recipeSearchQuery = MutableStateFlow("")
     private val _pickerTarget = MutableStateFlow<MenuSlot?>(null)
@@ -108,7 +111,7 @@ class MenuViewModel @Inject constructor(
     private val coreMenuData = combine(
         visibleMenusFlow, recipesFlow, fridgeItemsFlow, extrasFlow
     ) { (visibleMenu, visibleNextWeekMenu), recipes, fridge, extras ->
-        val (summaries, shoppingItems) = extras
+        val (summaries, shoppingItems, userName) = extras
 
         val suggestedIds = recipes
             .filter { r -> r.ingredients.isNotEmpty() && r.ingredients.all { it.availability(fridge) == IngredientAvailability.AVAILABLE } }
@@ -132,7 +135,8 @@ class MenuViewModel @Inject constructor(
             suggestedRecipes = suggested,
             expiringFridgeItems = expiring,
             weeklyPlannedCount = filledSlotsNextWeek,
-            shoppingListCount = shoppingItems.size
+            shoppingListCount = shoppingItems.size,
+            userName = userName
         )
     }.mapOnDefault { it }
 
@@ -165,7 +169,8 @@ class MenuViewModel @Inject constructor(
             suggestedRecipes = core.suggestedRecipes,
             expiringFridgeItems = core.expiringFridgeItems,
             weeklyPlannedCount = core.weeklyPlannedCount,
-            shoppingListCount = core.shoppingListCount
+            shoppingListCount = core.shoppingListCount,
+            userName = core.userName
         )
     }
         .mapOnDefault { it }
@@ -251,7 +256,8 @@ class MenuViewModel @Inject constructor(
         val suggestedRecipes: List<RecipeSummary>,
         val expiringFridgeItems: List<FridgeItem>,
         val weeklyPlannedCount: Int,
-        val shoppingListCount: Int
+        val shoppingListCount: Int,
+        val userName: String?
     )
 
     private fun weekStartFor(offset: Int): LocalDate =

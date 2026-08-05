@@ -1,5 +1,5 @@
 [versions]
-agp = "9.3.0"
+agp = "9.3.1"
 benchmarkMacroJunit4 = "1.4.1"
 coilCompose = "3.5.0"
 coreKtx = "1.19.0"
@@ -27,6 +27,7 @@ uiautomator = "2.4.0"
 material3 = "1.4.0"
 uiTextGoogleFonts = "1.11.4"
 material3Version = "1.0.0-alpha17"
+datastorePreferences = "1.2.1"
 
 [libraries]
 androidx-compose-runtime-tracing = { module = "androidx.compose.runtime:runtime-tracing", version.ref = "runtimeTracing" }
@@ -46,6 +47,7 @@ androidx-uiautomator = { module = "androidx.test.uiautomator:uiautomator", versi
 coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coilCompose" }
 coil-svg = { module = "io.coil-kt.coil3:coil-svg", version.ref = "coilCompose" }
 desugar_jdk_libs = { module = "com.android.tools:desugar_jdk_libs", version.ref = "desugar_jdk_libs" }
+androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastorePreferences" }
 firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
 firebase-auth = { module = "com.google.firebase:firebase-auth" }
 hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hiltAndroid" }

@@ -49,6 +49,7 @@ dependencies {
     implementation(libs.material3)
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.auth)
+    implementation(libs.androidx.datastore.preferences)
     coreLibraryDesugaring(libs.desugar.jdk.libs)
     implementation(libs.androidx.compose.runtime.tracing)
     implementation(platform(libs.androidx.compose.bom))

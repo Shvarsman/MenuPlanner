@@ -51,6 +51,7 @@ import com.shvarsman.coolinar.presentation.screens.cooking.CookingScreen
 import com.shvarsman.coolinar.presentation.screens.fridge.FridgeScreen
 import com.shvarsman.coolinar.presentation.screens.home.HomeScreen
 import com.shvarsman.coolinar.presentation.screens.home.WeekMenuScreen
+import com.shvarsman.coolinar.presentation.screens.onboarding.OnboardingScreen
 import com.shvarsman.coolinar.presentation.screens.profile.ProfileScreen
 import com.shvarsman.coolinar.presentation.screens.recipe.all.AllRecipesListScreen
 import com.shvarsman.coolinar.presentation.screens.recipe.category.AllCategoriesScreen
@@ -77,7 +78,7 @@ private val bottomItems = listOf(
 )
 
 @Composable
-fun AppNavGraph() {
+fun AppNavGraph(showOnboarding: Boolean = false) {
     val rootNavController = rememberNavController()
 
     Surface(
@@ -86,7 +87,7 @@ fun AppNavGraph() {
     ) {
         NavHost(
             navController = rootNavController,
-            startDestination = "main_tabs_wrapper",
+            startDestination = if (showOnboarding) "onboarding" else "main_tabs_wrapper",
             enterTransition = {
                 slideInHorizontally(initialOffsetX = { it }) + fadeIn()
             },
@@ -102,6 +103,16 @@ fun AppNavGraph() {
         ) {
             composable("main_tabs_wrapper") {
                 MainTabsScreen(rootNavController = rootNavController)
+            }
+
+            composable("onboarding") {
+                OnboardingScreen(
+                    onFinished = {
+                        rootNavController.navigate("main_tabs_wrapper") {
+                            popUpTo("onboarding") { inclusive = true }
+                        }
+                    }
+                )
             }
 
             composable(Destination.ProductCatalog.route) {

@@ -1,4 +1,4 @@
-package com.shvarsman.coolinar.presentation.screens.profile
+package com.shvarsman.coolinar.presentation.screens.onboarding
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -6,7 +6,8 @@ import com.shvarsman.coolinar.R
 import com.shvarsman.coolinar.domain.model.AuthException
 import com.shvarsman.coolinar.domain.model.AuthState
 import com.shvarsman.coolinar.domain.repository.AuthRepository
-import com.shvarsman.coolinar.domain.repository.UserPreferencesRepository
+import com.shvarsman.coolinar.domain.repository.OnboardingRepository
+import com.shvarsman.coolinar.presentation.screens.profile.AuthFormMode
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -15,19 +16,14 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-enum class AuthFormMode { SIGN_IN, SIGN_UP }
-
 @HiltViewModel
-class ProfileViewModel @Inject constructor(
+class OnboardingViewModel @Inject constructor(
     private val authRepository: AuthRepository,
-    private val userPreferencesRepository: UserPreferencesRepository
+    private val onboardingRepository: OnboardingRepository
 ) : ViewModel() {
 
     val authState: StateFlow<AuthState> = authRepository.authState
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), AuthState.Loading)
-
-    val displayName: StateFlow<String?> = userPreferencesRepository.displayName
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
     private val _formMode = MutableStateFlow(AuthFormMode.SIGN_IN)
     val formMode: StateFlow<AuthFormMode> = _formMode
@@ -38,9 +34,8 @@ class ProfileViewModel @Inject constructor(
     private val _errorRes = MutableStateFlow<Int?>(null)
     val errorRes: StateFlow<Int?> = _errorRes
 
-    fun toggleFormMode() {
-        _formMode.value =
-            if (_formMode.value == AuthFormMode.SIGN_IN) AuthFormMode.SIGN_UP else AuthFormMode.SIGN_IN
+    fun setFormMode(mode: AuthFormMode) {
+        _formMode.value = mode
         _errorRes.value = null
     }
 
@@ -62,12 +57,9 @@ class ProfileViewModel @Inject constructor(
         }
     }
 
-    fun updateDisplayName(name: String) {
-        viewModelScope.launch { userPreferencesRepository.setDisplayName(name) }
-    }
-
-    fun signOut() {
-        viewModelScope.launch { authRepository.signOut() }
+    /** Пользователь остаётся гостем — никакого Firebase-аккаунта не создаём, просто закрываем онбординг. */
+    fun finishOnboarding() {
+        viewModelScope.launch { onboardingRepository.setCompleted() }
     }
 }
 

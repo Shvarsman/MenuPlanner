@@ -56,6 +56,7 @@ fun HomeScreen(
     val weeklyPlannedCount = uiState.weeklyPlannedCount
     val weeklyTotalCount = uiState.weeklyTotalCount
     val shoppingListCount = uiState.shoppingListCount
+    val userName = uiState.userName
 
     Scaffold(
         modifier = modifier,
@@ -80,7 +81,7 @@ fun HomeScreen(
         ) {
             item(key = "greeting") {
                 Text(
-                    text = greetingText(),
+                    text = greetingText(userName),
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Medium,
                     modifier = Modifier.padding(horizontal = 16.dp)
@@ -128,17 +129,15 @@ fun HomeScreen(
     }
 }
 
-private fun greetingText(): String {
+private fun greetingText(userName: String?): String {
     val hour = java.time.LocalTime.now().hour
     val base = when (hour) {
         in 5..11 -> "Доброе утро"
         in 12..17 -> "Добрый день"
         else -> "Добрый вечер" // 18-23 и 0-4
     }
-    // Имени пока нет — функционал входа появится позже; тогда сюда добавится ", $userName"
-    return "$base!"
+    return if (!userName.isNullOrBlank()) "$base, $userName!" else "$base!"
 }
-
 @Composable
 private fun ExpiringItemsBanner(
     items: List<FridgeItem>,

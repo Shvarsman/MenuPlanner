@@ -3,15 +3,10 @@
     <string name="profile_title">Profile</string>
     <string name="profile_sign_in">Sign in</string>
     <string name="profile_sign_up">Create account</string>
-    <string name="profile_continue_as_guest">Continue as guest</string>
     <string name="profile_email">Email</string>
     <string name="profile_password">Password</string>
     <string name="profile_sign_out">Sign out</string>
     <string name="profile_backup_restore">Backup &amp; Restore</string>
-    <string name="profile_guest_badge">Guest</string>
-    <string name="profile_link_email_title">Save your progress</string>
-    <string name="profile_link_email_subtitle">Add an email and password so you don\'t lose access to your account</string>
-    <string name="profile_link_email_button">Add email &amp; password</string>
     <string name="profile_error_generic">Something went wrong. Please try again.</string>
     <string name="profile_error_invalid_email">Please enter a valid email address</string>
     <string name="profile_error_weak_password">Password must be at least 6 characters</string>
@@ -25,4 +20,16 @@
     <string name="profile_sign_out_confirm_title">Sign out?</string>
     <string name="profile_sign_out_confirm_text">You can sign back in anytime with the same account.</string>
     <string name="profile_cancel">Cancel</string>
+
+    <string name="profile_display_name">Name</string>
+    <string name="onboarding_page1_title">Plan your fridge</string>
+    <string name="onboarding_page1_description">Track what you have at home, expiration dates, and never run out of essentials.</string>
+    <string name="onboarding_page2_title">Discover recipes</string>
+    <string name="onboarding_page2_description">Save your favorite recipes and see what you can cook right now with what\'s in your fridge.</string>
+    <string name="onboarding_page3_title">Plan your week</string>
+    <string name="onboarding_page3_description">Build a weekly menu and get a shopping list generated automatically.</string>
+    <string name="onboarding_final_title">Get started</string>
+    <string name="onboarding_skip_intro">Skip</string>
+    <string name="onboarding_skip">Continue without an account</string>
+    <string name="onboarding_next">Next</string>
 </resources>

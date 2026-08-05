@@ -61,6 +61,7 @@ fun ProfileScreen(
     viewModel: ProfileViewModel = hiltViewModel()
 ) {
     val authState by viewModel.authState.collectAsStateWithLifecycle()
+    val displayName by viewModel.displayName.collectAsStateWithLifecycle()
     val formMode by viewModel.formMode.collectAsStateWithLifecycle()
     val isSubmitting by viewModel.isSubmitting.collectAsStateWithLifecycle()
     val errorRes by viewModel.errorRes.collectAsStateWithLifecycle()
@@ -94,27 +95,24 @@ fun ProfileScreen(
 
                 is AuthState.SignedOut -> {
                     AuthForm(
+                        displayName = displayName,
                         formMode = formMode,
                         isSubmitting = isSubmitting,
                         errorRes = errorRes,
+                        onDisplayNameChange = { viewModel.updateDisplayName(it) },
                         onSubmit = { email, password -> viewModel.submit(email, password) },
                         onToggleMode = { viewModel.toggleFormMode() },
-                        onContinueAsGuest = { viewModel.continueAsGuest() },
                         onClearError = { viewModel.clearError() }
                     )
                 }
 
                 is AuthState.SignedIn -> {
                     SignedInContent(
-                        displayName = state.user.displayName,
+                        displayName = displayName,
                         email = state.user.email,
-                        isAnonymous = state.user.isAnonymous,
-                        isSubmitting = isSubmitting,
-                        errorRes = errorRes,
+                        onDisplayNameChange = { viewModel.updateDisplayName(it) },
                         onOpenBackup = onOpenBackup,
-                        onSignOut = { viewModel.signOut() },
-                        onLinkEmail = { email, password -> viewModel.linkEmail(email, password) },
-                        onClearError = { viewModel.clearError() }
+                        onSignOut = { viewModel.signOut() }
                     )
                 }
             }
@@ -124,12 +122,13 @@ fun ProfileScreen(
 
 @Composable
 private fun AuthForm(
+    displayName: String?,
     formMode: AuthFormMode,
     isSubmitting: Boolean,
     errorRes: Int?,
+    onDisplayNameChange: (String) -> Unit,
     onSubmit: (email: String, password: String) -> Unit,
     onToggleMode: () -> Unit,
-    onContinueAsGuest: () -> Unit,
     onClearError: () -> Unit
 ) {
     var email by remember { mutableStateOf("") }
@@ -160,6 +159,13 @@ private fun AuthForm(
             modifier = Modifier.align(Alignment.CenterHorizontally)
         )
         Spacer(Modifier.height(24.dp))
+
+        LabeledTextField(
+            label = stringResource(R.string.profile_display_name),
+            value = displayName ?: "",
+            onValueChange = onDisplayNameChange
+        )
+        Spacer(Modifier.height(12.dp))
 
         LabeledTextField(
             label = stringResource(R.string.profile_email),
@@ -208,15 +214,6 @@ private fun AuthForm(
                 )
             )
         }
-
-        Spacer(Modifier.height(16.dp))
-        TextButton(
-            onClick = onContinueAsGuest,
-            enabled = !isSubmitting,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text(stringResource(R.string.profile_continue_as_guest))
-        }
     }
 }
 
@@ -224,13 +221,9 @@ private fun AuthForm(
 private fun SignedInContent(
     displayName: String?,
     email: String?,
-    isAnonymous: Boolean,
-    isSubmitting: Boolean,
-    errorRes: Int?,
+    onDisplayNameChange: (String) -> Unit,
     onOpenBackup: () -> Unit,
-    onSignOut: () -> Unit,
-    onLinkEmail: (email: String, password: String) -> Unit,
-    onClearError: () -> Unit
+    onSignOut: () -> Unit
 ) {
     var showSignOutConfirm by remember { mutableStateOf(false) }
 
@@ -258,13 +251,7 @@ private fun SignedInContent(
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Medium
                 )
-                if (isAnonymous) {
-                    Text(
-                        text = stringResource(R.string.profile_guest_badge),
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                } else if (email != null) {
+                if (email != null) {
                     Text(
                         text = email,
                         style = MaterialTheme.typography.bodySmall,
@@ -274,13 +261,14 @@ private fun SignedInContent(
             }
         }
 
-        if (isAnonymous) {
-            LinkEmailCard(
-                isSubmitting = isSubmitting,
-                errorRes = errorRes,
-                onLinkEmail = onLinkEmail,
-                onClearError = onClearError
-            )
+        Card(modifier = Modifier.fillMaxWidth(), shape = CornerShape) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                LabeledTextField(
+                    label = stringResource(R.string.profile_display_name),
+                    value = displayName ?: "",
+                    onValueChange = onDisplayNameChange
+                )
+            }
         }
 
         NavRow(
@@ -313,73 +301,6 @@ private fun SignedInContent(
                 }
             }
         )
-    }
-}
-
-@Composable
-private fun LinkEmailCard(
-    isSubmitting: Boolean,
-    errorRes: Int?,
-    onLinkEmail: (email: String, password: String) -> Unit,
-    onClearError: () -> Unit
-) {
-    var expanded by remember { mutableStateOf(false) }
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-
-    Card(modifier = Modifier.fillMaxWidth(), shape = CornerShape) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text(
-                stringResource(R.string.profile_link_email_title),
-                style = MaterialTheme.typography.titleSmall,
-                fontWeight = FontWeight.Medium
-            )
-            Spacer(Modifier.height(4.dp))
-            Text(
-                stringResource(R.string.profile_link_email_subtitle),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-
-            if (expanded) {
-                Spacer(Modifier.height(12.dp))
-                LabeledTextField(
-                    label = stringResource(R.string.profile_email),
-                    value = email,
-                    onValueChange = { email = it; onClearError() }
-                )
-                Spacer(Modifier.height(12.dp))
-                PasswordField(
-                    label = stringResource(R.string.profile_password),
-                    value = password,
-                    onValueChange = { password = it; onClearError() }
-                )
-                if (errorRes != null) {
-                    Spacer(Modifier.height(8.dp))
-                    Text(
-                        text = stringResource(errorRes),
-                        color = MaterialTheme.colorScheme.error,
-                        style = MaterialTheme.typography.bodySmall
-                    )
-                }
-                Spacer(Modifier.height(12.dp))
-                Button(
-                    onClick = { onLinkEmail(email.trim(), password) },
-                    enabled = !isSubmitting && email.isNotBlank() && password.isNotBlank(),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text(stringResource(R.string.profile_link_email_button))
-                }
-            } else {
-                Spacer(Modifier.height(12.dp))
-                Button(
-                    onClick = { expanded = true },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text(stringResource(R.string.profile_link_email_button))
-                }
-            }
-        }
     }
 }
 

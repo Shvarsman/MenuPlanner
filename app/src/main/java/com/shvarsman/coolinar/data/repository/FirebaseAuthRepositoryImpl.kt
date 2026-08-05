@@ -1,7 +1,6 @@
 package com.shvarsman.coolinar.data.repository
 
 import com.google.firebase.FirebaseNetworkException
-import com.google.firebase.auth.EmailAuthProvider
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.FirebaseAuthInvalidUserException
@@ -30,10 +29,6 @@ class FirebaseAuthRepositoryImpl @Inject constructor(
         awaitClose { firebaseAuth.removeAuthStateListener(listener) }
     }
 
-    override suspend fun signInAnonymously(): Result<Unit> = runCatchingAuth {
-        firebaseAuth.signInAnonymously().await()
-    }
-
     override suspend fun signUpWithEmail(email: String, password: String): Result<Unit> =
         runCatchingAuth {
             firebaseAuth.createUserWithEmailAndPassword(email, password).await()
@@ -42,14 +37,6 @@ class FirebaseAuthRepositoryImpl @Inject constructor(
     override suspend fun signInWithEmail(email: String, password: String): Result<Unit> =
         runCatchingAuth {
             firebaseAuth.signInWithEmailAndPassword(email, password).await()
-        }
-
-    override suspend fun linkAnonymousWithEmail(email: String, password: String): Result<Unit> =
-        runCatchingAuth {
-            val current = firebaseAuth.currentUser
-                ?: throw AuthException.Unknown("Нет активной анонимной сессии")
-            val credential = EmailAuthProvider.getCredential(email, password)
-            current.linkWithCredential(credential).await()
         }
 
     override suspend fun signOut() {
@@ -84,8 +71,7 @@ private fun FirebaseUser?.toAuthState(): AuthState =
             User(
                 uid = uid,
                 email = email,
-                displayName = displayName,
-                isAnonymous = isAnonymous
+                displayName = displayName
             )
         )
     }
