@@ -101,6 +101,7 @@ fun WeekMenuScreen(
     onCreateRecipe: () -> Unit,
     onNavigateToCooking: (recipeId: Long, menuEntryId: Long) -> Unit,
     onViewRecipe: (recipeId: Long) -> Unit,
+    onOpenShoppingList: () -> Unit,
     viewModel: MenuViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -216,7 +217,10 @@ fun WeekMenuScreen(
     if (insufficientDialogEntry != null) {
         InsufficientIngredientsDialog(
             onConfirmAnyway = { viewModel.confirmCookAnyway() },
-            onGoToShopping = { viewModel.dismissInsufficientDialog() }
+            onGoToShopping = {
+                viewModel.dismissInsufficientDialog()
+                onOpenShoppingList()
+            }
         )
     }
 }

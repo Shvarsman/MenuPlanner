@@ -237,7 +237,8 @@ fun AppNavGraph() {
                     },
                     onViewRecipe = { recipeId ->
                         rootNavController.navigate(Destination.RecipeView.createRoute(recipeId))
-                    }
+                    },
+                    onOpenShoppingList = { rootNavController.navigate(Destination.ShoppingList.route) }
                 )
             }
 
