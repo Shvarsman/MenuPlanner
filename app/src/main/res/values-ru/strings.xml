@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Coolinar</string>
+    <string name="profile_title">Профиль</string>
+    <string name="profile_sign_in">Войти</string>
+    <string name="profile_sign_up">Создать аккаунт</string>
+    <string name="profile_continue_as_guest">Продолжить как гость</string>
+    <string name="profile_email">Email</string>
+    <string name="profile_password">Пароль</string>
+    <string name="profile_sign_out">Выйти</string>
+    <string name="profile_backup_restore">Резервное копирование</string>
+    <string name="profile_guest_badge">Гость</string>
+    <string name="profile_link_email_title">Сохраните свой прогресс</string>
+    <string name="profile_link_email_subtitle">Добавьте email и пароль, чтобы не потерять доступ к аккаунту</string>
+    <string name="profile_link_email_button">Привязать email и пароль</string>
+    <string name="profile_error_generic">Что-то пошло не так. Попробуйте снова</string>
+    <string name="profile_error_invalid_email">Введите корректный email</string>
+    <string name="profile_error_weak_password">Пароль должен быть не менее 6 символов</string>
+    <string name="profile_error_wrong_credentials">Неверный email или пароль</string>
+    <string name="profile_error_email_in_use">Этот email уже зарегистрирован</string>
+    <string name="profile_error_network">Ошибка сети. Проверьте соединение и попробуйте снова</string>
+    <string name="profile_switch_to_sign_up">Нет аккаунта? Зарегистрироваться</string>
+    <string name="profile_switch_to_sign_in">Уже есть аккаунт? Войти</string>
+    <string name="profile_toggle_password_visibility">Показать/скрыть пароль</string>
+    <string name="profile_display_name_fallback">Гость</string>
+    <string name="profile_sign_out_confirm_title">Выйти из аккаунта?</string>
+    <string name="profile_sign_out_confirm_text">Вы всегда сможете войти обратно с тем же аккаунтом.</string>
+    <string name="profile_cancel">Отмена</string>
+</resources>

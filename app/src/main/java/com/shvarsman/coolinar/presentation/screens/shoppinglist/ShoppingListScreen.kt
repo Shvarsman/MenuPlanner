@@ -18,6 +18,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Kitchen
@@ -77,6 +78,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun ShoppingListScreen(
     modifier: Modifier = Modifier,
+    onBack: () -> Unit,
     viewModel: ShoppingListViewModel = hiltViewModel()
 ) {
     val groupedUnchecked by viewModel.groupedUnchecked.collectAsStateWithLifecycle()
@@ -112,6 +114,11 @@ fun ShoppingListScreen(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад")
+                    }
+                },
                 title = {
                     TopBarSearchField(
                         modifier = Modifier.padding(end = 8.dp),
@@ -151,8 +158,7 @@ fun ShoppingListScreen(
         },
         floatingActionButton = {
             GlassFab(
-                onClick = { viewModel.openPicker() },
-                modifier = Modifier.padding(bottom = FloatingBottomBarClearance)
+                onClick = { viewModel.openPicker() }
             ) {
                 Icon(Icons.Filled.Add, contentDescription = "Добавить продукт")
             }
@@ -248,7 +254,7 @@ fun ShoppingListScreen(
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
                     contentPadding = PaddingValues(
-                        bottom = padding.calculateBottomPadding() + FloatingBottomBarClearance
+                        bottom = padding.calculateBottomPadding()
                     )
                 ) {
                     groupedUnchecked.forEach { (category, categoryItems) ->

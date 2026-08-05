@@ -1,3 +1,28 @@
 <resources>
     <string name="app_name">Coolinar</string>
+    <string name="profile_title">Profile</string>
+    <string name="profile_sign_in">Sign in</string>
+    <string name="profile_sign_up">Create account</string>
+    <string name="profile_continue_as_guest">Continue as guest</string>
+    <string name="profile_email">Email</string>
+    <string name="profile_password">Password</string>
+    <string name="profile_sign_out">Sign out</string>
+    <string name="profile_backup_restore">Backup &amp; Restore</string>
+    <string name="profile_guest_badge">Guest</string>
+    <string name="profile_link_email_title">Save your progress</string>
+    <string name="profile_link_email_subtitle">Add an email and password so you don\'t lose access to your account</string>
+    <string name="profile_link_email_button">Add email &amp; password</string>
+    <string name="profile_error_generic">Something went wrong. Please try again.</string>
+    <string name="profile_error_invalid_email">Please enter a valid email address</string>
+    <string name="profile_error_weak_password">Password must be at least 6 characters</string>
+    <string name="profile_error_wrong_credentials">Incorrect email or password</string>
+    <string name="profile_error_email_in_use">This email is already registered</string>
+    <string name="profile_error_network">Network error. Check your connection and try again</string>
+    <string name="profile_switch_to_sign_up">Don\'t have an account? Sign up</string>
+    <string name="profile_switch_to_sign_in">Already have an account? Sign in</string>
+    <string name="profile_toggle_password_visibility">Toggle password visibility</string>
+    <string name="profile_display_name_fallback">Guest user</string>
+    <string name="profile_sign_out_confirm_title">Sign out?</string>
+    <string name="profile_sign_out_confirm_text">You can sign back in anytime with the same account.</string>
+    <string name="profile_cancel">Cancel</string>
 </resources>

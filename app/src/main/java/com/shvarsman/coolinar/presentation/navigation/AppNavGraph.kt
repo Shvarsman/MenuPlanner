@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.MenuBook
+import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Kitchen
 import androidx.compose.material.icons.filled.RestaurantMenu
 import androidx.compose.material.icons.filled.ShoppingCart
@@ -50,6 +51,7 @@ import com.shvarsman.coolinar.presentation.screens.cooking.CookingScreen
 import com.shvarsman.coolinar.presentation.screens.fridge.FridgeScreen
 import com.shvarsman.coolinar.presentation.screens.home.HomeScreen
 import com.shvarsman.coolinar.presentation.screens.home.WeekMenuScreen
+import com.shvarsman.coolinar.presentation.screens.profile.ProfileScreen
 import com.shvarsman.coolinar.presentation.screens.recipe.all.AllRecipesListScreen
 import com.shvarsman.coolinar.presentation.screens.recipe.category.AllCategoriesScreen
 import com.shvarsman.coolinar.presentation.screens.recipe.category.RecipeCategoryScreen
@@ -71,7 +73,7 @@ private val bottomItems = listOf(
     BottomItem(Destination.Home, "Главная", Icons.Filled.RestaurantMenu),
     BottomItem(Destination.Fridge, "Холодильник", Icons.Filled.Kitchen),
     BottomItem(Destination.Recipes, "Рецепты", Icons.AutoMirrored.Filled.MenuBook),
-    BottomItem(Destination.ShoppingList, "Покупки", Icons.Filled.ShoppingCart)
+    BottomItem(Destination.Profile, "Профиль", Icons.Filled.AccountCircle)
 )
 
 @Composable
@@ -238,6 +240,10 @@ fun AppNavGraph() {
                     }
                 )
             }
+
+            composable(Destination.ShoppingList.route) {
+                ShoppingListScreen(onBack = { rootNavController.popBackStack() })
+            }
         }
     }
 }
@@ -330,7 +336,6 @@ private fun MainTabsScreen(rootNavController: NavHostController) {
                     onViewRecipe = { recipeId ->
                         rootNavController.navigate(Destination.RecipeView.createRoute(recipeId))
                     },
-                    onOpenBackup = { rootNavController.navigate(Destination.Backup.route) },
                     onOpenWeekMenu = { rootNavController.navigate(Destination.WeekMenu.route) },
                     onOpenFridge = {
                         childNavController.navigate(Destination.Fridge.route) {
@@ -341,15 +346,7 @@ private fun MainTabsScreen(rootNavController: NavHostController) {
                             restoreState = true
                         }
                     },
-                    onOpenShoppingList = {
-                        childNavController.navigate(Destination.ShoppingList.route) {
-                            popUpTo(childNavController.graph.findStartDestination().id) {
-                                saveState = true
-                            }
-                            launchSingleTop = true
-                            restoreState = true
-                        }
-                    },
+                    onOpenShoppingList = { rootNavController.navigate(Destination.ShoppingList.route) },
                     onShowAllSuggested = { rootNavController.navigate(Destination.SuggestedRecipes.route) }
                 )
             }
@@ -397,8 +394,10 @@ private fun MainTabsScreen(rootNavController: NavHostController) {
                 )
             }
 
-            composable(Destination.ShoppingList.route) {
-                ShoppingListScreen()
+            composable(Destination.Profile.route) {
+                ProfileScreen(
+                    onOpenBackup = { rootNavController.navigate(Destination.Backup.route) }
+                )
             }
         }
     }

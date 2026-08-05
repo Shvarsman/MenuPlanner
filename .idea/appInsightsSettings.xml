@@ -8,10 +8,10 @@
             <InsightsFilterSettings>
               <option name="connection">
                 <ConnectionSetting>
-                  <option name="appId" value="PLACEHOLDER" />
-                  <option name="mobileSdkAppId" value="" />
-                  <option name="projectId" value="" />
-                  <option name="projectNumber" value="" />
+                  <option name="appId" value="com.shvarsman.coolinar" />
+                  <option name="mobileSdkAppId" value="1:766166798101:android:09539f4efa9d2db038231c" />
+                  <option name="projectId" value="coolinar-f0510" />
+                  <option name="projectNumber" value="766166798101" />
                 </ConnectionSetting>
               </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />

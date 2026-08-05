@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt.android)
+    alias(libs.plugins.google.services)
     kotlin("plugin.serialization") version "2.4.0"
 }
 
@@ -46,6 +47,8 @@ android {
 
 dependencies {
     implementation(libs.material3)
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.auth)
     coreLibraryDesugaring(libs.desugar.jdk.libs)
     implementation(libs.androidx.compose.runtime.tracing)
     implementation(platform(libs.androidx.compose.bom))

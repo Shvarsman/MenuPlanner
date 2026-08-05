@@ -13,7 +13,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.CalendarMonth
-import androidx.compose.material.icons.filled.SettingsBackupRestore
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Card
@@ -21,7 +20,6 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -50,7 +48,6 @@ fun HomeScreen(
     onOpenWeekMenu: () -> Unit,
     onShowAllSuggested: () -> Unit,
     onViewRecipe: (recipeId: Long) -> Unit,
-    onOpenBackup: () -> Unit,
     viewModel: MenuViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -65,14 +62,6 @@ fun HomeScreen(
         topBar = {
             CenterAlignedTopAppBar(
                 title = { Text("Coolinar", fontSize = 24.sp, fontFamily = molleFont) },
-                actions = {
-                    IconButton(onClick = onOpenBackup) {
-                        Icon(
-                            Icons.Filled.SettingsBackupRestore,
-                            contentDescription = "Резервное копирование"
-                        )
-                    }
-                },
                 expandedHeight = TopAppBarDefaults.TopAppBarExpandedHeight,
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.background,

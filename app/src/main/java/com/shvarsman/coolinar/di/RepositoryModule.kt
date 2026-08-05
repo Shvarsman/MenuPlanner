@@ -1,12 +1,14 @@
 package com.shvarsman.coolinar.di
 
 import com.shvarsman.coolinar.data.repository.BackupRepositoryImpl
+import com.shvarsman.coolinar.data.repository.FirebaseAuthRepositoryImpl
 import com.shvarsman.coolinar.data.repository.FridgeRepositoryImpl
 import com.shvarsman.coolinar.data.repository.MenuRepositoryImpl
 import com.shvarsman.coolinar.data.repository.ProductRepositoryImpl
 import com.shvarsman.coolinar.data.repository.RecipeRepositoryImpl
 import com.shvarsman.coolinar.data.repository.RoomTransactionRunner
 import com.shvarsman.coolinar.data.repository.ShoppingListRepositoryImpl
+import com.shvarsman.coolinar.domain.repository.AuthRepository
 import com.shvarsman.coolinar.domain.repository.BackupRepository
 import com.shvarsman.coolinar.domain.repository.FridgeRepository
 import com.shvarsman.coolinar.domain.repository.MenuRepository
@@ -51,4 +53,8 @@ abstract class RepositoryModule {
     @Binds
     @Singleton
     abstract fun bindTransactionRunner(impl: RoomTransactionRunner): TransactionRunner
+
+    @Binds
+    @Singleton
+    abstract fun bindAuthRepository(impl: FirebaseAuthRepositoryImpl): AuthRepository
 }
