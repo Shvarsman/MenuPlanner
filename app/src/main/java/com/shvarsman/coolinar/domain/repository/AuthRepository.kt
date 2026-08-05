@@ -10,5 +10,8 @@ interface AuthRepository {
 
     suspend fun signInWithEmail(email: String, password: String): Result<Unit>
 
+    /** Требует реаутентификации текущим паролем — так требует Firebase SDK для смены пароля. */
+    suspend fun changePassword(currentPassword: String, newPassword: String): Result<Unit>
+
     suspend fun signOut()
 }

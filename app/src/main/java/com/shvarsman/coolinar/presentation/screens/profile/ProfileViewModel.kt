@@ -7,6 +7,7 @@ import com.shvarsman.coolinar.domain.model.AuthException
 import com.shvarsman.coolinar.domain.model.AuthState
 import com.shvarsman.coolinar.domain.repository.AuthRepository
 import com.shvarsman.coolinar.domain.repository.UserPreferencesRepository
+import com.shvarsman.coolinar.domain.usecase.auth.SignUpWithEmailUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -20,7 +21,8 @@ enum class AuthFormMode { SIGN_IN, SIGN_UP }
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
     private val authRepository: AuthRepository,
-    private val userPreferencesRepository: UserPreferencesRepository
+    private val signUpWithEmail: SignUpWithEmailUseCase,
+    userPreferencesRepository: UserPreferencesRepository
 ) : ViewModel() {
 
     val authState: StateFlow<AuthState> = authRepository.authState
@@ -55,15 +57,11 @@ class ProfileViewModel @Inject constructor(
             _errorRes.value = null
             val result = when (_formMode.value) {
                 AuthFormMode.SIGN_IN -> authRepository.signInWithEmail(email, password)
-                AuthFormMode.SIGN_UP -> authRepository.signUpWithEmail(email, password)
+                AuthFormMode.SIGN_UP -> signUpWithEmail(email, password)
             }
             result.onFailure { _errorRes.value = it.toErrorRes() }
             _isSubmitting.value = false
         }
-    }
-
-    fun updateDisplayName(name: String) {
-        viewModelScope.launch { userPreferencesRepository.setDisplayName(name) }
     }
 
     fun signOut() {

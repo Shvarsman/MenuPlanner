@@ -16,7 +16,6 @@ import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Kitchen
 import androidx.compose.material.icons.filled.RestaurantMenu
-import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
@@ -53,6 +52,7 @@ import com.shvarsman.coolinar.presentation.screens.home.HomeScreen
 import com.shvarsman.coolinar.presentation.screens.home.WeekMenuScreen
 import com.shvarsman.coolinar.presentation.screens.onboarding.OnboardingScreen
 import com.shvarsman.coolinar.presentation.screens.profile.ProfileScreen
+import com.shvarsman.coolinar.presentation.screens.profile.ProfileSettingsScreen
 import com.shvarsman.coolinar.presentation.screens.recipe.all.AllRecipesListScreen
 import com.shvarsman.coolinar.presentation.screens.recipe.category.AllCategoriesScreen
 import com.shvarsman.coolinar.presentation.screens.recipe.category.RecipeCategoryScreen
@@ -60,7 +60,6 @@ import com.shvarsman.coolinar.presentation.screens.recipe.editor.RecipeEditorScr
 import com.shvarsman.coolinar.presentation.screens.recipe.list.RecipeListScreen
 import com.shvarsman.coolinar.presentation.screens.recipe.suggested.SuggestedRecipesScreen
 import com.shvarsman.coolinar.presentation.screens.recipe.view.RecipeViewScreen
-import com.shvarsman.coolinar.presentation.screens.shoppinglist.ShoppingListScreen
 import com.shvarsman.coolinar.presentation.ui.theme.CornerShape
 import com.shvarsman.coolinar.presentation.ui.theme.gradientStyle
 
@@ -253,8 +252,12 @@ fun AppNavGraph(showOnboarding: Boolean = false) {
                 )
             }
 
-            composable(Destination.ShoppingList.route) {
-                ShoppingListScreen(onBack = { rootNavController.popBackStack() })
+            composable(Destination.Backup.route) {
+                BackupScreen(onBack = { rootNavController.popBackStack() })
+            }
+
+            composable(Destination.ProfileSettings.route) {
+                ProfileSettingsScreen(onBack = { rootNavController.popBackStack() })
             }
         }
     }
@@ -408,7 +411,8 @@ private fun MainTabsScreen(rootNavController: NavHostController) {
 
             composable(Destination.Profile.route) {
                 ProfileScreen(
-                    onOpenBackup = { rootNavController.navigate(Destination.Backup.route) }
+                    onOpenBackup = { rootNavController.navigate(Destination.Backup.route) },
+                    onOpenProfileSettings = { rootNavController.navigate(Destination.ProfileSettings.route) }
                 )
             }
         }

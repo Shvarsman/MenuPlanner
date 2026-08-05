@@ -1,6 +1,7 @@
 package com.shvarsman.coolinar.data.repository
 
 import com.google.firebase.FirebaseNetworkException
+import com.google.firebase.auth.EmailAuthProvider
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.FirebaseAuthInvalidUserException
@@ -37,6 +38,17 @@ class FirebaseAuthRepositoryImpl @Inject constructor(
     override suspend fun signInWithEmail(email: String, password: String): Result<Unit> =
         runCatchingAuth {
             firebaseAuth.signInWithEmailAndPassword(email, password).await()
+        }
+
+    override suspend fun changePassword(currentPassword: String, newPassword: String): Result<Unit> =
+        runCatchingAuth {
+            val user = firebaseAuth.currentUser
+                ?: throw AuthException.Unknown("Нет активной сессии")
+            val email = user.email
+                ?: throw AuthException.Unknown("У аккаунта нет email")
+            val credential = EmailAuthProvider.getCredential(email, currentPassword)
+            user.reauthenticate(credential).await()
+            user.updatePassword(newPassword).await()
         }
 
     override suspend fun signOut() {

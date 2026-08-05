@@ -33,4 +33,15 @@
     <string name="onboarding_skip_intro">Пропустить</string>
     <string name="onboarding_skip">Продолжить без аккаунта</string>
     <string name="onboarding_next">Далее</string>
+
+    <string name="profile_setup_button">Настроить профиль</string>
+    <string name="profile_settings_title">Настройки профиля</string>
+    <string name="profile_settings_save">Сохранить</string>
+    <string name="profile_settings_name_saved">Имя сохранено</string>
+    <string name="profile_settings_password_section_title">Смена пароля</string>
+    <string name="profile_current_password">Текущий пароль</string>
+    <string name="profile_new_password">Новый пароль</string>
+    <string name="profile_confirm_new_password">Подтвердите новый пароль</string>
+    <string name="profile_password_changed">Пароль изменён</string>
+    <string name="profile_error_passwords_dont_match">Пароли не совпадают</string>
 </resources>

@@ -32,4 +32,15 @@
     <string name="onboarding_skip_intro">Skip</string>
     <string name="onboarding_skip">Continue without an account</string>
     <string name="onboarding_next">Next</string>
+
+    <string name="profile_setup_button">Set up profile</string>
+    <string name="profile_settings_title">Profile settings</string>
+    <string name="profile_settings_save">Save</string>
+    <string name="profile_settings_name_saved">Name saved</string>
+    <string name="profile_settings_password_section_title">Change password</string>
+    <string name="profile_current_password">Current password</string>
+    <string name="profile_new_password">New password</string>
+    <string name="profile_confirm_new_password">Confirm new password</string>
+    <string name="profile_password_changed">Password changed</string>
+    <string name="profile_error_passwords_dont_match">Passwords don\'t match</string>
 </resources>

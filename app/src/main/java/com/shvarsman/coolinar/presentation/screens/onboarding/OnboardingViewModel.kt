@@ -7,6 +7,7 @@ import com.shvarsman.coolinar.domain.model.AuthException
 import com.shvarsman.coolinar.domain.model.AuthState
 import com.shvarsman.coolinar.domain.repository.AuthRepository
 import com.shvarsman.coolinar.domain.repository.OnboardingRepository
+import com.shvarsman.coolinar.domain.usecase.auth.SignUpWithEmailUseCase
 import com.shvarsman.coolinar.presentation.screens.profile.AuthFormMode
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -19,6 +20,7 @@ import javax.inject.Inject
 @HiltViewModel
 class OnboardingViewModel @Inject constructor(
     private val authRepository: AuthRepository,
+    private val signUpWithEmail: SignUpWithEmailUseCase,
     private val onboardingRepository: OnboardingRepository
 ) : ViewModel() {
 
@@ -50,7 +52,7 @@ class OnboardingViewModel @Inject constructor(
             _errorRes.value = null
             val result = when (_formMode.value) {
                 AuthFormMode.SIGN_IN -> authRepository.signInWithEmail(email, password)
-                AuthFormMode.SIGN_UP -> authRepository.signUpWithEmail(email, password)
+                AuthFormMode.SIGN_UP -> signUpWithEmail(email, password)
             }
             result.onFailure { _errorRes.value = it.toErrorRes() }
             _isSubmitting.value = false

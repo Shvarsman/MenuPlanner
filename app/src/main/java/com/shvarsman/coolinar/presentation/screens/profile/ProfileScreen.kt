@@ -16,6 +16,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.ManageAccounts
 import androidx.compose.material.icons.filled.SettingsBackupRestore
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
@@ -58,6 +59,7 @@ import com.shvarsman.coolinar.presentation.ui.theme.FloatingBottomBarClearance
 fun ProfileScreen(
     modifier: Modifier = Modifier,
     onOpenBackup: () -> Unit,
+    onOpenProfileSettings: () -> Unit,
     viewModel: ProfileViewModel = hiltViewModel()
 ) {
     val authState by viewModel.authState.collectAsStateWithLifecycle()
@@ -95,11 +97,9 @@ fun ProfileScreen(
 
                 is AuthState.SignedOut -> {
                     AuthForm(
-                        displayName = displayName,
                         formMode = formMode,
                         isSubmitting = isSubmitting,
                         errorRes = errorRes,
-                        onDisplayNameChange = { viewModel.updateDisplayName(it) },
                         onSubmit = { email, password -> viewModel.submit(email, password) },
                         onToggleMode = { viewModel.toggleFormMode() },
                         onClearError = { viewModel.clearError() }
@@ -110,7 +110,7 @@ fun ProfileScreen(
                     SignedInContent(
                         displayName = displayName,
                         email = state.user.email,
-                        onDisplayNameChange = { viewModel.updateDisplayName(it) },
+                        onOpenProfileSettings = onOpenProfileSettings,
                         onOpenBackup = onOpenBackup,
                         onSignOut = { viewModel.signOut() }
                     )
@@ -122,11 +122,9 @@ fun ProfileScreen(
 
 @Composable
 private fun AuthForm(
-    displayName: String?,
     formMode: AuthFormMode,
     isSubmitting: Boolean,
     errorRes: Int?,
-    onDisplayNameChange: (String) -> Unit,
     onSubmit: (email: String, password: String) -> Unit,
     onToggleMode: () -> Unit,
     onClearError: () -> Unit
@@ -159,13 +157,6 @@ private fun AuthForm(
             modifier = Modifier.align(Alignment.CenterHorizontally)
         )
         Spacer(Modifier.height(24.dp))
-
-        LabeledTextField(
-            label = stringResource(R.string.profile_display_name),
-            value = displayName ?: "",
-            onValueChange = onDisplayNameChange
-        )
-        Spacer(Modifier.height(12.dp))
 
         LabeledTextField(
             label = stringResource(R.string.profile_email),
@@ -221,7 +212,7 @@ private fun AuthForm(
 private fun SignedInContent(
     displayName: String?,
     email: String?,
-    onDisplayNameChange: (String) -> Unit,
+    onOpenProfileSettings: () -> Unit,
     onOpenBackup: () -> Unit,
     onSignOut: () -> Unit
 ) {
@@ -261,15 +252,11 @@ private fun SignedInContent(
             }
         }
 
-        Card(modifier = Modifier.fillMaxWidth(), shape = CornerShape) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                LabeledTextField(
-                    label = stringResource(R.string.profile_display_name),
-                    value = displayName ?: "",
-                    onValueChange = onDisplayNameChange
-                )
-            }
-        }
+        NavRow(
+            icon = Icons.Filled.ManageAccounts,
+            text = stringResource(R.string.profile_setup_button),
+            onClick = onOpenProfileSettings
+        )
 
         NavRow(
             icon = Icons.Filled.SettingsBackupRestore,
@@ -372,7 +359,7 @@ private fun PasswordField(
 private fun NavRow(
     icon: androidx.compose.ui.graphics.vector.ImageVector,
     text: String,
-    tint: androidx.compose.ui.graphics.Color = MaterialTheme.colorScheme.primary,
+    tint: androidx.compose.ui.graphics.Color = MaterialTheme.colorScheme.onSurface,
     onClick: () -> Unit
 ) {
     Card(onClick = onClick, modifier = Modifier.fillMaxWidth(), shape = CornerShape) {

@@ -42,4 +42,6 @@ sealed class Destination(val route: String) {
     object WeekMenu : Destination("week_menu")
 
     object Profile : Destination("profile")
+
+    object ProfileSettings : Destination("profile_settings")
 }
