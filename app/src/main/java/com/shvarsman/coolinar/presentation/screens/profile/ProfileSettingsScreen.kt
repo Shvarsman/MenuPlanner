@@ -2,7 +2,6 @@ package com.shvarsman.coolinar.presentation.screens.profile
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -68,7 +67,10 @@ fun ProfileSettingsScreen(
                 title = { Text(stringResource(R.string.profile_settings_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = null
+                        )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -103,7 +105,7 @@ fun ProfileSettingsScreen(
                             style = MaterialTheme.typography.bodySmall
                         )
                     }
-                    Spacer(Modifier.height(12.dp))
+                    Spacer(Modifier.height(16.dp))
                     Button(
                         onClick = { viewModel.saveDisplayName(nameInput.trim()) },
                         enabled = !isSavingName && nameInput.isNotBlank(),
@@ -121,7 +123,7 @@ fun ProfileSettingsScreen(
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.Medium
                     )
-                    Spacer(Modifier.height(12.dp))
+                    Spacer(Modifier.height(16.dp))
 
                     var currentPassword by remember { mutableStateOf("") }
                     var newPassword by remember { mutableStateOf("") }
@@ -133,13 +135,13 @@ fun ProfileSettingsScreen(
                         value = currentPassword,
                         onValueChange = { currentPassword = it; viewModel.clearPasswordError() }
                     )
-                    Spacer(Modifier.height(12.dp))
+                    Spacer(Modifier.height(16.dp))
                     SettingsPasswordField(
                         label = stringResource(R.string.profile_new_password),
                         value = newPassword,
                         onValueChange = { newPassword = it; viewModel.clearPasswordError() }
                     )
-                    Spacer(Modifier.height(12.dp))
+                    Spacer(Modifier.height(16.dp))
                     SettingsPasswordField(
                         label = stringResource(R.string.profile_confirm_new_password),
                         value = confirmPassword,
@@ -204,9 +206,16 @@ fun ProfileSettingsScreen(
 @Composable
 private fun SettingsLabeledField(label: String, value: String, onValueChange: (String) -> Unit) {
     Column {
-        Text(label, style = MaterialTheme.typography.labelMedium)
-        Spacer(Modifier.height(4.dp))
-        Surface(shape = RoundedCornerShape(28.dp), color = MaterialTheme.colorScheme.surfaceContainerHighest) {
+        Text(
+            text = label,
+            modifier = Modifier.padding(start = 8.dp),
+            style = MaterialTheme.typography.labelMedium
+        )
+        Spacer(Modifier.height(8.dp))
+        Surface(
+            shape = CornerShape,
+            color = MaterialTheme.colorScheme.surface
+        ) {
             OutlinedTextField(
                 value = value,
                 onValueChange = onValueChange,
@@ -225,9 +234,16 @@ private fun SettingsLabeledField(label: String, value: String, onValueChange: (S
 private fun SettingsPasswordField(label: String, value: String, onValueChange: (String) -> Unit) {
     var visible by remember { mutableStateOf(false) }
     Column {
-        Text(label, style = MaterialTheme.typography.labelMedium)
-        Spacer(Modifier.height(4.dp))
-        Surface(shape = RoundedCornerShape(28.dp), color = MaterialTheme.colorScheme.surfaceContainerHighest) {
+        Text(
+            text = label,
+            modifier = Modifier.padding(start = 8.dp),
+            style = MaterialTheme.typography.labelMedium
+        )
+        Spacer(Modifier.height(8.dp))
+        Surface(
+            shape = CornerShape,
+            color = MaterialTheme.colorScheme.surface
+        ) {
             OutlinedTextField(
                 value = value,
                 onValueChange = onValueChange,

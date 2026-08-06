@@ -60,6 +60,7 @@ import com.shvarsman.coolinar.presentation.screens.recipe.editor.RecipeEditorScr
 import com.shvarsman.coolinar.presentation.screens.recipe.list.RecipeListScreen
 import com.shvarsman.coolinar.presentation.screens.recipe.suggested.SuggestedRecipesScreen
 import com.shvarsman.coolinar.presentation.screens.recipe.view.RecipeViewScreen
+import com.shvarsman.coolinar.presentation.screens.shoppinglist.ShoppingListScreen
 import com.shvarsman.coolinar.presentation.ui.theme.CornerShape
 import com.shvarsman.coolinar.presentation.ui.theme.gradientStyle
 
@@ -258,6 +259,10 @@ fun AppNavGraph(showOnboarding: Boolean = false) {
 
             composable(Destination.ProfileSettings.route) {
                 ProfileSettingsScreen(onBack = { rootNavController.popBackStack() })
+            }
+
+            composable(Destination.ShoppingList.route) {
+                ShoppingListScreen(onBack = { rootNavController.popBackStack() })
             }
         }
     }

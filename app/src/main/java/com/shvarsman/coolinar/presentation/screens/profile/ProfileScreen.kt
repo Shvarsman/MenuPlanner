@@ -42,6 +42,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -310,8 +312,8 @@ private fun LabeledTextField(
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
                 colors = androidx.compose.material3.OutlinedTextFieldDefaults.colors(
-                    unfocusedBorderColor = androidx.compose.ui.graphics.Color.Transparent,
-                    focusedBorderColor = androidx.compose.ui.graphics.Color.Transparent
+                    unfocusedBorderColor = Color.Transparent,
+                    focusedBorderColor = Color.Transparent
                 )
             )
         }
@@ -347,8 +349,8 @@ private fun PasswordField(
                 },
                 modifier = Modifier.fillMaxWidth(),
                 colors = androidx.compose.material3.OutlinedTextFieldDefaults.colors(
-                    unfocusedBorderColor = androidx.compose.ui.graphics.Color.Transparent,
-                    focusedBorderColor = androidx.compose.ui.graphics.Color.Transparent
+                    unfocusedBorderColor = Color.Transparent,
+                    focusedBorderColor = Color.Transparent
                 )
             )
         }
@@ -357,9 +359,9 @@ private fun PasswordField(
 
 @Composable
 private fun NavRow(
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    icon: ImageVector,
     text: String,
-    tint: androidx.compose.ui.graphics.Color = MaterialTheme.colorScheme.onSurface,
+    tint: Color = MaterialTheme.colorScheme.onSurface,
     onClick: () -> Unit
 ) {
     Card(onClick = onClick, modifier = Modifier.fillMaxWidth(), shape = CornerShape) {
@@ -378,7 +380,7 @@ private fun NavRow(
             Icon(
                 Icons.AutoMirrored.Filled.ArrowForward,
                 contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                tint = tint
             )
         }
     }
