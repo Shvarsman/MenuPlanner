@@ -3,8 +3,10 @@
 package com.shvarsman.coolinar.presentation.screens.common
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
@@ -13,12 +15,15 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Event
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material3.Card
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDefaults
 import androidx.compose.material3.DatePickerDialog
@@ -26,13 +31,14 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SearchBarDefaults
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -43,9 +49,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import com.shvarsman.coolinar.domain.model.MeasureUnit
+import com.shvarsman.coolinar.presentation.ui.theme.CornerShape
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneOffset
@@ -70,7 +81,7 @@ fun QuantityUnitField(
     var unitMenuExpanded by remember { mutableStateOf(false) }
 
     Surface(
-        shape = RoundedCornerShape(28.dp),
+        shape = CornerShape,
         color = MaterialTheme.colorScheme.surface,
         modifier = modifier.fillMaxWidth()
     ) {
@@ -78,7 +89,7 @@ fun QuantityUnitField(
             modifier = Modifier.padding(start = 16.dp, end = 8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            TextField(
+            OutlinedTextField(
                 value = quantityText,
                 onValueChange = { input ->
                     onQuantityChange(
@@ -96,23 +107,14 @@ fun QuantityUnitField(
                 singleLine = true,
                 isError = isError,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                colors = TextFieldDefaults.colors(
-                    focusedContainerColor = Color.Transparent,
-                    unfocusedContainerColor = Color.Transparent,
-                    focusedIndicatorColor = Color.Transparent,
-                    unfocusedIndicatorColor = Color.Transparent,
-                    unfocusedPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                    focusedPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                    focusedTextColor = MaterialTheme.colorScheme.onSurface,
-                    unfocusedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                ),
+                colors = transparentFieldColors(unfocusedTextColor = MaterialTheme.colorScheme.onSurfaceVariant),
                 modifier = Modifier.weight(1f)
             )
 
             Box {
                 Row(
                     modifier = Modifier
-                        .clip(RoundedCornerShape(20.dp))
+                        .clip(CornerShape)
                         .clickable { unitMenuExpanded = true }
                         .padding(horizontal = 10.dp, vertical = 12.dp),
                     verticalAlignment = Alignment.CenterVertically
@@ -175,7 +177,7 @@ fun ExpirationDatePickerField(
         }
         Surface(
             onClick = { showPicker = true },
-            shape = RoundedCornerShape(28.dp),
+            shape = CornerShape,
             color = MaterialTheme.colorScheme.surface,
             modifier = Modifier.fillMaxWidth()
         ) {
@@ -256,7 +258,7 @@ fun ReadOnlyField(
     Column(modifier = modifier) {
         FieldLabel(label)
         Surface(
-            shape = RoundedCornerShape(28.dp),
+            shape = CornerShape,
             color = MaterialTheme.colorScheme.surface,
             modifier = Modifier.fillMaxWidth()
         ) {
@@ -268,3 +270,142 @@ fun ReadOnlyField(
         }
     }
 }
+
+/**
+ * Обычное текстовое поле с подписью-лейбл сверху — единый стиль для всех
+ * форм ввода вне QuantityUnitField (профиль, онбординг, настройки и т.п.).
+ */
+@Composable
+fun LabeledTextField(
+    label: String?,
+    value: String,
+    onValueChange: (String) -> Unit,
+    modifier: Modifier = Modifier,
+    placeholder: String? = null,
+    isError: Boolean = false,
+    singleLine: Boolean = true,
+    minLines: Int = 1,
+    textStyle: TextStyle = LocalTextStyle.current
+) {
+    Column(modifier = modifier) {
+        label?.let { FieldLabel(it) }
+        Surface(
+            shape = CornerShape,
+            color = MaterialTheme.colorScheme.surface
+        ) {
+            OutlinedTextField(
+                value = value,
+                onValueChange = onValueChange,
+                placeholder = placeholder?.let { { Text(it) } },
+                singleLine = singleLine,
+                minLines = minLines,
+                isError = isError,
+                textStyle = textStyle,
+                modifier = Modifier.fillMaxWidth(),
+                colors = transparentFieldColors()
+            )
+        }
+    }
+}
+
+/** То же самое, что LabeledTextField, но со скрытием текста и переключателем видимости. */
+@Composable
+fun PasswordField(
+    label: String,
+    value: String,
+    onValueChange: (String) -> Unit,
+    modifier: Modifier = Modifier,
+    isError: Boolean = false
+) {
+    var visible by remember { mutableStateOf(false) }
+    Column(modifier = modifier) {
+        FieldLabel(label)
+        Surface(
+            shape = CornerShape,
+            color = MaterialTheme.colorScheme.surface
+        ) {
+            OutlinedTextField(
+                value = value,
+                onValueChange = onValueChange,
+                singleLine = true,
+                isError = isError,
+                visualTransformation = if (visible) VisualTransformation.None else PasswordVisualTransformation(),
+                trailingIcon = {
+                    IconButton(onClick = { visible = !visible }) {
+                        Icon(
+                            if (visible) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
+                            contentDescription = null
+                        )
+                    }
+                },
+                modifier = Modifier.fillMaxWidth(),
+                colors = transparentFieldColors()
+            )
+        }
+    }
+}
+
+/**
+ * Карточка-переход на другой экран: иконка + текст слева, стрелка справа.
+ * Единый стиль для всех навигационных пунктов (профиль, бэкап, меню на неделю,
+ * список покупок и т.д.) — раньше дублировался в HomeScreen и ProfileScreen.
+ */
+@Composable
+fun NavRow(
+    icon: ImageVector,
+    text: String,
+    modifier: Modifier = Modifier,
+    tint: Color = MaterialTheme.colorScheme.onSurface,
+    onClick: () -> Unit
+) {
+    Card(onClick = onClick, modifier = modifier.fillMaxWidth(), shape = CornerShape) {
+        Row(
+            modifier = Modifier
+                .padding(16.dp)
+                .fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(icon, contentDescription = null, tint = tint)
+                Spacer(Modifier.width(12.dp))
+                Text(text, style = MaterialTheme.typography.bodyMedium, color = tint)
+            }
+            Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null, tint = tint)
+        }
+    }
+}
+
+/**
+ * Карточка-секция формы: Card(shape=CornerShape) + Column с внутренним отступом 16dp.
+ * Убирает повторяющийся Card { Column(Modifier.padding(16.dp)) { ... } } по всему проекту.
+ */
+@Composable
+fun FormCard(
+    modifier: Modifier = Modifier,
+    content: @Composable ColumnScope.() -> Unit
+) {
+    Card(modifier = modifier.fillMaxWidth(), shape = CornerShape) {
+        Column(modifier = Modifier.padding(16.dp), content = content)
+    }
+}
+
+/**
+ * Общий набор цветов для всех текстовых полей проекта: рамка OutlinedTextField
+ * скрыта (Color.Transparent), потому что визуальный контейнер — это Surface
+ * снаружи (CornerShape), а не сама рамка поля. unfocusedTextColor параметризован —
+ * QuantityUnitField намеренно приглушает текст в неактивном состоянии,
+ * остальные поля используют цвет по умолчанию.
+ */
+@Composable
+private fun transparentFieldColors(
+    unfocusedTextColor: Color = MaterialTheme.colorScheme.onSurface,
+    focusedTextColor: Color = MaterialTheme.colorScheme.onSurface
+) = OutlinedTextFieldDefaults.colors(
+    unfocusedBorderColor = Color.Transparent,
+    focusedBorderColor = Color.Transparent,
+    unfocusedTextColor = unfocusedTextColor,
+    focusedTextColor = focusedTextColor,
+    unfocusedPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant,
+    focusedPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant
+)

@@ -2,26 +2,45 @@ package com.shvarsman.coolinar.presentation.screens.backup
 
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.FileDownload
 import androidx.compose.material.icons.filled.FileUpload
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.shvarsman.coolinar.domain.repository.BackupType
-import com.shvarsman.coolinar.presentation.ui.theme.CornerShape
-import com.shvarsman.coolinar.presentation.ui.theme.gradientStyle
+import com.shvarsman.coolinar.presentation.screens.common.FormCard
+import com.shvarsman.coolinar.presentation.screens.common.GlassIconButton
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -65,16 +84,9 @@ fun BackupScreen(
                     )
                 },
                 navigationIcon = {
-                    IconButton(
-                        modifier = Modifier
-                            .padding(horizontal = 16.dp)
-                            .clip(CornerShape)
-                            .background(
-                                MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.9f),
-                                CornerShape
-                            )
-                            .gradientStyle(shape = CornerShape),
-                        onClick = onBack
+                    GlassIconButton(
+                        onClick = onBack,
+                        modifier = Modifier.padding(horizontal = 16.dp)
                     ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
@@ -96,99 +108,95 @@ fun BackupScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Card(shape = CornerShape) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Text(
-                        text = "Полное копирование",
-                        style = MaterialTheme.typography.titleMedium
-                    )
-                    Spacer(Modifier.height(4.dp))
-                    Text(
-                        text = "Рецепты, холодильник, список покупок и меню на неделю целиком.",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Spacer(Modifier.height(12.dp))
-                    Button(
-                        onClick = {
-                            startExport(
-                                BackupType.FULL,
-                                fileNamePrefix = "menuplanner_full_backup"
-                            )
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                        enabled = uiState !is BackupUiState.InProgress
-                    ) {
-                        Icon(Icons.Filled.FileDownload, contentDescription = null)
-                        Spacer(Modifier.width(8.dp))
-                        Text(text = "Создать полную копию")
-                    }
+            FormCard {
+                Text(
+                    text = "Полное копирование",
+                    style = MaterialTheme.typography.titleMedium
+                )
+                Spacer(Modifier.height(4.dp))
+                Text(
+                    text = "Рецепты, холодильник, список покупок и меню на неделю целиком.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Spacer(Modifier.height(12.dp))
+                Button(
+                    onClick = {
+                        startExport(
+                            BackupType.FULL,
+                            fileNamePrefix = "coolinar_full_backup"
+                        )
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    enabled = uiState !is BackupUiState.InProgress
+                ) {
+                    Icon(Icons.Filled.FileDownload, contentDescription = null)
+                    Spacer(Modifier.width(8.dp))
+                    Text(text = "Создать полную копию")
                 }
             }
 
-            Card(shape = CornerShape) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Text(
-                        text = "Только рецепты",
-                        style = MaterialTheme.typography.titleMedium
-                    )
-                    Spacer(Modifier.height(4.dp))
-                    Text(
-                        text = "Все рецепты с фото, ингредиентами и шагами — без холодильника, покупок и меню.",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Spacer(Modifier.height(12.dp))
-                    Button(
-                        onClick = { startExport(
+            FormCard {
+                Text(
+                    text = "Только рецепты",
+                    style = MaterialTheme.typography.titleMedium
+                )
+                Spacer(Modifier.height(4.dp))
+                Text(
+                    text = "Все рецепты с фото, ингредиентами и шагами — без холодильника, покупок и меню.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Spacer(Modifier.height(12.dp))
+                Button(
+                    onClick = {
+                        startExport(
                             type = BackupType.RECIPES_ONLY,
-                            fileNamePrefix = "menuplanner_recipes"
-                        ) },
-                        modifier = Modifier.fillMaxWidth(),
-                        enabled = uiState !is BackupUiState.InProgress
-                    ) {
-                        Icon(
-                            imageVector = Icons.Filled.FileDownload,
-                            contentDescription = null
+                            fileNamePrefix = "coolinar_recipes"
                         )
-                        Spacer(Modifier.width(8.dp))
-                        Text(text = "Сохранить все рецепты")
-                    }
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    enabled = uiState !is BackupUiState.InProgress
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.FileDownload,
+                        contentDescription = null
+                    )
+                    Spacer(Modifier.width(8.dp))
+                    Text(text = "Сохранить все рецепты")
                 }
             }
 
-            Card(shape = CornerShape) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Text(
-                        text = "Восстановление",
-                        style = MaterialTheme.typography.titleMedium
-                    )
-                    Spacer(Modifier.height(4.dp))
-                    Text(
-                        text = "Подходит любой файл резервной копии — полный, только рецепты или один рецепт. Продукты объединяются по названию. Рецепты и записи меню всегда добавляются как новые.",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Spacer(Modifier.height(12.dp))
-                    Button(
-                        onClick = {
-                            importLauncher.launch(
-                                arrayOf(
-                                    "application/zip",
-                                    "application/octet-stream"
-                                )
+            FormCard {
+                Text(
+                    text = "Восстановление",
+                    style = MaterialTheme.typography.titleMedium
+                )
+                Spacer(Modifier.height(4.dp))
+                Text(
+                    text = "Подходит любой файл резервной копии — полный, только рецепты или один рецепт. Продукты объединяются по названию. Рецепты и записи меню всегда добавляются как новые.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Spacer(Modifier.height(12.dp))
+                Button(
+                    onClick = {
+                        importLauncher.launch(
+                            arrayOf(
+                                "application/zip",
+                                "application/octet-stream"
                             )
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                        enabled = uiState !is BackupUiState.InProgress
-                    ) {
-                        Icon(
-                            imageVector = Icons.Filled.FileUpload,
-                            contentDescription = null
                         )
-                        Spacer(Modifier.width(8.dp))
-                        Text(text = "Восстановить из файла")
-                    }
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    enabled = uiState !is BackupUiState.InProgress
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.FileUpload,
+                        contentDescription = null
+                    )
+                    Spacer(Modifier.width(8.dp))
+                    Text(text = "Восстановить из файла")
                 }
             }
         }
@@ -247,9 +255,11 @@ private fun exportSummary(state: BackupUiState.ExportSuccess): String {
         BackupType.FULL -> {
             "Сохранено: рецептов — ${r.recipesCount}, продуктов в холодильнике — ${r.fridgeItemsCount}, позиций в списке покупок — ${r.shoppingItemsCount}, записей в меню — ${r.menuEntriesCount}"
         }
+
         BackupType.RECIPES_ONLY -> {
             "Сохранено рецептов: ${r.recipesCount}"
         }
+
         BackupType.SINGLE_RECIPE -> {
             "Рецепт сохранён"
         }

@@ -1,20 +1,17 @@
 package com.shvarsman.coolinar.presentation.screens.common
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedCard
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -25,6 +22,8 @@ import com.shvarsman.coolinar.presentation.ui.theme.CornerShape
 
 /**
  * Поле выбора текстового значения из списка/шита (категория, способ приготовления).
+ * Тот же визуальный язык, что у LabeledTextField/ExpirationDatePickerField:
+ * FieldLabel сверху + Surface(CornerShape, colorScheme.surface) без рамки.
  */
 @Composable
 fun SelectorField(
@@ -35,59 +34,47 @@ fun SelectorField(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    OutlinedCard(
-        onClick = onClick,
-        modifier = modifier.fillMaxWidth(),
-        shape = CornerShape,
-        colors = CardDefaults.outlinedCardColors(
-            containerColor = MaterialTheme.colorScheme.surface
-        ),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
-    ) {
-        Row(
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
-            verticalAlignment = Alignment.CenterVertically
+    Column(modifier = modifier) {
+        FieldLabel(label)
+        Surface(
+            onClick = onClick,
+            shape = CornerShape,
+            color = MaterialTheme.colorScheme.surface,
+            modifier = Modifier.fillMaxWidth()
         ) {
-            Icon(
-                imageVector = leadingIcon,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(24.dp)
-            )
-
-            Spacer(Modifier.width(16.dp))
-
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = label,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.primary
+            Row(
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = leadingIcon,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(20.dp)
                 )
-                Spacer(Modifier.height(2.dp))
+                Spacer(Modifier.width(12.dp))
                 Text(
                     text = value.ifEmpty { placeholder },
-                    style = MaterialTheme.typography.bodyLarge,
+                    modifier = Modifier.weight(1f),
                     color = if (value.isEmpty()) {
-                        MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
+                        MaterialTheme.colorScheme.onSurfaceVariant
                     } else {
                         MaterialTheme.colorScheme.onSurface
                     }
                 )
+                Icon(
+                    imageVector = Icons.Filled.ArrowDropDown,
+                    contentDescription = "Открыть выбор",
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
-
-            Icon(
-                imageVector = Icons.Filled.ArrowDropDown,
-                contentDescription = "Открыть выбор",
-                tint = MaterialTheme.colorScheme.onSurface
-            )
         }
     }
 }
 
 /**
- * Поле выбора длительности (время приготовления): слева — иконка-триггер с подписью,
- * справа — значение крупным шрифтом в формате "20ч 30мин" (нулевые части опускаются).
- * Вся карточка кликабельна и открывает DurationPickerDialog.
+ * Поле выбора длительности (время приготовления): та же карточка, но значение —
+ * крупным шрифтом справа, в формате "20ч 30мин" (нулевые части опускаются).
  */
 @Composable
 fun DurationSelectorField(
@@ -100,50 +87,43 @@ fun DurationSelectorField(
 ) {
     val isSet = hours > 0 || minutes > 0
 
-    OutlinedCard(
-        onClick = onClick,
-        modifier = modifier.fillMaxWidth(),
-        shape = CornerShape,
-        colors = CardDefaults.outlinedCardColors(
-            containerColor = MaterialTheme.colorScheme.surface
-        ),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 12.dp),
-            verticalAlignment = Alignment.CenterVertically
+    Column(modifier = modifier) {
+        FieldLabel(label)
+        Surface(
+            onClick = onClick,
+            shape = CornerShape,
+            color = MaterialTheme.colorScheme.surface,
+            modifier = Modifier.fillMaxWidth()
         ) {
-            Icon(
-                imageVector = leadingIcon,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(24.dp)
-            )
-
-            Spacer(Modifier.width(16.dp))
-
-            Text(
-                text = label,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.weight(1f)
-            )
-
-            Spacer(Modifier.width(8.dp))
-
-            Text(
-                text = formatCookingTime(hours, minutes),
-                style = MaterialTheme.typography.headlineSmall.copy(
-                    fontFeatureSettings = "tnum"
-                ),
-                color = if (isSet) {
-                    MaterialTheme.colorScheme.onSurface
-                } else {
-                    MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.38f)
-                }
-            )
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 14.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = leadingIcon,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(20.dp)
+                )
+                Spacer(Modifier.width(12.dp))
+                Text(
+                    text = formatCookingTime(hours, minutes),
+                    style = MaterialTheme.typography.bodyLarge.copy(fontFeatureSettings = "tnum"),
+                    color = if (isSet) {
+                        MaterialTheme.colorScheme.onSurface
+                    } else {
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                    },
+                    modifier = Modifier.weight(1f)
+                )
+                Icon(
+                    imageVector = Icons.Filled.ArrowDropDown,
+                    contentDescription = "Открыть выбор",
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
         }
     }
 }

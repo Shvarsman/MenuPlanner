@@ -77,6 +77,7 @@ import com.shvarsman.coolinar.domain.model.UnitConversion
 import com.shvarsman.coolinar.domain.model.availability
 import com.shvarsman.coolinar.domain.model.computeReservedAmounts
 import com.shvarsman.coolinar.presentation.screens.common.AppBottomSheet
+import com.shvarsman.coolinar.presentation.screens.common.GlassIconButton
 import com.shvarsman.coolinar.presentation.screens.common.rememberSizedImageRequest
 import com.shvarsman.coolinar.presentation.ui.theme.CornerShape
 import com.shvarsman.coolinar.presentation.utils.rememberDebouncedSearch
@@ -142,8 +143,14 @@ fun WeekMenuScreen(
             CenterAlignedTopAppBar(
                 title = { Text("Меню на неделю") },
                 navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад")
+                    GlassIconButton(
+                        onClick = onBack,
+                        modifier = Modifier.padding(horizontal = 16.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Назад"
+                        )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -411,7 +418,10 @@ private fun MenuEntryCard(
             )
             recipe.ingredients.all { ingredient ->
                 val reserved = reservedFromEarlierEntries[
-                    ReservedKey(ingredient.product.id, UnitConversion.canonicalUnit(ingredient.unit))
+                    ReservedKey(
+                        ingredient.product.id,
+                        UnitConversion.canonicalUnit(ingredient.unit)
+                    )
                 ]
                 ingredient.availability(fridgeItems, reserved) == IngredientAvailability.AVAILABLE
             }

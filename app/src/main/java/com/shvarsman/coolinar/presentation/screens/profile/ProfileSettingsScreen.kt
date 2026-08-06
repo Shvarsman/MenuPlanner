@@ -7,22 +7,14 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Visibility
-import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -32,16 +24,16 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.shvarsman.coolinar.R
-import com.shvarsman.coolinar.presentation.ui.theme.CornerShape
+import com.shvarsman.coolinar.presentation.screens.common.FormCard
+import com.shvarsman.coolinar.presentation.screens.common.GlassIconButton
+import com.shvarsman.coolinar.presentation.screens.common.LabeledTextField
+import com.shvarsman.coolinar.presentation.screens.common.PasswordField
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -66,10 +58,13 @@ fun ProfileSettingsScreen(
             CenterAlignedTopAppBar(
                 title = { Text(stringResource(R.string.profile_settings_title)) },
                 navigationIcon = {
-                    IconButton(onClick = onBack) {
+                    GlassIconButton(
+                        onClick = onBack,
+                        modifier = Modifier.padding(horizontal = 16.dp)
+                    ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = null
+                            contentDescription = "Назад"
                         )
                     }
                 },
@@ -90,179 +85,111 @@ fun ProfileSettingsScreen(
                 .padding(horizontal = 16.dp, vertical = 8.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Card(modifier = Modifier.fillMaxWidth(), shape = CornerShape) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    SettingsLabeledField(
-                        label = stringResource(R.string.profile_display_name),
-                        value = nameInput,
-                        onValueChange = { nameInput = it }
-                    )
-                    if (nameSaved) {
-                        Spacer(Modifier.height(8.dp))
-                        Text(
-                            stringResource(R.string.profile_settings_name_saved),
-                            color = MaterialTheme.colorScheme.primary,
-                            style = MaterialTheme.typography.bodySmall
-                        )
-                    }
-                    Spacer(Modifier.height(16.dp))
-                    Button(
-                        onClick = { viewModel.saveDisplayName(nameInput.trim()) },
-                        enabled = !isSavingName && nameInput.isNotBlank(),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text(stringResource(R.string.profile_settings_save))
-                    }
-                }
-            }
-
-            Card(modifier = Modifier.fillMaxWidth(), shape = CornerShape) {
-                Column(modifier = Modifier.padding(16.dp)) {
+            FormCard {
+                LabeledTextField(
+                    label = stringResource(R.string.profile_display_name),
+                    value = nameInput,
+                    onValueChange = { nameInput = it }
+                )
+                if (nameSaved) {
+                    Spacer(Modifier.height(8.dp))
                     Text(
-                        stringResource(R.string.profile_settings_password_section_title),
-                        style = MaterialTheme.typography.titleSmall,
-                        fontWeight = FontWeight.Medium
+                        stringResource(R.string.profile_settings_name_saved),
+                        color = MaterialTheme.colorScheme.primary,
+                        style = MaterialTheme.typography.bodySmall
                     )
-                    Spacer(Modifier.height(16.dp))
+                }
+                Spacer(Modifier.height(12.dp))
+                Button(
+                    onClick = { viewModel.saveDisplayName(nameInput.trim()) },
+                    enabled = !isSavingName && nameInput.isNotBlank(),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(stringResource(R.string.profile_settings_save))
+                }
+            }
 
-                    var currentPassword by remember { mutableStateOf("") }
-                    var newPassword by remember { mutableStateOf("") }
-                    var confirmPassword by remember { mutableStateOf("") }
-                    var localMismatch by remember { mutableStateOf(false) }
+            FormCard {
+                Text(
+                    stringResource(R.string.profile_settings_password_section_title),
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Medium
+                )
+                Spacer(Modifier.height(12.dp))
 
-                    SettingsPasswordField(
-                        label = stringResource(R.string.profile_current_password),
-                        value = currentPassword,
-                        onValueChange = { currentPassword = it; viewModel.clearPasswordError() }
+                var currentPassword by remember { mutableStateOf("") }
+                var newPassword by remember { mutableStateOf("") }
+                var confirmPassword by remember { mutableStateOf("") }
+                var localMismatch by remember { mutableStateOf(false) }
+
+                PasswordField(
+                    label = stringResource(R.string.profile_current_password),
+                    value = currentPassword,
+                    onValueChange = { currentPassword = it; viewModel.clearPasswordError() }
+                )
+                Spacer(Modifier.height(12.dp))
+                PasswordField(
+                    label = stringResource(R.string.profile_new_password),
+                    value = newPassword,
+                    onValueChange = { newPassword = it; viewModel.clearPasswordError() }
+                )
+                Spacer(Modifier.height(12.dp))
+                PasswordField(
+                    label = stringResource(R.string.profile_confirm_new_password),
+                    value = confirmPassword,
+                    onValueChange = { confirmPassword = it; viewModel.clearPasswordError() }
+                )
+
+                if (localMismatch) {
+                    Spacer(Modifier.height(8.dp))
+                    Text(
+                        stringResource(R.string.profile_error_passwords_dont_match),
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodySmall
                     )
-                    Spacer(Modifier.height(16.dp))
-                    SettingsPasswordField(
-                        label = stringResource(R.string.profile_new_password),
-                        value = newPassword,
-                        onValueChange = { newPassword = it; viewModel.clearPasswordError() }
+                }
+                if (passwordErrorRes != null) {
+                    Spacer(Modifier.height(8.dp))
+                    Text(
+                        stringResource(passwordErrorRes!!),
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodySmall
                     )
-                    Spacer(Modifier.height(16.dp))
-                    SettingsPasswordField(
-                        label = stringResource(R.string.profile_confirm_new_password),
-                        value = confirmPassword,
-                        onValueChange = { confirmPassword = it; viewModel.clearPasswordError() }
+                }
+                if (passwordChanged) {
+                    Spacer(Modifier.height(8.dp))
+                    Text(
+                        stringResource(R.string.profile_password_changed),
+                        color = MaterialTheme.colorScheme.primary,
+                        style = MaterialTheme.typography.bodySmall
                     )
+                }
 
-                    if (localMismatch) {
-                        Spacer(Modifier.height(8.dp))
-                        Text(
-                            stringResource(R.string.profile_error_passwords_dont_match),
-                            color = MaterialTheme.colorScheme.error,
-                            style = MaterialTheme.typography.bodySmall
-                        )
-                    }
-                    if (passwordErrorRes != null) {
-                        Spacer(Modifier.height(8.dp))
-                        Text(
-                            stringResource(passwordErrorRes!!),
-                            color = MaterialTheme.colorScheme.error,
-                            style = MaterialTheme.typography.bodySmall
-                        )
-                    }
-                    if (passwordChanged) {
-                        Spacer(Modifier.height(8.dp))
-                        Text(
-                            stringResource(R.string.profile_password_changed),
-                            color = MaterialTheme.colorScheme.primary,
-                            style = MaterialTheme.typography.bodySmall
-                        )
-                    }
-
-                    Spacer(Modifier.height(12.dp))
-                    Button(
-                        onClick = {
-                            if (newPassword != confirmPassword) {
-                                localMismatch = true
-                            } else {
-                                localMismatch = false
-                                viewModel.changePassword(currentPassword, newPassword)
-                            }
-                        },
-                        enabled = !isChangingPassword && currentPassword.isNotBlank() &&
-                                newPassword.isNotBlank() && confirmPassword.isNotBlank(),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text(stringResource(R.string.profile_settings_save))
-                    }
-
-                    LaunchedEffect(passwordChanged) {
-                        if (passwordChanged) {
-                            currentPassword = ""
-                            newPassword = ""
-                            confirmPassword = ""
+                Spacer(Modifier.height(12.dp))
+                Button(
+                    onClick = {
+                        if (newPassword != confirmPassword) {
+                            localMismatch = true
+                        } else {
+                            localMismatch = false
+                            viewModel.changePassword(currentPassword, newPassword)
                         }
+                    },
+                    enabled = !isChangingPassword && currentPassword.isNotBlank() &&
+                            newPassword.isNotBlank() && confirmPassword.isNotBlank(),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(stringResource(R.string.profile_settings_save))
+                }
+
+                LaunchedEffect(passwordChanged) {
+                    if (passwordChanged) {
+                        currentPassword = ""
+                        newPassword = ""
+                        confirmPassword = ""
                     }
                 }
             }
-        }
-    }
-}
-
-@Composable
-private fun SettingsLabeledField(label: String, value: String, onValueChange: (String) -> Unit) {
-    Column {
-        Text(
-            text = label,
-            modifier = Modifier.padding(start = 8.dp),
-            style = MaterialTheme.typography.labelMedium
-        )
-        Spacer(Modifier.height(8.dp))
-        Surface(
-            shape = CornerShape,
-            color = MaterialTheme.colorScheme.surface
-        ) {
-            OutlinedTextField(
-                value = value,
-                onValueChange = onValueChange,
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth(),
-                colors = OutlinedTextFieldDefaults.colors(
-                    unfocusedBorderColor = Color.Transparent,
-                    focusedBorderColor = Color.Transparent
-                )
-            )
-        }
-    }
-}
-
-@Composable
-private fun SettingsPasswordField(label: String, value: String, onValueChange: (String) -> Unit) {
-    var visible by remember { mutableStateOf(false) }
-    Column {
-        Text(
-            text = label,
-            modifier = Modifier.padding(start = 8.dp),
-            style = MaterialTheme.typography.labelMedium
-        )
-        Spacer(Modifier.height(8.dp))
-        Surface(
-            shape = CornerShape,
-            color = MaterialTheme.colorScheme.surface
-        ) {
-            OutlinedTextField(
-                value = value,
-                onValueChange = onValueChange,
-                singleLine = true,
-                visualTransformation = if (visible) VisualTransformation.None else PasswordVisualTransformation(),
-                trailingIcon = {
-                    IconButton(onClick = { visible = !visible }) {
-                        Icon(
-                            if (visible) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
-                            contentDescription = stringResource(R.string.profile_toggle_password_visibility)
-                        )
-                    }
-                },
-                modifier = Modifier.fillMaxWidth(),
-                colors = OutlinedTextFieldDefaults.colors(
-                    unfocusedBorderColor = Color.Transparent,
-                    focusedBorderColor = Color.Transparent
-                )
-            )
         }
     }
 }

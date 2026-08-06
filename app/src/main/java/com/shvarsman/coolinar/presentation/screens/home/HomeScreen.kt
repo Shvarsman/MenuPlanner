@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material.icons.filled.Warning
@@ -34,8 +33,8 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.shvarsman.coolinar.domain.model.FridgeItem
+import com.shvarsman.coolinar.presentation.screens.common.NavRow
 import com.shvarsman.coolinar.presentation.screens.recipe.components.RecipeCarouselSection
-import com.shvarsman.coolinar.presentation.ui.theme.CornerShape
 import com.shvarsman.coolinar.presentation.ui.theme.FloatingBottomBarClearance
 import com.shvarsman.coolinar.presentation.ui.theme.molleFont
 
@@ -99,17 +98,18 @@ fun HomeScreen(
             }
 
             item(key = "week_menu_nav") {
-                WeekMenuNavCard(
-                    planned = weeklyPlannedCount,
-                    total = weeklyTotalCount,
+                NavRow(
+                    icon = Icons.Filled.CalendarMonth,
+                    text = "На следующей неделе запланировано $weeklyPlannedCount из $weeklyTotalCount приёмов пищи",
                     onClick = onOpenWeekMenu,
                     modifier = Modifier.padding(horizontal = 16.dp)
                 )
             }
 
             item(key = "shopping_list_quick_nav") {
-                ShoppingListQuickNavCard(
-                    itemCount = shoppingListCount,
+                NavRow(
+                    icon = Icons.Filled.ShoppingCart,
+                    text = if (shoppingListCount == 0) "Список покупок пуст" else "В списке покупок: $shoppingListCount",
                     onClick = onOpenShoppingList,
                     modifier = Modifier.padding(horizontal = 16.dp)
                 )
@@ -138,6 +138,7 @@ private fun greetingText(userName: String?): String {
     }
     return if (!userName.isNullOrBlank()) "$base, $userName!" else "$base!"
 }
+
 @Composable
 private fun ExpiringItemsBanner(
     items: List<FridgeItem>,
@@ -175,77 +176,6 @@ private fun ExpiringItemsBanner(
                     maxLines = 2
                 )
             }
-        }
-    }
-}
-
-@Composable
-private fun WeekMenuNavCard(
-    planned: Int,
-    total: Int,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Card(onClick = onClick, modifier = modifier.fillMaxWidth(), shape = CornerShape) {
-        Row(
-            modifier = Modifier
-                .padding(16.dp)
-                .fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(
-                    Icons.Filled.CalendarMonth,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary
-                )
-                Spacer(Modifier.width(12.dp))
-                Text(
-                    "На следующей неделе запланировано $planned из $total приёмов пищи",
-                    style = MaterialTheme.typography.bodyMedium
-                )
-            }
-            Icon(
-                Icons.AutoMirrored.Filled.ArrowForward,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
-    }
-}
-
-@Composable
-private fun ShoppingListQuickNavCard(
-    itemCount: Int,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Card(onClick = onClick, modifier = modifier.fillMaxWidth(), shape = CornerShape) {
-        Row(
-            modifier = Modifier
-                .padding(16.dp)
-                .fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(
-                    Icons.Filled.ShoppingCart,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary
-                )
-                Spacer(Modifier.width(12.dp))
-                Text(
-                    if (itemCount == 0) "Список покупок пуст" else "В списке покупок: $itemCount",
-                    style = MaterialTheme.typography.bodyMedium
-                )
-            }
-            Icon(
-                Icons.AutoMirrored.Filled.ArrowForward,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant
-            )
         }
     }
 }

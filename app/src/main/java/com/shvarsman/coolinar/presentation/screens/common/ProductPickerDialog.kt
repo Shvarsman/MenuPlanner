@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
@@ -41,6 +40,7 @@ import com.shvarsman.coolinar.domain.model.Category
 import com.shvarsman.coolinar.domain.model.MeasureUnit
 import com.shvarsman.coolinar.domain.model.Product
 import com.shvarsman.coolinar.presentation.ui.icons.ProductIcon
+import com.shvarsman.coolinar.presentation.ui.theme.CornerShape
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 
@@ -138,7 +138,7 @@ fun ProductPickerDialog(
                         LazyColumn(
                             modifier = Modifier
                                 .weight(1f)
-                                .clip(RoundedCornerShape(28.dp))
+                                .clip(CornerShape)
                                 .background(MaterialTheme.colorScheme.surface)
                         ) {
                             items(filtered, key = { it.id }) { product ->

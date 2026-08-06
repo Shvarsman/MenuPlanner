@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.DropdownMenu
@@ -26,8 +25,6 @@ import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -36,11 +33,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.shvarsman.coolinar.domain.model.Category
 import com.shvarsman.coolinar.domain.model.MeasureUnit
 import com.shvarsman.coolinar.presentation.ui.icons.CategoryIcon
+import com.shvarsman.coolinar.presentation.ui.theme.CornerShape
 
 /** Поле названия продукта — в едином стиле с остальными полями ввода. */
 @Composable
@@ -50,35 +47,14 @@ fun ProductNameField(
     modifier: Modifier = Modifier,
     isError: Boolean = false
 ) {
-    Column(modifier = modifier) {
-        FieldLabel("Название")
-        Surface(
-            shape = RoundedCornerShape(28.dp),
-            color = MaterialTheme.colorScheme.surface,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                TextField(
-                    value = name,
-                    onValueChange = onNameChange,
-                    placeholder = { Text("Например, Арбуз") },
-                    singleLine = true,
-                    isError = isError,
-                    colors = TextFieldDefaults.colors(
-                        focusedContainerColor = Color.Transparent,
-                        unfocusedContainerColor = Color.Transparent,
-                        focusedIndicatorColor = Color.Transparent,
-                        unfocusedIndicatorColor = Color.Transparent,
-                        unfocusedPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                        focusedPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                        focusedTextColor = MaterialTheme.colorScheme.onSurface,
-                        unfocusedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                    ),
-                    modifier = Modifier.fillMaxWidth()
-                )
-            }
-        }
-    }
+    LabeledTextField(
+        label = "Название",
+        value = name,
+        onValueChange = onNameChange,
+        placeholder = "Например, Арбуз",
+        isError = isError,
+        modifier = modifier
+    )
 }
 
 /** Список выбора категории — прокручиваемый, с радио-кнопкой на каждой строке. */
@@ -93,7 +69,7 @@ fun CategoryPickerList(
         LazyColumn(
             modifier = Modifier
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(28.dp))
+                .clip(CornerShape)
         ) {
             items(Category.entries.toTypedArray()) { category ->
                 ListItem(
@@ -129,7 +105,7 @@ fun MeasureUnitField(
         Box {
             Surface(
                 onClick = { expanded = true },
-                shape = RoundedCornerShape(28.dp),
+                shape = CornerShape,
                 color = MaterialTheme.colorScheme.surface,
                 modifier = Modifier.fillMaxWidth()
             ) {

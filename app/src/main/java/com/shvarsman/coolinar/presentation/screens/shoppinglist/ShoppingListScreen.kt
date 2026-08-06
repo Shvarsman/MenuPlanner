@@ -63,6 +63,7 @@ import com.shvarsman.coolinar.domain.model.ShoppingListItem
 import com.shvarsman.coolinar.presentation.screens.common.DropdownFilterChip
 import com.shvarsman.coolinar.presentation.screens.common.FieldLabel
 import com.shvarsman.coolinar.presentation.screens.common.GlassFab
+import com.shvarsman.coolinar.presentation.screens.common.GlassIconButton
 import com.shvarsman.coolinar.presentation.screens.common.ProductPickerDialog
 import com.shvarsman.coolinar.presentation.screens.common.QuantityUnitField
 import com.shvarsman.coolinar.presentation.screens.common.SwipeToDeleteRow
@@ -115,8 +116,14 @@ fun ShoppingListScreen(
         topBar = {
             TopAppBar(
                 navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад")
+                    GlassIconButton(
+                        onClick = onBack,
+                        modifier = Modifier.padding(horizontal = 16.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Назад"
+                        )
                     }
                 },
                 title = {
@@ -128,19 +135,12 @@ fun ShoppingListScreen(
                     )
                 },
                 actions = {
-                    IconButton(
-                        modifier = Modifier
-                            .padding(end = 16.dp)
-                            .clip(CornerShape)
-                            .background(
-                                MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.9f),
-                                CornerShape
-                            )
-                            .gradientStyle(shape = CornerShape),
-                        onClick = { viewModel.requestMoveCheckedToFridge() }
+                    GlassIconButton(
+                        onClick = { viewModel.requestMoveCheckedToFridge() },
+                        modifier = Modifier.padding(end = 16.dp)
                     ) {
                         Icon(
-                            Icons.Filled.Kitchen,
+                            imageVector = Icons.Filled.Kitchen,
                             contentDescription = "Перенести купленное в холодильник",
                             tint = if (hasCheckedItems) {
                                 MaterialTheme.colorScheme.onSurfaceVariant

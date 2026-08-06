@@ -22,15 +22,12 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AddAPhoto
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Kitchen
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material3.AlertDialog
@@ -42,8 +39,6 @@ import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.PlainTooltip
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SegmentedButton
@@ -52,12 +47,11 @@ import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TooltipAnchorPosition
 import androidx.compose.material3.TooltipBox
 import androidx.compose.material3.TooltipDefaults
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -68,7 +62,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
@@ -78,22 +71,23 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import com.shvarsman.coolinar.domain.model.CookingMethod
-import com.shvarsman.coolinar.domain.model.FridgeItem
-import com.shvarsman.coolinar.domain.model.IngredientAvailability
 import com.shvarsman.coolinar.domain.model.RecipeCategory
 import com.shvarsman.coolinar.domain.model.RecipeDifficulty
-import com.shvarsman.coolinar.domain.model.RecipeIngredient
 import com.shvarsman.coolinar.domain.model.StepContentItem
 import com.shvarsman.coolinar.domain.model.availability
 import com.shvarsman.coolinar.presentation.screens.common.AppBottomSheet
 import com.shvarsman.coolinar.presentation.screens.common.DurationPickerDialog
 import com.shvarsman.coolinar.presentation.screens.common.DurationSelectorField
 import com.shvarsman.coolinar.presentation.screens.common.FieldLabel
+import com.shvarsman.coolinar.presentation.screens.common.GlassIconButton
+import com.shvarsman.coolinar.presentation.screens.common.IngredientListCard
+import com.shvarsman.coolinar.presentation.screens.common.LabeledTextField
 import com.shvarsman.coolinar.presentation.screens.common.ProductPickerDialog
 import com.shvarsman.coolinar.presentation.screens.common.SelectionTile
 import com.shvarsman.coolinar.presentation.screens.common.SelectorField
 import com.shvarsman.coolinar.presentation.screens.common.StepContent
 import com.shvarsman.coolinar.presentation.screens.common.TimerMinutesPickerDialog
+import com.shvarsman.coolinar.presentation.screens.common.TopBarSearchField
 import com.shvarsman.coolinar.presentation.screens.common.buildRenderedSteps
 import com.shvarsman.coolinar.presentation.screens.common.rememberSizedImageRequest
 import com.shvarsman.coolinar.presentation.ui.icons.CookingMethodIcon
@@ -157,9 +151,12 @@ fun RecipeEditorScreen(
                     )
                 },
                 navigationIcon = {
-                    IconButton(onClick = {
-                        if (state.isDirty) showExitConfirmation = true else onDone()
-                    }) {
+                    GlassIconButton(
+                        onClick = {
+                            if (state.isDirty) showExitConfirmation = true else onDone()
+                        },
+                        modifier = Modifier.padding(horizontal = 16.dp)
+                    ) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад")
                     }
                 },
@@ -177,7 +174,11 @@ fun RecipeEditorScreen(
                             Text("Сохранить")
                         }
                     }
-                }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.background,
+                    scrolledContainerColor = MaterialTheme.colorScheme.background
+                )
             )
         },
         bottomBar = {
@@ -218,24 +219,18 @@ fun RecipeEditorScreen(
                         photoUri = state.photoUri,
                         onPick = { coverPhotoPicker.launch("image/*") }
                     )
-                    Spacer(Modifier.height(12.dp))
+                    Spacer(Modifier.height(16.dp))
                 }
 
                 item {
-                    TextField(
+                    LabeledTextField(
+                        label = "Название рецепта",
                         value = state.title,
                         onValueChange = viewModel::onTitleChange,
+                        placeholder = "Название рецепта",
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 8.dp),
-                        colors = TextFieldDefaults.colors(
-                            focusedContainerColor = Color.Transparent,
-                            unfocusedContainerColor = Color.Transparent,
-                            focusedIndicatorColor = Color.Transparent,
-                            unfocusedIndicatorColor = Color.Transparent,
-                        ),
-                        placeholder = { Text("Название рецепта") },
-                        textStyle = MaterialTheme.typography.headlineSmall
+                            .padding(horizontal = 16.dp)
                     )
                 }
 
@@ -293,28 +288,15 @@ fun RecipeEditorScreen(
                 }
 
                 item {
-                    Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)) {
-                        FieldLabel("Описание")
-                        Surface(
-                            shape = RoundedCornerShape(28.dp),
-                            color = androidx.compose.material3.SearchBarDefaults.colors().containerColor,
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            TextField(
-                                value = state.description,
-                                onValueChange = viewModel::onDescriptionChange,
-                                placeholder = { Text("Коротко опишите рецепт") },
-                                minLines = 3,
-                                colors = TextFieldDefaults.colors(
-                                    focusedContainerColor = Color.Transparent,
-                                    unfocusedContainerColor = Color.Transparent,
-                                    focusedIndicatorColor = Color.Transparent,
-                                    unfocusedIndicatorColor = Color.Transparent
-                                ),
-                                modifier = Modifier.fillMaxWidth()
-                            )
-                        }
-                    }
+                    LabeledTextField(
+                        label = "Описание",
+                        value = state.description,
+                        onValueChange = viewModel::onDescriptionChange,
+                        placeholder = "Коротко опишите рецепт",
+                        singleLine = false,
+                        minLines = 3,
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
+                    )
                 }
 
                 item {
@@ -337,12 +319,15 @@ fun RecipeEditorScreen(
                         }
                     }
                 }
-                items(state.ingredients) { ingredient ->
-                    IngredientRow(
-                        ingredient = ingredient,
-                        fridgeItems = fridgeItems,
-                        onRemove = { viewModel.removeIngredient(ingredient) }
-                    )
+                if (state.ingredients.isNotEmpty()) {
+                    item {
+                        IngredientListCard(
+                            ingredients = state.ingredients,
+                            availabilityFor = { it.availability(fridgeItems) },
+                            onRemove = { viewModel.removeIngredient(it) },
+                            modifier = Modifier.padding(horizontal = 16.dp)
+                        )
+                    }
                 }
 
                 item {
@@ -438,25 +423,11 @@ fun RecipeEditorScreen(
             fillMaxHeight = true,
             onDismissRequest = { showCookingMethodBottomSheet = false }
         ) { onClose ->
-            OutlinedTextField(
-                value = searchQuery,
-                onValueChange = { searchQuery = it },
-                modifier = Modifier.fillMaxWidth(),
-                placeholder = { Text("Поиск способа...") },
-                leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
-                trailingIcon = {
-                    if (searchQuery.isNotEmpty()) {
-                        IconButton(onClick = { searchQuery = "" }) {
-                            Icon(Icons.Default.Close, contentDescription = "Очистить")
-                        }
-                    }
-                },
-                singleLine = true,
-                shape = CornerShape,
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = MaterialTheme.colorScheme.primary,
-                    unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant
-                )
+            TopBarSearchField(
+                query = searchQuery,
+                onQueryChange = { searchQuery = it },
+                placeholder = "Поиск способа...",
+                modifier = Modifier.fillMaxWidth()
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -656,40 +627,3 @@ private fun CoverPhotoPicker(
         }
     }
 }
-
-@Composable
-private fun IngredientRow(
-    ingredient: RecipeIngredient,
-    fridgeItems: List<FridgeItem>,
-    onRemove: () -> Unit
-) {
-    val status = ingredient.availability(fridgeItems)
-    val textColor = when (status) {
-        IngredientAvailability.AVAILABLE -> MaterialTheme.colorScheme.primary
-        IngredientAvailability.INSUFFICIENT -> MaterialTheme.colorScheme.error
-    }
-
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 2.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        Text(
-            if (ingredient.product.isToTaste) {
-                "${ingredient.product.name} — по вкусу"
-            } else {
-                "${ingredient.product.name} — ${formatQty(ingredient.quantity)} ${ingredient.unit.displayName}"
-            },
-            style = MaterialTheme.typography.bodyMedium,
-            color = if (ingredient.product.isToTaste) MaterialTheme.colorScheme.onSurfaceVariant else textColor
-        )
-        IconButton(onClick = onRemove) {
-            Icon(Icons.Filled.Close, contentDescription = "Удалить ингредиент")
-        }
-    }
-}
-
-private fun formatQty(value: Double): String =
-    if (value == value.toLong().toDouble()) value.toLong().toString() else value.toString()
