@@ -20,8 +20,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.shvarsman.coolinar.R
 import com.shvarsman.coolinar.domain.model.IngredientAvailability
 import com.shvarsman.coolinar.domain.model.RecipeIngredient
 import com.shvarsman.coolinar.presentation.ui.icons.ProductIcon
@@ -58,7 +60,7 @@ fun IngredientListItem(
             )
             Text(
                 text = if (ingredient.product.isToTaste) {
-                    "По вкусу"
+                    stringResource(R.string.to_taste)
                 } else {
                     "${formatIngredientQty(ingredient.quantity)} ${ingredient.unit.displayName}"
                 },
@@ -71,15 +73,15 @@ fun IngredientListItem(
             Spacer(Modifier.width(8.dp))
             when (availability) {
                 IngredientAvailability.AVAILABLE -> Icon(
-                    Icons.Filled.CheckCircle,
-                    contentDescription = "Хватает",
+                    imageVector = Icons.Filled.CheckCircle,
+                    contentDescription = stringResource(R.string.ingredient_available),
                     tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(20.dp)
                 )
 
                 IngredientAvailability.INSUFFICIENT -> Icon(
-                    Icons.Filled.Warning,
-                    contentDescription = "Не хватает",
+                    imageVector = Icons.Filled.Warning,
+                    contentDescription = stringResource(R.string.ingredient_available),
                     tint = MaterialTheme.colorScheme.error,
                     modifier = Modifier.size(20.dp)
                 )
@@ -88,7 +90,10 @@ fun IngredientListItem(
 
         if (onRemove != null) {
             IconButton(onClick = onRemove) {
-                Icon(Icons.Filled.Close, contentDescription = "Удалить ингредиент")
+                Icon(
+                    imageVector = Icons.Filled.Close,
+                    contentDescription = stringResource(R.string.ingredient_available)
+                )
             }
         }
     }

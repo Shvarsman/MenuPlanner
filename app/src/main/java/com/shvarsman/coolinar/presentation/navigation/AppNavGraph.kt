@@ -71,7 +71,7 @@ private data class BottomItem(
 )
 
 private val bottomItems = listOf(
-    BottomItem(Destination.Home, "Главная", Icons.Filled.RestaurantMenu),
+    BottomItem(Destination.Home, "Home", Icons.Filled.RestaurantMenu),
     BottomItem(Destination.Fridge, "Холодильник", Icons.Filled.Kitchen),
     BottomItem(Destination.Recipes, "Рецепты", Icons.AutoMirrored.Filled.MenuBook),
     BottomItem(Destination.Profile, "Профиль", Icons.Filled.AccountCircle)

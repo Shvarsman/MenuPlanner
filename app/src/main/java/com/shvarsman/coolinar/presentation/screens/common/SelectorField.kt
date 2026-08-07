@@ -17,7 +17,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.shvarsman.coolinar.R
 import com.shvarsman.coolinar.presentation.ui.theme.CornerShape
 
 /**
@@ -64,7 +66,7 @@ fun SelectorField(
                 )
                 Icon(
                     imageVector = Icons.Filled.ArrowDropDown,
-                    contentDescription = "Открыть выбор",
+                    contentDescription = stringResource(R.string.open_selection),
                     tint = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
@@ -120,7 +122,7 @@ fun DurationSelectorField(
                 )
                 Icon(
                     imageVector = Icons.Filled.ArrowDropDown,
-                    contentDescription = "Открыть выбор",
+                    contentDescription = stringResource(R.string.open_selection),
                     tint = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }

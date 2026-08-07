@@ -50,11 +50,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
+import com.shvarsman.coolinar.R
 import com.shvarsman.coolinar.domain.model.MeasureUnit
 import com.shvarsman.coolinar.presentation.ui.theme.CornerShape
 import java.time.Instant
@@ -103,7 +105,7 @@ fun QuantityUnitField(
                             }
                     )
                 },
-                placeholder = { Text("Количество") },
+                placeholder = { Text(stringResource(R.string.quantity_label)) },
                 singleLine = true,
                 isError = isError,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
@@ -126,7 +128,7 @@ fun QuantityUnitField(
                     Spacer(Modifier.width(2.dp))
                     Icon(
                         Icons.Filled.ArrowDropDown,
-                        contentDescription = "Единица измерения",
+                        contentDescription = stringResource(R.string.unit_of_measure),
                         modifier = Modifier.size(20.dp),
                         tint = MaterialTheme.colorScheme.onSurface
                     )
@@ -193,7 +195,8 @@ fun ExpirationDatePickerField(
                 Icon(Icons.Filled.Event, contentDescription = null)
                 Spacer(Modifier.width(12.dp))
                 Text(
-                    text = value?.format(DateTimeFormatter.ofPattern("dd.MM.yyyy")) ?: "Не указан",
+                    text = value?.format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))
+                        ?: stringResource(R.string.not_specified),
                     modifier = Modifier.weight(1f)
                 )
                 if (value != null) {
@@ -201,7 +204,7 @@ fun ExpirationDatePickerField(
                     // крестик правее и делала его крупнее остальных иконок в диалоге
                     Icon(
                         Icons.Filled.Close,
-                        contentDescription = "Убрать дату",
+                        contentDescription = stringResource(R.string.remove_date),
                         modifier = Modifier
                             .size(20.dp)
                             .clip(CircleShape)
@@ -225,9 +228,13 @@ fun ExpirationDatePickerField(
                         Instant.ofEpochMilli(it).atZone(ZoneOffset.UTC).toLocalDate()
                     })
                     showPicker = false
-                }) { Text("ОК") }
+                }) { Text(stringResource(R.string.ok)) }
             },
-            dismissButton = { TextButton(onClick = { showPicker = false }) { Text("Отмена") } },
+            dismissButton = {
+                TextButton(onClick = {
+                    showPicker = false
+                }) { Text(stringResource(R.string.cancel)) }
+            },
             colors = DatePickerDefaults.colors(
                 containerColor = MaterialTheme.colorScheme.surfaceVariant,
             )

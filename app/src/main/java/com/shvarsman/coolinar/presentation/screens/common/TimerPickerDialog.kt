@@ -29,9 +29,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import com.shvarsman.coolinar.R
 
 private val TIMER_PRESETS = listOf(1, 3, 5, 10, 15, 20, 30, 45, 60)
 private const val MIN_TIMER_MINUTES = 1
@@ -65,7 +67,7 @@ fun TimerMinutesPickerDialog(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = "Таймер шага",
+                    text = stringResource(R.string.step_timer_title),
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier
@@ -79,7 +81,10 @@ fun TimerMinutesPickerDialog(
                     FilledTonalIconButton(
                         onClick = { minutes = (minutes - 1).coerceAtLeast(MIN_TIMER_MINUTES) }
                     ) {
-                        Icon(Icons.Filled.Remove, contentDescription = "Меньше")
+                        Icon(
+                            imageVector = Icons.Filled.Remove,
+                            contentDescription = stringResource(R.string.decrease)
+                        )
                     }
 
                     Column(
@@ -95,7 +100,7 @@ fun TimerMinutesPickerDialog(
                             modifier = Modifier.fillMaxWidth()
                         )
                         Text(
-                            text = "мин",
+                            text = stringResource(R.string.minutes_short),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -104,7 +109,10 @@ fun TimerMinutesPickerDialog(
                     FilledTonalIconButton(
                         onClick = { minutes = (minutes + 1).coerceAtMost(MAX_TIMER_MINUTES) }
                     ) {
-                        Icon(Icons.Filled.Add, contentDescription = "Больше")
+                        Icon(
+                            imageVector = Icons.Filled.Add,
+                            contentDescription = stringResource(R.string.increase)
+                        )
                     }
                 }
 
@@ -121,7 +129,7 @@ fun TimerMinutesPickerDialog(
                         FilterChip(
                             selected = minutes == preset,
                             onClick = { minutes = preset },
-                            label = { Text("$preset мин") }
+                            label = { Text(stringResource(R.string.minutes_value, preset)) }
                         )
                     }
                 }
@@ -133,11 +141,17 @@ fun TimerMinutesPickerDialog(
                     horizontalArrangement = Arrangement.End
                 ) {
                     TextButton(onClick = onDismissRequest) {
-                        Text("Отмена", style = MaterialTheme.typography.labelLarge)
+                        Text(
+                            text = stringResource(R.string.cancel),
+                            style = MaterialTheme.typography.labelLarge
+                        )
                     }
                     Spacer(modifier = Modifier.width(8.dp))
                     TextButton(onClick = { onConfirm(minutes) }) {
-                        Text("ОК", style = MaterialTheme.typography.labelLarge)
+                        Text(
+                            text = stringResource(R.string.ok),
+                            style = MaterialTheme.typography.labelLarge
+                        )
                     }
                 }
             }

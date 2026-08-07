@@ -276,7 +276,7 @@ private fun SignedInContent(
             },
             dismissButton = {
                 TextButton(onClick = { showSignOutConfirm = false }) {
-                    Text(stringResource(R.string.profile_cancel))
+                    Text(stringResource(R.string.cancel))
                 }
             }
         )

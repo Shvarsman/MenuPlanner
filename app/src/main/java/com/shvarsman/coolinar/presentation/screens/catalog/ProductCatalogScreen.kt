@@ -55,11 +55,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.shvarsman.coolinar.R
 import com.shvarsman.coolinar.domain.model.Category
 import com.shvarsman.coolinar.domain.model.MeasureUnit
 import com.shvarsman.coolinar.domain.model.Product
@@ -67,8 +69,8 @@ import com.shvarsman.coolinar.presentation.screens.common.AppBottomSheet
 import com.shvarsman.coolinar.presentation.screens.common.DropdownFilterChip
 import com.shvarsman.coolinar.presentation.screens.common.ProductFormFields
 import com.shvarsman.coolinar.presentation.screens.common.TopBarSearchField
-import com.shvarsman.coolinar.presentation.ui.icons.ProductIcon
 import com.shvarsman.coolinar.presentation.ui.icons.CategoryIcon
+import com.shvarsman.coolinar.presentation.ui.icons.ProductIcon
 import com.shvarsman.coolinar.presentation.ui.theme.CornerShape
 import com.shvarsman.coolinar.presentation.ui.theme.gradientStyle
 import com.shvarsman.coolinar.presentation.utils.GroupedRow
@@ -98,13 +100,15 @@ fun ProductCatalogScreen(
 
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
+    val deletedFromCatalogTemplate = stringResource(R.string.deleted_from_catalog)
+    val undoLabel = stringResource(R.string.undo)
 
     fun requestDelete(product: Product) {
         viewModel.requestDelete(product)
         scope.launch {
             val result = snackbarHostState.showSnackbar(
-                message = "«${product.name}» удалён из каталога",
-                actionLabel = "Отменить",
+                message = String.format(deletedFromCatalogTemplate, product.name),
+                actionLabel = undoLabel,
                 duration = SnackbarDuration.Short
             )
             if (result == SnackbarResult.ActionPerformed) viewModel.undoDelete(product.id)
@@ -131,7 +135,7 @@ fun ProductCatalogScreen(
                     ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Назад"
+                            contentDescription = stringResource(R.string.back)
                         )
                     }
                 },
@@ -140,7 +144,7 @@ fun ProductCatalogScreen(
                         modifier = Modifier.padding(end = 16.dp, start = 8.dp),
                         query = localSearchQuery,
                         onQueryChange = onLocalSearchQueryChange,
-                        placeholder = "Поиск продуктов"
+                        placeholder = stringResource(R.string.search_products)
                     )
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -165,7 +169,7 @@ fun ProductCatalogScreen(
                 FilterChip(
                     selected = showOnlyCustom,
                     onClick = { viewModel.toggleShowOnlyCustom() },
-                    label = { Text("Мои продукты") },
+                    label = { Text(stringResource(R.string.my_products)) },
                     shape = CornerShape,
                     colors = FilterChipDefaults.filterChipColors(
                         selectedContainerColor = MaterialTheme.colorScheme.surface,
@@ -175,7 +179,7 @@ fun ProductCatalogScreen(
                 FilterChip(
                     selected = !showOnlyCustom,
                     onClick = { viewModel.toggleShowOnlyCustom() },
-                    label = { Text("Все") },
+                    label = { Text(stringResource(R.string.all)) },
                     shape = CornerShape,
                     colors = FilterChipDefaults.filterChipColors(
                         selectedContainerColor = MaterialTheme.colorScheme.surface,
@@ -183,12 +187,13 @@ fun ProductCatalogScreen(
                     )
                 )
                 DropdownFilterChip(
-                    displayText = selectedCategory?.displayName ?: "Категория",
+                    displayText = selectedCategory?.displayName
+                        ?: stringResource(R.string.category_label),
                     isActive = selectedCategory != null
                 ) { close ->
                     DropdownMenuItem(
                         modifier = Modifier.padding(horizontal = 16.dp),
-                        text = { Text("Все категории") },
+                        text = { Text(stringResource(R.string.all_categories)) },
                         onClick = { viewModel.selectCategory(null); close() }
                     )
                     if (availableCategories.isNotEmpty()) {
@@ -198,7 +203,11 @@ fun ProductCatalogScreen(
                                 modifier = Modifier.padding(horizontal = 16.dp),
                                 text = {
                                     Text(
-                                        "${category.displayName} ($count)",
+                                        stringResource(
+                                            R.string.category_with_count,
+                                            category.displayName,
+                                            count
+                                        ),
                                         maxLines = 1,
                                         overflow = TextOverflow.Ellipsis
                                     )
@@ -229,9 +238,9 @@ fun ProductCatalogScreen(
                     verticalArrangement = Arrangement.Center
                 ) {
                     Text(
-                        if (searchQuery.isNotBlank()) "Ничего не найдено"
-                        else if (showOnlyCustom) "Вы ещё не добавили свои продукты"
-                        else "Каталог продуктов пуст.\nПродукты появятся здесь после добавления\nв холодильник, рецепт или список покупок.",
+                        if (searchQuery.isNotBlank()) stringResource(R.string.nothing_found)
+                        else if (showOnlyCustom) stringResource(R.string.no_custom_products)
+                        else stringResource(R.string.catalog_empty),
                         textAlign = TextAlign.Center,
                         color = MaterialTheme.colorScheme.onBackground,
                         modifier = Modifier.padding(horizontal = 32.dp)
@@ -291,16 +300,18 @@ fun ProductCatalogScreen(
     productPendingDelete?.let { product ->
         AlertDialog(
             onDismissRequest = { productPendingDelete = null },
-            title = { Text(text = "Удалить продукт?") },
-            text = { Text(text = "«${product.name}» будет удалён из каталога.") },
+            title = { Text(text = stringResource(R.string.delete_product_title)) },
+            text = { Text(text = stringResource(R.string.delete_product_message, product.name)) },
             confirmButton = {
                 TextButton(onClick = {
                     requestDelete(product)
                     productPendingDelete = null
-                }) { Text(text = "Удалить") }
+                }) { Text(text = stringResource(R.string.delete)) }
             },
             dismissButton = {
-                TextButton(onClick = { productPendingDelete = null }) { Text(text = "Отмена") }
+                TextButton(onClick = {
+                    productPendingDelete = null
+                }) { Text(text = stringResource(R.string.cancel)) }
             }
         )
     }
@@ -308,19 +319,33 @@ fun ProductCatalogScreen(
     pendingForceDelete?.let { (product, usagesCount) ->
         AlertDialog(
             onDismissRequest = { viewModel.cancelForceDelete() },
-            title = { Text(text = "Продукт используется") },
+            title = { Text(text = stringResource(R.string.product_in_use_title)) },
             text = {
                 Text(
-                    text = "«${product.name}» используется в $usagesCount местах " +
-                            "(рецепты / холодильник / список покупок). При удалении эти записи " +
-                            "тоже будут удалены. Продолжить?"
+                    text = stringResource(
+                        R.string.product_in_use_message,
+                        product.name,
+                        usagesCount
+                    )
                 )
             },
             confirmButton = {
-                TextButton(onClick = { viewModel.confirmForceDelete() }) { Text(text = "Всё равно удалить") }
+                TextButton(onClick = { viewModel.confirmForceDelete() }) {
+                    Text(
+                        text = stringResource(
+                            R.string.delete_anyway
+                        )
+                    )
+                }
             },
             dismissButton = {
-                TextButton(onClick = { viewModel.cancelForceDelete() }) { Text(text = "Отмена") }
+                TextButton(onClick = { viewModel.cancelForceDelete() }) {
+                    Text(
+                        text = stringResource(
+                            R.string.cancel
+                        )
+                    )
+                }
             }
         )
     }
@@ -349,20 +374,30 @@ private fun CatalogCategoryHeader(category: Category) {
 private fun CatalogProductRow(product: Product, onEdit: () -> Unit, onDelete: () -> Unit) {
     ListItem(
         headlineContent = { Text(text = product.name) },
-        supportingContent = { Text(text = "По умолчанию: ${product.defaultUnit.displayName}") },
+        supportingContent = {
+            Text(
+                text = stringResource(
+                    R.string.default_unit,
+                    product.defaultUnit.displayName
+                )
+            )
+        },
         leadingContent = {
             ProductIcon(product = product, modifier = Modifier.size(32.dp))
         },
         trailingContent = {
             Row {
                 IconButton(onClick = onEdit) {
-                    Icon(imageVector = Icons.Filled.Edit, contentDescription = "Редактировать")
+                    Icon(
+                        imageVector = Icons.Filled.Edit,
+                        contentDescription = stringResource(R.string.edit)
+                    )
                 }
                 if (!product.isDefault) {
                     IconButton(onClick = onDelete) {
                         Icon(
                             imageVector = Icons.Filled.Delete,
-                            contentDescription = "Удалить из каталога"
+                            contentDescription = stringResource(R.string.delete_from_catalog)
                         )
                     }
                 }
@@ -388,7 +423,7 @@ fun EditProductBottomSheet(
     var isAlwaysAvailable by remember(product.id) { mutableStateOf(product.isAlwaysAvailable) }
 
     AppBottomSheet(
-        title = "Редактировать продукт",
+        title = stringResource(R.string.edit_product_title),
         fillMaxHeight = true,
         onDismissRequest = onDismiss
     ) { onClose ->
@@ -409,12 +444,12 @@ fun EditProductBottomSheet(
         Spacer(Modifier.height(8.dp))
 
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-            TextButton(onClick = onClose) { Text("Отмена") }
+            TextButton(onClick = onClose) { Text(stringResource(R.string.cancel)) }
             Spacer(Modifier.width(8.dp))
             Button(
                 enabled = name.isNotBlank(),
                 onClick = { onConfirm(name.trim(), category, unit, isToTaste, isAlwaysAvailable) }
-            ) { Text("Сохранить") }
+            ) { Text(stringResource(R.string.save)) }
         }
     }
 }

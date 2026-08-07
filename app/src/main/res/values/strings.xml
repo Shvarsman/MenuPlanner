@@ -1,4 +1,10 @@
 <resources>
+    <!-- Общие -->
+    <string name="back">Back</string>
+    <string name="cancel">Cancel</string>
+    <string name="next">Next</string>
+    <string name="add">Add</string>
+    <!-- Профиль-->
     <string name="app_name">Coolinar</string>
     <string name="profile_title">Profile</string>
     <string name="profile_sign_in">Sign in</string>
@@ -19,20 +25,18 @@
     <string name="profile_display_name_fallback">Guest user</string>
     <string name="profile_sign_out_confirm_title">Sign out?</string>
     <string name="profile_sign_out_confirm_text">You can sign back in anytime with the same account.</string>
-    <string name="profile_cancel">Cancel</string>
-
     <string name="profile_display_name">Name</string>
-    <string name="onboarding_page1_title">Plan your fridge</string>
-    <string name="onboarding_page1_description">Track what you have at home, expiration dates, and never run out of essentials.</string>
-    <string name="onboarding_page2_title">Discover recipes</string>
-    <string name="onboarding_page2_description">Save your favorite recipes and see what you can cook right now with what\'s in your fridge.</string>
-    <string name="onboarding_page3_title">Plan your week</string>
-    <string name="onboarding_page3_description">Build a weekly menu and get a shopping list generated automatically.</string>
-    <string name="onboarding_final_title">Get started</string>
+
+    <!-- Онбординг-->
+    <string name="onboarding_page1_title">Hi! I\'m Iradiy</string>
+    <string name="onboarding_page1_description">I\'ll help you keep track of what\'s in your fridge and remind you about expiration dates in time.</string>
+    <string name="onboarding_page2_title">I love good recipes</string>
+    <string name="onboarding_page2_description">Save your favorite recipes — I\'ll show you what you can cook right now with what\'s at home.</string>
+    <string name="onboarding_page3_title">Shall we plan the week together?</string>
+    <string name="onboarding_page3_description">Build your weekly menu, and I\'ll put together the shopping list for you.</string>
+    <string name="onboarding_final_title">Let\'s get started!</string>
     <string name="onboarding_skip_intro">Skip</string>
     <string name="onboarding_skip">Continue without an account</string>
-    <string name="onboarding_next">Next</string>
-
     <string name="profile_setup_button">Set up profile</string>
     <string name="profile_settings_title">Profile settings</string>
     <string name="profile_settings_save">Save</string>
@@ -43,4 +47,120 @@
     <string name="profile_confirm_new_password">Confirm new password</string>
     <string name="profile_password_changed">Password changed</string>
     <string name="profile_error_passwords_dont_match">Passwords don\'t match</string>
+
+    <!-- Бэкап-->
+    <string name="backup_title">Backup</string>
+    <string name="backup_full_title">Full backup</string>
+    <string name="backup_full_description">Recipes, fridge, shopping list and the whole weekly menu.</string>
+    <string name="backup_full_button">Create full backup</string>
+    <string name="backup_recipes_title">Recipes only</string>
+    <string name="backup_recipes_description">All recipes with photos, ingredients and steps — without fridge, shopping list or menu.</string>
+    <string name="backup_recipes_button">Save all recipes</string>
+    <string name="backup_restore_title">Restore</string>
+    <string name="backup_restore_description">Any backup file works — full, recipes only, or a single recipe. Products are merged by name. Recipes and menu entries are always added as new.</string>
+    <string name="backup_restore_button">Restore from file</string>
+    <string name="backup_please_wait">Please wait</string>
+    <string name="backup_processing">Processing backup…</string>
+    <string name="ok">OK</string>
+    <string name="backup_done">Done</string>
+    <string name="backup_error">Error</string>
+    <string name="backup_export_summary_full">Saved: recipes — %1$d, fridge items — %2$d, shopping list items — %3$d, menu entries — %4$d</string>
+    <string name="backup_export_summary_recipes">Recipes saved: %1$d</string>
+    <string name="backup_export_summary_single_recipe">Recipe saved</string>
+    <string name="backup_import_part_recipes">recipes — %1$d</string>
+    <string name="backup_import_part_fridge">fridge items — %1$d</string>
+    <string name="backup_import_part_shopping">shopping list items — %1$d</string>
+    <string name="backup_import_part_menu">menu entries — %1$d</string>
+    <string name="backup_import_empty">The file contained no data to restore</string>
+    <string name="backup_import_summary">Restored: %1$s</string>
+
+    <!--DurationPickerDialog-->
+    <string name="duration_picker_title">Cooking time</string>
+    <string name="cooking_time_hours_minutes">%1$dh %2$dmin</string>
+    <string name="cooking_time_hours">%1$dh</string>
+    <string name="cooking_time_minutes">%1$dmin</string>
+    <string name="cooking_time_zero">0min</string>
+
+    <!--IngredientListItem-->
+    <string name="to_taste">To taste</string>
+    <string name="ingredient_available">Sufficient</string>
+    <string name="ingredient_insufficient">Not enough</string>
+    <string name="remove_ingredient">Remove ingredient</string>
+
+    <!--ProductFormFields-->
+    <string name="product_name_label">Name</string>
+    <string name="product_name_placeholder">E.g., Watermelon</string>
+    <string name="category_label">Category</string>
+    <string name="default_measure_unit_label">Default unit of measure</string>
+    <string name="to_taste_description">No fixed amount — salt, spices, etc.</string>
+    <string name="always_available">Always in stock</string>
+    <string name="always_available_description">Tap water and the like — not stored in the fridge, never added to shopping list</string>
+
+    <!--ProductPickerDialog-->
+    <string name="select_product">Select product</string>
+    <string name="new_product">New product</string>
+    <string name="search_product">Search product</string>
+    <string name="create_new_product">Create new product</string>
+    <string name="nothing_found">Nothing found</string>
+    <string name="nothing_found_hint">Try a different search or create a new product</string>
+    <string name="quantity_label">Quantity</string>
+    <string name="expiration_date_label">Expiration date</string>
+    <string name="create_product_error">Failed to create product: %1$s</string>
+    <string name="creating">Creating…</string>
+
+    <!--StepContent-->
+    <string name="step_placeholder">Describe the step…</string>
+    <string name="delete_photo">Delete photo</string>
+    <string name="timer">Timer</string>
+    <string name="delete_timer">Delete timer</string>
+
+    <!--TimerPickerDialog-->
+    <string name="step_timer_title">Step timer</string>
+    <string name="decrease">Decrease</string>
+    <string name="increase">Increase</string>
+    <string name="minutes_short">min</string>
+    <string name="minutes_value">%1$d min</string>
+    <string name="clear">Clear</string>
+
+    <!--SelectorField-->
+    <string name="open_selection">Open picker</string>
+
+    <!--ProductCatalogScreen-->
+    <string name="search_products">Search products</string>
+    <string name="my_products">My products</string>
+    <string name="all">All</string>
+    <string name="all_categories">All categories</string>
+    <string name="category_with_count">%1$s (%2$d)</string>
+    <string name="no_custom_products">You haven\'t added any custom products yet</string>
+    <string name="catalog_empty">The product catalog is empty.\nProducts will appear here once added\nto the fridge, a recipe, or the shopping list.</string>
+    <string name="delete_product_title">Delete product?</string>
+    <string name="delete_product_message">\u00AB%1$s\u00BB will be removed from the catalog.</string>
+    <string name="delete">Delete</string>
+    <string name="product_in_use_title">Product is in use</string>
+    <string name="product_in_use_message">\u00AB%1$s\u00BB is used in %2$d places (recipes / fridge / shopping list). Deleting it will also remove those entries. Continue?</string>
+    <string name="delete_anyway">Delete anyway</string>
+    <string name="default_unit">Default: %1$s</string>
+    <string name="edit">Edit</string>
+    <string name="delete_from_catalog">Remove from catalog</string>
+    <string name="edit_product_title">Edit product</string>
+    <string name="save">Save</string>
+    <string name="deleted_from_catalog">\u00AB%1$s\u00BB removed from catalog</string>
+    <string name="undo">Undo</string>
+
+    <!--FormFields-->
+    <string name="unit_of_measure">Unit of measure</string>
+    <string name="not_specified">Not set</string>
+    <string name="remove_date">Remove date</string>
+
+    <!--ShoppingListScreen-->
+    <string name="search_shopping_list">Search shopping list</string>
+    <string name="move_to_fridge">Move purchased items to fridge</string>
+    <string name="add_product">Add product</string>
+    <string name="shopping_list_empty">Shopping list is empty.\nAdd some products.</string>
+    <string name="move_to_fridge_title">Move to fridge?</string>
+    <string name="move_to_fridge_message">Checked items will be removed from the shopping list and added to the fridge.</string>
+    <string name="move">Move</string>
+    <string name="purchased">Purchased</string>
+    <string name="qty_with_unit">%1$s %2$s</string>
+    <string name="shopping_item_deleted">\u00AB%1$s\u00BB deleted</string>
 </resources>

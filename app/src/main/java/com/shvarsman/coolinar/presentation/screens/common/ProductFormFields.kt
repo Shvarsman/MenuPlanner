@@ -33,7 +33,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.shvarsman.coolinar.R
 import com.shvarsman.coolinar.domain.model.Category
 import com.shvarsman.coolinar.domain.model.MeasureUnit
 import com.shvarsman.coolinar.presentation.ui.icons.CategoryIcon
@@ -48,10 +50,10 @@ fun ProductNameField(
     isError: Boolean = false
 ) {
     LabeledTextField(
-        label = "Название",
+        label = stringResource(R.string.product_name_label),
         value = name,
         onValueChange = onNameChange,
-        placeholder = "Например, Арбуз",
+        placeholder = stringResource(R.string.product_name_placeholder),
         isError = isError,
         modifier = modifier
     )
@@ -65,7 +67,7 @@ fun CategoryPickerList(
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier) {
-        FieldLabel("Категория")
+        FieldLabel(stringResource(R.string.category_label))
         LazyColumn(
             modifier = Modifier
                 .fillMaxWidth()
@@ -97,7 +99,7 @@ fun MeasureUnitField(
     selectedUnit: MeasureUnit,
     onUnitChange: (MeasureUnit) -> Unit,
     modifier: Modifier = Modifier,
-    label: String = "Единица измерения по умолчанию"
+    label: String = stringResource(R.string.default_measure_unit_label)
 ) {
     var expanded by remember { mutableStateOf(false) }
     Column(modifier = modifier) {
@@ -174,12 +176,12 @@ fun ProductFormFields(
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    "По вкусу",
+                    text = stringResource(R.string.to_taste),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
-                    "Без фиксированного количества — соль, специи и т.п.",
+                    text = stringResource(R.string.to_taste_description),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -194,12 +196,12 @@ fun ProductFormFields(
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    "Всегда в наличии",
+                    stringResource(R.string.always_available),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
-                    "Вода из-под крана и т.п. — не хранится в холодильнике, не докупается",
+                    stringResource(R.string.always_available_description),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

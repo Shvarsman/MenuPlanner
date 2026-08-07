@@ -46,7 +46,7 @@ fun DropdownFilterChip(
             leadingIcon = if (isActive) {
                 {
                     Icon(
-                        Icons.Filled.Check,
+                        imageVector = Icons.Filled.Check,
                         contentDescription = null,
                         modifier = Modifier.size(FilterChipDefaults.IconSize)
                     )
@@ -54,7 +54,7 @@ fun DropdownFilterChip(
             } else null,
             trailingIcon = {
                 Icon(
-                    Icons.Filled.ArrowDropDown,
+                    imageVector = Icons.Filled.ArrowDropDown,
                     contentDescription = null,
                     modifier = Modifier.size(FilterChipDefaults.IconSize)
                 )

@@ -1,5 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Общие -->
+    <string name="back">Назад</string>
+    <string name="cancel">Отмена</string>
+    <string name="next">Далее</string>
+    <string name="add">Добавить</string>
+
+    <!-- Профиль-->
     <string name="app_name">Coolinar</string>
     <string name="profile_title">Профиль</string>
     <string name="profile_sign_in">Войти</string>
@@ -20,20 +27,18 @@
     <string name="profile_display_name_fallback">Гость</string>
     <string name="profile_sign_out_confirm_title">Выйти из аккаунта?</string>
     <string name="profile_sign_out_confirm_text">Вы всегда сможете войти обратно с тем же аккаунтом.</string>
-    <string name="profile_cancel">Отмена</string>
 
+    <!-- Онбординг-->
     <string name="profile_display_name">Имя</string>
-    <string name="onboarding_page1_title">Планируйте холодильник</string>
-    <string name="onboarding_page1_description">Следите за тем, что есть дома, сроками годности, и никогда не оставайтесь без нужных продуктов.</string>
-    <string name="onboarding_page2_title">Открывайте рецепты</string>
-    <string name="onboarding_page2_description">Сохраняйте любимые рецепты и смотрите, что можно приготовить прямо сейчас из того, что есть в холодильнике.</string>
-    <string name="onboarding_page3_title">Планируйте неделю</string>
-    <string name="onboarding_page3_description">Составляйте меню на неделю и получайте автоматически сформированный список покупок.</string>
-    <string name="onboarding_final_title">Начнём</string>
+    <string name="onboarding_page1_title">Привет! Я Ирадий</string>
+    <string name="onboarding_page1_description">Буду помогать тебе следить за продуктами в холодильнике и вовремя напоминать о сроках годности.</string>
+    <string name="onboarding_page2_title">Я люблю хорошие рецепты</string>
+    <string name="onboarding_page2_description">Сохраняй любимые рецепты — покажу, что можно приготовить прямо сейчас из того, что уже есть дома.</string>
+    <string name="onboarding_page3_title">Спланируем неделю вместе?</string>
+    <string name="onboarding_page3_description">Составь меню на неделю, а я сама соберу список покупок.</string>
+    <string name="onboarding_final_title">Давай приступим!</string>
     <string name="onboarding_skip_intro">Пропустить</string>
     <string name="onboarding_skip">Продолжить без аккаунта</string>
-    <string name="onboarding_next">Далее</string>
-
     <string name="profile_setup_button">Настроить профиль</string>
     <string name="profile_settings_title">Настройки профиля</string>
     <string name="profile_settings_save">Сохранить</string>
@@ -44,4 +49,120 @@
     <string name="profile_confirm_new_password">Подтвердите новый пароль</string>
     <string name="profile_password_changed">Пароль изменён</string>
     <string name="profile_error_passwords_dont_match">Пароли не совпадают</string>
+
+    <!-- Бэкап-->
+    <string name="backup_title">Резервное копирование</string>
+    <string name="backup_full_title">Полное копирование</string>
+    <string name="backup_full_description">Рецепты, холодильник, список покупок и меню на неделю целиком.</string>
+    <string name="backup_full_button">Создать полную копию</string>
+    <string name="backup_recipes_title">Только рецепты</string>
+    <string name="backup_recipes_description">Все рецепты с фото, ингредиентами и шагами — без холодильника, покупок и меню.</string>
+    <string name="backup_recipes_button">Сохранить все рецепты</string>
+    <string name="backup_restore_title">Восстановление</string>
+    <string name="backup_restore_description">Подходит любой файл резервной копии — полный, только рецепты или один рецепт. Продукты объединяются по названию. Рецепты и записи меню всегда добавляются как новые.</string>
+    <string name="backup_restore_button">Восстановить из файла</string>
+    <string name="backup_please_wait">Подождите</string>
+    <string name="backup_processing">Обработка резервной копии…</string>
+    <string name="ok">Ок</string>
+    <string name="backup_done">Готово</string>
+    <string name="backup_error">Ошибка</string>
+    <string name="backup_export_summary_full">Сохранено: рецептов — %1$d, продуктов в холодильнике — %2$d, позиций в списке покупок — %3$d, записей в меню — %4$d</string>
+    <string name="backup_export_summary_recipes">Сохранено рецептов: %1$d</string>
+    <string name="backup_export_summary_single_recipe">Рецепт сохранён</string>
+    <string name="backup_import_part_recipes">рецептов — %1$d</string>
+    <string name="backup_import_part_fridge">продуктов в холодильнике — %1$d</string>
+    <string name="backup_import_part_shopping">позиций в списке покупок — %1$d</string>
+    <string name="backup_import_part_menu">записей в меню — %1$d</string>
+    <string name="backup_import_empty">Файл не содержал данных для восстановления</string>
+    <string name="backup_import_summary">Восстановлено: %1$s</string>
+
+    <!--DurationPickerDialog-->
+    <string name="duration_picker_title">Время приготовления</string>
+    <string name="cooking_time_hours_minutes">%1$dч %2$dмин</string>
+    <string name="cooking_time_hours">%1$dч</string>
+    <string name="cooking_time_minutes">%1$dмин</string>
+    <string name="cooking_time_zero">0мин</string>
+
+    <!--IngredientListItem-->
+    <string name="to_taste">По вкусу</string>
+    <string name="ingredient_available">Хватает</string>
+    <string name="ingredient_insufficient">Не хватает</string>
+    <string name="remove_ingredient">Удалить ингредиент</string>
+
+    <!--ProductFormFields-->
+    <string name="product_name_label">Название</string>
+    <string name="product_name_placeholder">Например, Арбуз</string>
+    <string name="category_label">Категория</string>
+    <string name="default_measure_unit_label">Единица измерения по умолчанию</string>
+    <string name="to_taste_description">Без фиксированного количества — соль, специи и т.п.</string>
+    <string name="always_available">Всегда в наличии</string>
+    <string name="always_available_description">Вода из-под крана и т.п. — не хранится в холодильнике, не докупается</string>
+
+    <!--ProductPickerDialog-->
+    <string name="select_product">Выбрать продукт</string>
+    <string name="new_product">Новый продукт</string>
+    <string name="search_product">Поиск продукта</string>
+    <string name="create_new_product">Создать новый продукт</string>
+    <string name="nothing_found">Ничего не найдено</string>
+    <string name="nothing_found_hint">Попробуйте изменить запрос или создайте новый продукт</string>
+    <string name="quantity_label">Количество</string>
+    <string name="expiration_date_label">Срок годности</string>
+    <string name="create_product_error">Не удалось создать продукт: %1$s</string>
+    <string name="creating">Создание…</string>
+
+    <!--StepContent-->
+    <string name="step_placeholder">Опишите шаг…</string>
+    <string name="delete_photo">Удалить фото</string>
+    <string name="timer">Таймер</string>
+    <string name="delete_timer">Удалить таймер</string>
+
+    <!--TimerPickerDialog-->
+    <string name="step_timer_title">Таймер шага</string>
+    <string name="decrease">Меньше</string>
+    <string name="increase">Больше</string>
+    <string name="minutes_short">мин</string>
+    <string name="minutes_value">%1$d мин</string>
+    <string name="clear">Очистить</string>
+
+    <!--SelectorField-->
+    <string name="open_selection">Открыть выбор</string>
+
+    <!--ProductCatalogScreen-->
+    <string name="search_products">Поиск продуктов</string>
+    <string name="my_products">Мои продукты</string>
+    <string name="all">Все</string>
+    <string name="all_categories">Все категории</string>
+    <string name="category_with_count">%1$s (%2$d)</string>
+    <string name="no_custom_products">Вы ещё не добавили свои продукты</string>
+    <string name="catalog_empty">Каталог продуктов пуст.\nПродукты появятся здесь после добавления\nв холодильник, рецепт или список покупок.</string>
+    <string name="delete_product_title">Удалить продукт?</string>
+    <string name="delete_product_message">\u00AB%1$s\u00BB будет удалён из каталога.</string>
+    <string name="delete">Удалить</string>
+    <string name="product_in_use_title">Продукт используется</string>
+    <string name="product_in_use_message">\u00AB%1$s\u00BB используется в %2$d местах (рецепты / холодильник / список покупок). При удалении эти записи тоже будут удалены. Продолжить?</string>
+    <string name="delete_anyway">Всё равно удалить</string>
+    <string name="default_unit">По умолчанию: %1$s</string>
+    <string name="edit">Редактировать</string>
+    <string name="delete_from_catalog">Удалить из каталога</string>
+    <string name="edit_product_title">Редактировать продукт</string>
+    <string name="save">Сохранить</string>
+    <string name="deleted_from_catalog">\u00AB%1$s\u00BB удалён из каталога</string>
+    <string name="undo">Отменить</string>
+
+    <!--FormFields-->
+    <string name="unit_of_measure">Единица измерения</string>
+    <string name="not_specified">Не указан</string>
+    <string name="remove_date">Убрать дату</string>
+
+    <!--ShoppingListScreen-->
+    <string name="search_shopping_list">Поиск в списке покупок</string>
+    <string name="move_to_fridge">Перенести купленное в холодильник</string>
+    <string name="add_product">Добавить продукт</string>
+    <string name="shopping_list_empty">Список покупок пуст.\nДобавьте продукты.</string>
+    <string name="move_to_fridge_title">Перенести в холодильник?</string>
+    <string name="move_to_fridge_message">Отмеченные продукты будут удалены из списка покупок и добавлены в холодильник.</string>
+    <string name="move">Перенести</string>
+    <string name="purchased">Куплено</string>
+    <string name="qty_with_unit">%1$s %2$s</string>
+    <string name="shopping_item_deleted">\u00AB%1$s\u00BB удалён</string>
 </resources>

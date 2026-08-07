@@ -34,8 +34,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.shvarsman.coolinar.R
 import com.shvarsman.coolinar.domain.model.Category
 import com.shvarsman.coolinar.domain.model.MeasureUnit
 import com.shvarsman.coolinar.domain.model.Product
@@ -77,6 +80,7 @@ fun ProductPickerDialog(
     var isCreating by remember { mutableStateOf(false) }
 
     val coroutineScope = rememberCoroutineScope()
+    val createProductErrorTemplate = stringResource(R.string.create_product_error)
 
     val filtered = remember(query, catalog) {
         if (query.isBlank()) catalog else catalog.filter {
@@ -89,8 +93,8 @@ fun ProductPickerDialog(
     AppBottomSheet(
         modifier = modifier,
         title = when (step) {
-            PickerStep.SELECT -> "Выбрать продукт"
-            PickerStep.CREATE -> "Новый продукт"
+            PickerStep.SELECT -> stringResource(R.string.select_product)
+            PickerStep.CREATE -> stringResource(R.string.new_product)
             PickerStep.QUANTITY -> ""
         },
         fillMaxHeight = true,
@@ -107,7 +111,7 @@ fun ProductPickerDialog(
                     TopBarSearchField(
                         query = query,
                         onQueryChange = { query = it },
-                        placeholder = "Поиск продукта",
+                        placeholder = stringResource(R.string.search_product),
                         modifier = Modifier.fillMaxWidth()
                     )
                     Spacer(Modifier.height(8.dp))
@@ -125,14 +129,15 @@ fun ProductPickerDialog(
                             modifier = Modifier.size(18.dp)
                         )
                         Spacer(Modifier.width(4.dp))
-                        Text("Создать новый продукт")
+                        Text(stringResource(R.string.create_new_product))
                     }
 
                     if (filtered.isEmpty()) {
-                        Text(
-                            "Ничего не найдено",
-                            modifier = Modifier.padding(16.dp),
-                            color = MaterialTheme.colorScheme.onSurface
+                        MascotEmptyState(
+                            pose = MascotPose.SEARCHING,
+                            title = stringResource(R.string.nothing_found),
+                            subtitle = stringResource(R.string.nothing_found_hint),
+                            size = 120.dp
                         )
                     } else {
                         LazyColumn(
@@ -226,7 +231,7 @@ fun ProductPickerDialog(
                                 )
                             }
                         }
-                        FieldLabel("Количество")
+                        FieldLabel(stringResource(R.string.quantity_label))
                         QuantityUnitField(
                             quantityText = quantityText,
                             onQuantityChange = { quantityText = it },
@@ -239,7 +244,7 @@ fun ProductPickerDialog(
                             ExpirationDatePickerField(
                                 value = expirationDate,
                                 onValueChange = { expirationDate = it },
-                                label = "Срок годности"
+                                label = stringResource(R.string.expiration_date_label)
                             )
                         }
                     }
@@ -256,7 +261,7 @@ fun ProductPickerDialog(
         ) {
             when (step) {
                 PickerStep.SELECT -> {
-                    TextButton(onClick = onClose) { Text("Отмена") }
+                    TextButton(onClick = onClose) { Text(stringResource(R.string.cancel)) }
                     Spacer(Modifier.width(0.dp))
                 }
 
@@ -268,7 +273,7 @@ fun ProductPickerDialog(
                             modifier = Modifier.size(16.dp)
                         )
                         Spacer(Modifier.width(4.dp))
-                        Text("Назад")
+                        Text(stringResource(R.string.back))
                     }
                 }
             }
@@ -289,13 +294,13 @@ fun ProductPickerDialog(
                                 createError = null
                                 step = PickerStep.QUANTITY
                             } catch (e: Exception) {
-                                createError = "Не удалось создать продукт: ${e.localizedMessage}"
+                                createError = String.format(createProductErrorTemplate, e.localizedMessage)
                             } finally {
                                 isCreating = false
                             }
                         }
                     }
-                ) { Text(if (isCreating) "Создание..." else "Далее") }
+                ) { Text(if (isCreating) stringResource(R.string.creating) else stringResource(R.string.next)) }
 
                 PickerStep.QUANTITY -> Button(
                     enabled = parsedQuantity != null && parsedQuantity > 0,
@@ -303,7 +308,7 @@ fun ProductPickerDialog(
                         val product = selectedProduct ?: return@Button
                         onConfirm(product, selectedUnit, parsedQuantity ?: 0.0, expirationDate)
                     }
-                ) { Text("Добавить") }
+                ) { Text(stringResource(R.string.add)) }
             }
         }
     }

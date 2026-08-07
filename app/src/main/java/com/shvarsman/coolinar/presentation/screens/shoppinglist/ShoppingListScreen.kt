@@ -1,6 +1,5 @@
 package com.shvarsman.coolinar.presentation.screens.shoppinglist
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -29,7 +28,6 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
@@ -50,13 +48,14 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.shvarsman.coolinar.R
 import com.shvarsman.coolinar.domain.model.Category
 import com.shvarsman.coolinar.domain.model.MeasureUnit
 import com.shvarsman.coolinar.domain.model.ShoppingListItem
@@ -70,9 +69,6 @@ import com.shvarsman.coolinar.presentation.screens.common.SwipeToDeleteRow
 import com.shvarsman.coolinar.presentation.screens.common.TopBarSearchField
 import com.shvarsman.coolinar.presentation.ui.icons.CategoryIcon
 import com.shvarsman.coolinar.presentation.ui.icons.ProductIcon
-import com.shvarsman.coolinar.presentation.ui.theme.CornerShape
-import com.shvarsman.coolinar.presentation.ui.theme.FloatingBottomBarClearance
-import com.shvarsman.coolinar.presentation.ui.theme.gradientStyle
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -97,13 +93,15 @@ fun ShoppingListScreen(
 
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
+    val deletedItemTemplate = stringResource(R.string.shopping_item_deleted)
+    val undoLabel = stringResource(R.string.undo)
 
     fun requestDelete(item: ShoppingListItem) {
         viewModel.requestDelete(item.id)
         scope.launch {
             val result = snackbarHostState.showSnackbar(
-                message = "«${item.product.name}» удалён",
-                actionLabel = "Отменить",
+                message = String.format(deletedItemTemplate, item.product.name),
+                actionLabel = undoLabel,
                 duration = SnackbarDuration.Short
             )
             if (result == SnackbarResult.ActionPerformed) viewModel.undoDelete(item.id)
@@ -122,7 +120,7 @@ fun ShoppingListScreen(
                     ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Назад"
+                            contentDescription = stringResource(R.string.back)
                         )
                     }
                 },
@@ -131,7 +129,7 @@ fun ShoppingListScreen(
                         modifier = Modifier.padding(end = 8.dp),
                         query = searchQuery,
                         onQueryChange = { viewModel.onSearchQueryChange(it) },
-                        placeholder = "Поиск в списке покупок"
+                        placeholder = stringResource(R.string.search_shopping_list)
                     )
                 },
                 actions = {
@@ -141,7 +139,7 @@ fun ShoppingListScreen(
                     ) {
                         Icon(
                             imageVector = Icons.Filled.Kitchen,
-                            contentDescription = "Перенести купленное в холодильник",
+                            contentDescription = stringResource(R.string.move_to_fridge),
                             tint = if (hasCheckedItems) {
                                 MaterialTheme.colorScheme.onSurfaceVariant
                             } else {
@@ -160,7 +158,10 @@ fun ShoppingListScreen(
             GlassFab(
                 onClick = { viewModel.openPicker() }
             ) {
-                Icon(Icons.Filled.Add, contentDescription = "Добавить продукт")
+                Icon(
+                    imageVector = Icons.Filled.Add,
+                    contentDescription = stringResource(R.string.add_product)
+                )
             }
         }
     ) { padding ->
@@ -177,18 +178,23 @@ fun ShoppingListScreen(
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 DropdownFilterChip(
-                    displayText = selectedCategory?.displayName ?: "Категория",
+                    displayText = selectedCategory?.displayName
+                        ?: stringResource(R.string.category_label),
                     isActive = selectedCategory != null
                 ) { close ->
                     DropdownMenuItem(
-                        text = { Text("Все категории") },
+                        text = { Text(stringResource(R.string.all_categories)) },
                         onClick = { viewModel.selectCategory(null); close() }
                     )
                     availableCategories.forEach { (category, count) ->
                         DropdownMenuItem(
                             text = {
                                 Text(
-                                    "${category.displayName} ($count)",
+                                    stringResource(
+                                        R.string.category_with_count,
+                                        category.displayName,
+                                        count
+                                    ),
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis
                                 )
@@ -244,8 +250,8 @@ fun ShoppingListScreen(
                     )
                     Spacer(Modifier.height(12.dp))
                     Text(
-                        if (searchQuery.isNotBlank() || selectedCategory != null) "Ничего не найдено"
-                        else "Список покупок пуст.\nДобавьте продукты.",
+                        if (searchQuery.isNotBlank() || selectedCategory != null) stringResource(R.string.nothing_found)
+                        else stringResource(R.string.shopping_list_empty),
                         textAlign = TextAlign.Center,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -310,13 +316,17 @@ fun ShoppingListScreen(
     if (showMoveConfirmation) {
         AlertDialog(
             onDismissRequest = { viewModel.cancelMoveToFridge() },
-            title = { Text("Перенести в холодильник?") },
-            text = { Text("Отмеченные продукты будут удалены из списка покупок и добавлены в холодильник.") },
+            title = { Text(stringResource(R.string.move_to_fridge_title)) },
+            text = { Text(stringResource(R.string.move_to_fridge_message)) },
             confirmButton = {
-                TextButton(onClick = { viewModel.confirmMoveCheckedToFridge() }) { Text("Перенести") }
+                TextButton(onClick = { viewModel.confirmMoveCheckedToFridge() }) {
+                    Text(
+                        stringResource(R.string.move)
+                    )
+                }
             },
             dismissButton = {
-                TextButton(onClick = { viewModel.cancelMoveToFridge() }) { Text("Отмена") }
+                TextButton(onClick = { viewModel.cancelMoveToFridge() }) { Text(stringResource(R.string.cancel)) }
             }
         )
     }
@@ -354,7 +364,7 @@ private fun CheckedHeader() {
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         Text(
-            "Куплено",
+            text = stringResource(R.string.purchased),
             style = MaterialTheme.typography.titleSmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -393,7 +403,11 @@ private fun ShoppingItemRow(
         },
         trailingContent = {
             Text(
-                "${formatQty(item.quantity)} ${item.unit.displayName}",
+                text = stringResource(
+                    R.string.qty_with_unit,
+                    formatQty(item.quantity),
+                    item.unit.displayName
+                ),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -419,7 +433,7 @@ private fun EditShoppingItemDialog(
         title = { Text(item.product.name) },
         text = {
             Column {
-                FieldLabel("Количество")
+                FieldLabel(stringResource(R.string.quantity_label))
                 QuantityUnitField(
                     quantityText = quantityText,
                     onQuantityChange = { quantityText = it },
@@ -431,9 +445,9 @@ private fun EditShoppingItemDialog(
         confirmButton = {
             TextButton(onClick = {
                 onConfirm(selectedUnit, quantityText.toDoubleOrNull() ?: item.quantity)
-            }) { Text("Сохранить") }
+            }) { Text(stringResource(R.string.save)) }
         },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("Отмена") } }
+        dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) } }
     )
 }
 

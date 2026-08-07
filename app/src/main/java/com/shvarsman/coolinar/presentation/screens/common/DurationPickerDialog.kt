@@ -20,11 +20,13 @@ import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import com.shvarsman.coolinar.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -60,7 +62,7 @@ fun DurationPickerDialog(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(bottom = 20.dp),
-                    text = "Время приготовления",
+                    text = stringResource(R.string.duration_picker_title),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface,
@@ -76,7 +78,10 @@ fun DurationPickerDialog(
                     horizontalArrangement = Arrangement.End
                 ) {
                     TextButton(onClick = onDismissRequest) {
-                        Text("Отмена", style = MaterialTheme.typography.labelLarge)
+                        Text(
+                            stringResource(R.string.cancel),
+                            style = MaterialTheme.typography.labelLarge
+                        )
                     }
                     Spacer(modifier = Modifier.width(8.dp))
                     TextButton(
@@ -84,7 +89,10 @@ fun DurationPickerDialog(
                             onConfirm(timePickerState.hour, timePickerState.minute)
                         }
                     ) {
-                        Text("ОК", style = MaterialTheme.typography.labelLarge)
+                        Text(
+                            stringResource(R.string.ok),
+                            style = MaterialTheme.typography.labelLarge
+                        )
                     }
                 }
             }
@@ -92,11 +100,17 @@ fun DurationPickerDialog(
     }
 }
 
+@Composable
 fun formatCookingTime(hours: Int, minutes: Int): String {
     return when {
-        hours > 0 && minutes > 0 -> "${hours}ч ${minutes}мин"
-        hours > 0 -> "${hours}ч"
-        minutes > 0 -> "${minutes}мин"
-        else -> "0мин"
+        hours > 0 && minutes > 0 -> stringResource(
+            R.string.cooking_time_hours_minutes,
+            hours,
+            minutes
+        )
+
+        hours > 0 -> stringResource(R.string.cooking_time_hours, hours)
+        minutes > 0 -> stringResource(R.string.cooking_time_minutes, minutes)
+        else -> stringResource(R.string.cooking_time_zero)
     }
 }

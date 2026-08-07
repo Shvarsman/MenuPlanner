@@ -20,6 +20,7 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -29,6 +30,7 @@ import coil3.compose.AsyncImage
 import com.shvarsman.coolinar.domain.model.StepContentItem
 import com.shvarsman.coolinar.presentation.ui.theme.CornerShape
 import kotlinx.coroutines.launch
+import com.shvarsman.coolinar.R
 
 sealed interface RenderedStep {
     data class Text(
@@ -203,7 +205,7 @@ private fun StepTextBlock(
             ),
             placeholder = {
                 Text(
-                    text = "Опишите шаг...",
+                    text = stringResource(R.string.step_placeholder),
                     fontSize = 16.sp,
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
                 )
@@ -255,7 +257,7 @@ private fun StepImageContent(
         ) {
             Icon(
                 imageVector = Icons.Default.Close,
-                contentDescription = "Удалить фото",
+                contentDescription = stringResource(R.string.delete_photo),
                 tint = MaterialTheme.colorScheme.onSurface
             )
         }
@@ -296,7 +298,7 @@ private fun StepTimerRow(
             )
             Spacer(Modifier.width(12.dp))
             Text(
-                text = "Таймер",
+                text = stringResource(R.string.timer),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSecondaryContainer,
                 modifier = Modifier.weight(1f)
@@ -313,7 +315,7 @@ private fun StepTimerRow(
             IconButton(onClick = onDelete) {
                 Icon(
                     imageVector = Icons.Default.Close,
-                    contentDescription = "Удалить таймер",
+                    contentDescription = stringResource(R.string.delete_timer),
                     tint = MaterialTheme.colorScheme.onSecondaryContainer
                 )
             }
