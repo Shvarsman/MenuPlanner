@@ -13,6 +13,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -20,12 +21,13 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import coil3.compose.AsyncImage
 import com.shvarsman.coolinar.presentation.screens.common.rememberSizedImageRequest
 import com.shvarsman.coolinar.presentation.ui.theme.CornerShape
+import com.shvarsman.coolinar.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CookingScreen(
-    recipeId: Long,
-    menuEntryId: Long,
+    recipeId: String,
+    menuEntryId: String,
     onBack: () -> Unit,
     onFinished: () -> Unit,
     viewModel: CookingViewModel = hiltViewModel()
@@ -44,14 +46,17 @@ fun CookingScreen(
             TopAppBar(
                 title = {
                     Text(
-                        text = state.recipe?.title ?: "Готовка",
+                        text = state.recipe?.title ?: stringResource(R.string.cooking_title),
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Medium
                     )
                 },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад")
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = stringResource(R.string.back)
+                        )
                     }
                 }
             )
@@ -66,7 +71,7 @@ fun CookingScreen(
                 ) {
                     Icon(Icons.Filled.Check, contentDescription = null)
                     Spacer(Modifier.width(8.dp))
-                    Text("Готово")
+                    Text(stringResource(R.string.done))
                 }
             }
         }
@@ -89,7 +94,7 @@ fun CookingScreen(
                     .fillMaxSize()
                     .padding(padding), contentAlignment = Alignment.Center
             ) {
-                Text("Рецепт не найден")
+                Text(stringResource(R.string.recipe_not_found))
             }
             return@Scaffold
         }
@@ -119,7 +124,7 @@ fun CookingScreen(
 
             item {
                 Text(
-                    "Ингредиенты",
+                    text = stringResource(R.string.ingredients),
                     style = MaterialTheme.typography.titleMedium,
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
                 )
@@ -127,9 +132,14 @@ fun CookingScreen(
             items(recipe.ingredients) { ingredient ->
                 Text(
                     if (ingredient.product.isToTaste)
-                        "${ingredient.product.name} — по вкусу"
+                        stringResource(R.string.ingredient_to_taste, ingredient.product.name)
                     else
-                        "${ingredient.product.name} — ${formatQty(ingredient.quantity)} ${ingredient.unit.displayName}",
+                        stringResource(
+                            R.string.ingredient_with_qty,
+                            ingredient.product.name,
+                            formatQty(ingredient.quantity),
+                            ingredient.unit.displayName
+                        ),
                     style = MaterialTheme.typography.bodyMedium,
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 2.dp)
                 )
@@ -137,7 +147,7 @@ fun CookingScreen(
 
             item {
                 Text(
-                    "Шаги приготовления",
+                    text = stringResource(R.string.cooking_steps),
                     style = MaterialTheme.typography.titleMedium,
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
                 )

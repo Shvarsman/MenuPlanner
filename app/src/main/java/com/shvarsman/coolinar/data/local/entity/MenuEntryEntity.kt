@@ -4,6 +4,7 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
+import com.shvarsman.coolinar.data.remote.sync.SyncableEntity
 import com.shvarsman.coolinar.domain.model.MealType
 import java.time.DayOfWeek
 import java.time.LocalDate
@@ -21,9 +22,12 @@ import java.time.LocalDate
     indices = [Index("recipeId"), Index("weekStartDate")]
 )
 data class MenuEntryEntity(
-    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    @PrimaryKey override val id: String,
     val weekStartDate: LocalDate,
     val dayOfWeek: DayOfWeek,
     val mealType: MealType,
-    val recipeId: Long
-)
+    val recipeId: String,
+    val createdAt: Long = System.currentTimeMillis(),
+    override val updatedAt: Long = System.currentTimeMillis(),
+    override val isDeleted: Boolean = false
+) : SyncableEntity

@@ -14,21 +14,30 @@ data class ShoppingListItemWithProduct(
 @Dao
 interface ShoppingListDao {
     @Transaction
-    @Query("SELECT * FROM shopping_list_items")
+    @Query("SELECT * FROM shopping_list_items WHERE isDeleted = 0")
     fun observeAllWithProduct(): Flow<List<ShoppingListItemWithProduct>>
 
+    @Query("SELECT * FROM shopping_list_items WHERE id = :id")
+    suspend fun getByIdIncludingDeleted(id: String): ShoppingListItemEntity?
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(item: ShoppingListItemEntity): Long
+    suspend fun insert(item: ShoppingListItemEntity)
 
     @Update
     suspend fun update(item: ShoppingListItemEntity)
 
-    @Query("DELETE FROM shopping_list_items WHERE id = :id")
-    suspend fun deleteById(id: Long)
+    @Query("UPDATE shopping_list_items SET isDeleted = 1, updatedAt = :updatedAt WHERE id = :id")
+    suspend fun softDeleteById(id: String, updatedAt: Long)
 
-    @Query("UPDATE shopping_list_items SET isChecked = :checked WHERE id = :id")
-    suspend fun setChecked(id: Long, checked: Boolean)
+    @Query("UPDATE shopping_list_items SET isChecked = :checked, updatedAt = :updatedAt WHERE id = :id")
+    suspend fun setChecked(id: String, checked: Boolean, updatedAt: Long)
 
-    @Query("DELETE FROM shopping_list_items WHERE isChecked = 1")
-    suspend fun clearChecked()
+    @Query("SELECT id FROM shopping_list_items WHERE isChecked = 1 AND isDeleted = 0")
+    suspend fun getCheckedIds(): List<String>
+
+    @Query("UPDATE shopping_list_items SET isDeleted = 1, updatedAt = :updatedAt WHERE isChecked = 1")
+    suspend fun softDeleteChecked(updatedAt: Long)
+
+    @Query("SELECT * FROM shopping_list_items")
+    suspend fun getAllIncludingDeleted(): List<ShoppingListItemEntity>
 }

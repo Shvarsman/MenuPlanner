@@ -62,7 +62,7 @@ class BackupRepositoryImpl @Inject constructor(
     override suspend fun exportBackup(
         destinationUri: Uri,
         type: BackupType,
-        singleRecipeId: Long?
+        singleRecipeId: String?
     ): BackupResult =
         withContext(Dispatchers.IO) {
             exportBackupInternal(destinationUri, type, singleRecipeId)
@@ -76,7 +76,7 @@ class BackupRepositoryImpl @Inject constructor(
     private suspend fun exportBackupInternal(
         destinationUri: Uri,
         type: BackupType,
-        singleRecipeId: Long?
+        singleRecipeId: String?
     ): BackupResult {
         val imageFilesToPack = mutableMapOf<String, String>()
         fun registerImage(uriString: String?): String? {
@@ -248,7 +248,7 @@ class BackupRepositoryImpl @Inject constructor(
 
         // Рецепты — всегда добавляются как новые записи; заодно запоминаем
         // title -> id для восстановления записей меню (только для FULL).
-        val recipeIdByTitle = mutableMapOf<String, Long>()
+        val recipeIdByTitle = mutableMapOf<String, String>()
 
         data.recipes.forEach { recipeDto ->
             val ingredients = recipeDto.ingredients.map { ingredientDto ->

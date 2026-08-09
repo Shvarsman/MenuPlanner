@@ -36,7 +36,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Remove
@@ -64,7 +63,6 @@ import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
-import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberSwipeToDismissBoxState
@@ -126,9 +124,9 @@ private val ContentOverlap = 28.dp
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RecipeViewScreen(
-    recipeId: Long,
+    recipeId: String,
     onBack: () -> Unit,
-    onEdit: (Long) -> Unit,
+    onEdit: (String) -> Unit,
     viewModel: RecipeViewViewModel = hiltViewModel()
 ) {
     LaunchedEffect(recipeId) { viewModel.load(recipeId) }

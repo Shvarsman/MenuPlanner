@@ -19,8 +19,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
+import com.shvarsman.coolinar.R
 import com.shvarsman.coolinar.domain.model.RecipeSummary
 import com.shvarsman.coolinar.presentation.screens.common.rememberSizedImageRequest
 import com.shvarsman.coolinar.presentation.ui.theme.CornerShape
@@ -46,7 +48,13 @@ fun RecipeListRow(
         ListItem(
             headlineContent = { Text(recipe.title, maxLines = 1) },
             supportingContent = {
-                Text("${recipe.ingredientCount} ингредиентов · ${recipe.stepCount} шагов")
+                Text(
+                    stringResource(
+                        R.string.recipe_stats_short,
+                        recipe.ingredientCount,
+                        recipe.stepCount
+                    )
+                )
             },
             leadingContent = {
                 Box(
@@ -66,7 +74,10 @@ fun RecipeListRow(
                             modifier = Modifier.fillMaxSize(),
                             color = MaterialTheme.colorScheme.secondaryContainer
                         ) {
-                            Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
+                            Box(
+                                contentAlignment = Alignment.Center,
+                                modifier = Modifier.fillMaxSize()
+                            ) {
                                 Icon(
                                     Icons.AutoMirrored.Filled.MenuBook,
                                     contentDescription = null,
@@ -80,10 +91,16 @@ fun RecipeListRow(
             trailingContent = {
                 Row {
                     IconButton(onClick = onEdit) {
-                        Icon(Icons.Filled.Edit, contentDescription = "Редактировать")
+                        Icon(
+                            imageVector = Icons.Filled.Edit,
+                            contentDescription = stringResource(R.string.edit_action)
+                        )
                     }
                     IconButton(onClick = onDelete) {
-                        Icon(Icons.Filled.Delete, contentDescription = "Удалить")
+                        Icon(
+                            imageVector = Icons.Filled.Delete,
+                            contentDescription = stringResource(R.string.delete)
+                        )
                     }
                 }
             }

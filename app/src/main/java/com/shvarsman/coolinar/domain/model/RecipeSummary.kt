@@ -1,7 +1,7 @@
 package com.shvarsman.coolinar.domain.model
 
 data class RecipeSummary(
-    val id: Long,
+    val id: String,
     val title: String,
     val category: RecipeCategory,
     val photoUri: String?,

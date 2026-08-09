@@ -8,10 +8,10 @@ import javax.inject.Inject
 class SaveRecipeUseCase @Inject constructor(
     private val repository: RecipeRepository
 ) {
-    suspend operator fun invoke(recipe: Recipe): Long {
+    suspend operator fun invoke(recipe: Recipe): String {
         require(recipe.title.isNotBlank()) { "Название рецепта не может быть пустым" }
         require(recipe.steps.isNotEmpty()) { "Добавьте хотя бы один шаг приготовления" }
-        return if (recipe.id == 0L) {
+        return if (recipe.id.isBlank()) {
             repository.addRecipe(recipe)
         } else {
             repository.updateRecipe(recipe)

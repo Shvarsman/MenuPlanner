@@ -16,7 +16,7 @@ class GetReservedQuantitiesUseCase @Inject constructor(
 ) {
     suspend operator fun invoke(
         weekStart: LocalDate,
-        excludeMenuEntryId: Long? = null
+        excludeMenuEntryId: String? = null
     ): Map<ReservedKey, ReservedAmount> {
         val entries = menuRepository.observeWeekMenu(weekStart).first()
         val recipes = recipeRepository.observeRecipes().first()

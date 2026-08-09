@@ -21,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
@@ -29,6 +30,7 @@ import com.shvarsman.coolinar.presentation.screens.common.rememberSizedImageRequ
 import com.shvarsman.coolinar.presentation.ui.theme.CornerShape
 import kotlinx.coroutines.delay
 import kotlin.time.Duration.Companion.milliseconds
+import com.shvarsman.coolinar.R
 
 /** Displays recipe steps read-only — no TextField, for the Cooking screen. */
 fun LazyListScope.CookingStepsReadOnly(steps: List<StepContentItem>) {
@@ -161,7 +163,7 @@ private fun CookingStepTimer(
                 )
                 Spacer(Modifier.width(12.dp))
                 Text(
-                    text = if (isFinished) "Время вышло" else "Таймер",
+                    text = if (isFinished) stringResource(R.string.time_up) else stringResource(R.string.timer),
                     style = MaterialTheme.typography.bodyMedium,
                     color = contentColor,
                     modifier = Modifier.weight(1f)
@@ -212,10 +214,10 @@ private fun CookingStepTimer(
                     Spacer(Modifier.width(6.dp))
                     Text(
                         when {
-                            isFinished -> "Запустить снова"
-                            isRunning -> "Пауза"
-                            remainingSeconds == totalSeconds -> "Запустить"
-                            else -> "Продолжить"
+                            isFinished -> stringResource(R.string.start_again)
+                            isRunning -> stringResource(R.string.pause)
+                            remainingSeconds == totalSeconds -> stringResource(R.string.start)
+                            else -> stringResource(R.string.resume)
                         }
                     )
                 }
@@ -233,7 +235,7 @@ private fun CookingStepTimer(
                             modifier = Modifier.size(18.dp)
                         )
                         Spacer(Modifier.width(4.dp))
-                        Text("Сбросить")
+                        Text(stringResource(R.string.reset))
                     }
                 }
             }

@@ -27,11 +27,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.shvarsman.coolinar.R
 import com.shvarsman.coolinar.domain.model.FridgeItem
 import com.shvarsman.coolinar.presentation.screens.common.NavRow
 import com.shvarsman.coolinar.presentation.screens.recipe.components.RecipeCarouselSection
@@ -46,7 +48,7 @@ fun HomeScreen(
     onOpenShoppingList: () -> Unit,
     onOpenWeekMenu: () -> Unit,
     onShowAllSuggested: () -> Unit,
-    onViewRecipe: (recipeId: Long) -> Unit,
+    onViewRecipe: (recipeId: String) -> Unit,
     viewModel: MenuViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -61,7 +63,13 @@ fun HomeScreen(
         modifier = modifier,
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("Coolinar", fontSize = 24.sp, fontFamily = molleFont) },
+                title = {
+                    Text(
+                        text = stringResource(R.string.app_name),
+                        fontSize = 24.sp,
+                        fontFamily = molleFont
+                    )
+                },
                 expandedHeight = TopAppBarDefaults.TopAppBarExpandedHeight,
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.background,
@@ -100,7 +108,11 @@ fun HomeScreen(
             item(key = "week_menu_nav") {
                 NavRow(
                     icon = Icons.Filled.CalendarMonth,
-                    text = "На следующей неделе запланировано $weeklyPlannedCount из $weeklyTotalCount приёмов пищи",
+                    text = stringResource(
+                        R.string.week_menu_summary,
+                        weeklyPlannedCount,
+                        weeklyTotalCount
+                    ),
                     onClick = onOpenWeekMenu,
                     modifier = Modifier.padding(horizontal = 16.dp)
                 )
@@ -109,7 +121,11 @@ fun HomeScreen(
             item(key = "shopping_list_quick_nav") {
                 NavRow(
                     icon = Icons.Filled.ShoppingCart,
-                    text = if (shoppingListCount == 0) "Список покупок пуст" else "В списке покупок: $shoppingListCount",
+                    text = if (shoppingListCount == 0) {
+                        stringResource(R.string.shopping_list_empty_short)
+                    } else {
+                        stringResource(R.string.shopping_list_count, shoppingListCount)
+                    },
                     onClick = onOpenShoppingList,
                     modifier = Modifier.padding(horizontal = 16.dp)
                 )
@@ -118,7 +134,7 @@ fun HomeScreen(
             if (suggestedRecipes.isNotEmpty()) {
                 item(key = "suggested_carousel") {
                     RecipeCarouselSection(
-                        title = "Можно приготовить прямо сейчас",
+                        title = stringResource(R.string.can_cook_now),
                         recipes = suggestedRecipes,
                         onRecipeClick = onViewRecipe,
                         onShowAllClick = onShowAllSuggested
@@ -129,14 +145,17 @@ fun HomeScreen(
     }
 }
 
+@Composable
 private fun greetingText(userName: String?): String {
     val hour = java.time.LocalTime.now().hour
     val base = when (hour) {
-        in 5..11 -> "Доброе утро"
-        in 12..17 -> "Добрый день"
-        else -> "Добрый вечер" // 18-23 и 0-4
+        in 5..11 -> stringResource(R.string.good_morning)
+        in 12..17 -> stringResource(R.string.good_afternoon)
+        else -> stringResource(R.string.good_evening)
     }
-    return if (!userName.isNullOrBlank()) "$base, $userName!" else "$base!"
+    return if (!userName.isNullOrBlank()) {
+        stringResource(R.string.greeting_with_name, base, userName)
+    } else stringResource(R.string.greeting_no_name, base)
 }
 
 @Composable
@@ -162,14 +181,14 @@ private fun ExpiringItemsBanner(
             Spacer(Modifier.width(12.dp))
             Column {
                 Text(
-                    "Скоро истекает срок годности",
+                    text = stringResource(R.string.expiring_soon_title),
                     style = MaterialTheme.typography.titleSmall,
                     color = MaterialTheme.colorScheme.onErrorContainer
                 )
                 Text(
                     items.joinToString(
                         limit = 3,
-                        truncated = "и ещё ${items.size - 3}..."
+                        truncated = stringResource(R.string.and_more, items.size - 3)
                     ) { it.product.name },
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onErrorContainer,

@@ -15,7 +15,7 @@ class MoveItemsToFridgeUseCase @Inject constructor(
     private val shoppingListRepository: ShoppingListRepository,
     private val fridgeRepository: FridgeRepository
 ) {
-    suspend operator fun invoke(itemIds: Set<Long>, expirationDates: Map<Long, LocalDate?> = emptyMap()) {
+    suspend operator fun invoke(itemIds: Set<String>, expirationDates: Map<String, LocalDate?> = emptyMap()) {
         if (itemIds.isEmpty()) return
         val items = shoppingListRepository.observeItems().first().filter { it.id in itemIds }
         if (items.isEmpty()) return

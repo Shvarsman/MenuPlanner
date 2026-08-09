@@ -2,6 +2,7 @@ package com.shvarsman.coolinar.presentation.screens.shoppinglist
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.shvarsman.coolinar.R
 import com.shvarsman.coolinar.domain.model.Category
 import com.shvarsman.coolinar.domain.model.MeasureUnit
 import com.shvarsman.coolinar.domain.model.Product
@@ -27,13 +28,12 @@ import kotlinx.coroutines.launch
 import java.time.LocalDate
 import javax.inject.Inject
 
-enum class ShoppingSortOption(val displayName: String) {
-    NAME_ASC("По алфавиту (А-Я)"),
-    NAME_DESC("По алфавиту (Я-А)"),
-    QUANTITY_ASC("По количеству (меньше→больше)"),
-    QUANTITY_DESC("По количеству (больше→меньше)")
+enum class ShoppingSortOption(@androidx.annotation.StringRes val displayNameRes: Int) {
+    NAME_ASC(R.string.sort_name_asc),
+    NAME_DESC(R.string.sort_name_desc),
+    QUANTITY_ASC(R.string.sort_quantity_asc),
+    QUANTITY_DESC(R.string.sort_quantity_desc)
 }
-
 @HiltViewModel
 class ShoppingListViewModel @Inject constructor(
     getShoppingList: GetShoppingListUseCase,
@@ -46,7 +46,7 @@ class ShoppingListViewModel @Inject constructor(
     private val updateShoppingItem: UpdateShoppingItemUseCase
 ) : ViewModel() {
 
-    private val pendingDeleteManager = PendingDeleteManager<Long>(viewModelScope)
+    private val pendingDeleteManager = PendingDeleteManager<String>(viewModelScope)
 
     private val rawItems: StateFlow<List<ShoppingListItem>> = getShoppingList()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
@@ -57,11 +57,11 @@ class ShoppingListViewModel @Inject constructor(
         .mapOnDefault { it }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    fun requestDelete(id: Long) {
+    fun requestDelete(id: String) {
         pendingDeleteManager.requestDelete(id) { removeShoppingItem(id) }
     }
 
-    fun undoDelete(id: Long) {
+    fun undoDelete(id: String) {
         pendingDeleteManager.undo(id)
     }
 

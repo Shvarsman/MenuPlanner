@@ -27,7 +27,7 @@ class RecipeCategoryViewModel @Inject constructor(
         savedStateHandle.get<String>("category") ?: RecipeCategory.OTHER.name
     )
 
-    private val pendingDeleteManager = PendingDeleteManager<Long>(viewModelScope)
+    private val pendingDeleteManager = PendingDeleteManager<String>(viewModelScope)
 
     val recipes: StateFlow<List<RecipeSummary>> = combine(
         getRecipeSummaries(), pendingDeleteManager.pendingIds
@@ -37,11 +37,11 @@ class RecipeCategoryViewModel @Inject constructor(
         .mapOnDefault { it }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    fun requestDelete(id: Long) {
+    fun requestDelete(id: String) {
         pendingDeleteManager.requestDelete(id) { deleteRecipe(id) }
     }
 
-    fun undoDelete(id: Long) {
+    fun undoDelete(id: String) {
         pendingDeleteManager.undo(id)
     }
 }

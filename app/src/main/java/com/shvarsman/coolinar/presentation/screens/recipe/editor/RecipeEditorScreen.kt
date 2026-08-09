@@ -98,7 +98,7 @@ import com.shvarsman.coolinar.presentation.ui.theme.CornerShape
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RecipeEditorScreen(
-    recipeId: Long,
+    recipeId: String,
     onDone: () -> Unit,
     viewModel: RecipeEditorViewModel = hiltViewModel()
 ) {
@@ -145,7 +145,7 @@ fun RecipeEditorScreen(
             TopAppBar(
                 title = {
                     Text(
-                        if (state.recipeId == 0L) "Новый рецепт" else "Редактировать рецепт",
+                        if (state.recipeId == "") "Новый рецепт" else "Редактировать рецепт",
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Medium
                     )

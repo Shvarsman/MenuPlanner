@@ -3,6 +3,7 @@ package com.shvarsman.coolinar.presentation.screens.fridge
 import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.shvarsman.coolinar.R
 import com.shvarsman.coolinar.domain.model.Category
 import com.shvarsman.coolinar.domain.model.FridgeItem
 import com.shvarsman.coolinar.domain.model.MeasureUnit
@@ -32,14 +33,14 @@ import javax.inject.Inject
 
 typealias FridgeListRow = GroupedRow<FridgeItem, Category>
 
-enum class FridgeSortOption(val displayName: String) {
-    NAME_ASC("По алфавиту (А-Я)"),
-    NAME_DESC("По алфавиту (Я-А)"),
-    EXPIRATION_SOON("Сначала истекающие"),
-    EXPIRATION_LATE("Сначала свежие"),
-    QUANTITY_ASC("По количеству (меньше→больше)"),
-    QUANTITY_DESC("По количеству (больше→меньше)"),
-    FAVORITES_FIRST("Сначала избранное")
+enum class FridgeSortOption(@androidx.annotation.StringRes val displayNameRes: Int) {
+    NAME_ASC(R.string.sort_name_asc),
+    NAME_DESC(R.string.sort_name_desc),
+    EXPIRATION_SOON(R.string.sort_expiration_soon),
+    EXPIRATION_LATE(R.string.sort_expiration_late),
+    QUANTITY_ASC(R.string.sort_quantity_asc),
+    QUANTITY_DESC(R.string.sort_quantity_desc),
+    FAVORITES_FIRST(R.string.sort_favorites_first)
 }
 
 @Immutable
@@ -104,21 +105,21 @@ class FridgeViewModel @Inject constructor(
         }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    private val pendingDeleteManager = PendingDeleteManager<Long>(viewModelScope)
+    private val pendingDeleteManager = PendingDeleteManager<String>(viewModelScope)
 
-    fun requestDelete(id: Long) {
+    fun requestDelete(id: String) {
         pendingDeleteManager.requestDelete(id) { deleteFridgeItem(id) }
     }
 
-    fun undoDelete(id: Long) {
+    fun undoDelete(id: String) {
         pendingDeleteManager.undo(id)
     }
 
-    fun requestDeleteBulk(ids: List<Long>) {
+    fun requestDeleteBulk(ids: List<String>) {
         ids.forEach { id -> pendingDeleteManager.requestDelete(id) { deleteFridgeItem(id) } }
     }
 
-    fun undoDeleteBulk(ids: List<Long>) {
+    fun undoDeleteBulk(ids: List<String>) {
         ids.forEach { pendingDeleteManager.undo(it) }
     }
 
@@ -203,14 +204,14 @@ class FridgeViewModel @Inject constructor(
     }
 
     // ── Множественный выбор ──────────────────────────────────────────
-    private val _selectedIds = MutableStateFlow<Set<Long>>(emptySet())
-    val selectedIds: StateFlow<Set<Long>> = _selectedIds
+    private val _selectedIds = MutableStateFlow<Set<String>>(emptySet())
+    val selectedIds: StateFlow<Set<String>> = _selectedIds
 
-    fun enterSelectionMode(initialId: Long) {
+    fun enterSelectionMode(initialId: String) {
         _selectedIds.value = setOf(initialId)
     }
 
-    fun toggleSelection(id: Long) {
+    fun toggleSelection(id: String) {
         _selectedIds.value =
             if (id in _selectedIds.value) _selectedIds.value - id else _selectedIds.value + id
     }

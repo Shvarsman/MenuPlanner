@@ -22,6 +22,9 @@ class FirebaseAuthRepositoryImpl @Inject constructor(
     private val firebaseAuth: FirebaseAuth
 ) : AuthRepository {
 
+    override val currentUserId: String?
+        get() = firebaseAuth.currentUser?.uid
+
     override val authState: Flow<AuthState> = callbackFlow {
         val listener = FirebaseAuth.AuthStateListener { auth ->
             trySend(auth.currentUser.toAuthState())

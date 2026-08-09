@@ -4,11 +4,12 @@ import java.time.DayOfWeek
 import java.time.LocalDate
 
 data class MenuEntry(
-    val id: Long = 0,
+    val id: String = "",
     val weekStartDate: LocalDate,
     val dayOfWeek: DayOfWeek,
     val mealType: MealType,
-    val recipeId: Long,
+    val recipeId: String,
     val recipeTitle: String = "",
-    val recipePhotoUri: String? = null
+    val recipePhotoUri: String? = null,
+    val createdAt: Long = System.currentTimeMillis()
 )

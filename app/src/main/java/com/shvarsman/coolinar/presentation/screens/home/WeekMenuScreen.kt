@@ -61,11 +61,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalLocale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
+import com.shvarsman.coolinar.R
 import com.shvarsman.coolinar.domain.model.FridgeItem
 import com.shvarsman.coolinar.domain.model.IngredientAvailability
 import com.shvarsman.coolinar.domain.model.MealType
@@ -86,7 +89,6 @@ import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.format.TextStyle
 import java.time.temporal.TemporalAdjusters
-import java.util.Locale
 
 private val weekDays = listOf(
     DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY, DayOfWeek.THURSDAY,
@@ -100,8 +102,8 @@ fun WeekMenuScreen(
     modifier: Modifier = Modifier,
     onBack: () -> Unit,
     onCreateRecipe: () -> Unit,
-    onNavigateToCooking: (recipeId: Long, menuEntryId: Long) -> Unit,
-    onViewRecipe: (recipeId: Long) -> Unit,
+    onNavigateToCooking: (recipeId: String, menuEntryId: String) -> Unit,
+    onViewRecipe: (recipeId: String) -> Unit,
     onOpenShoppingList: () -> Unit,
     viewModel: MenuViewModel = hiltViewModel()
 ) {
@@ -118,11 +120,13 @@ fun WeekMenuScreen(
     val selectedDay = uiState.selectedDay
     val selectedWeekOffset = uiState.selectedWeekOffset
 
+    val entryRemovedTemplate = stringResource(R.string.menu_entry_removed)
+
     val snackbarHostState = remember { SnackbarHostState() }
-    val requestDelete = rememberOptimisticDelete<MenuEntry, Long>(
+    val requestDelete = rememberOptimisticDelete<MenuEntry, String>(
         snackbarHostState = snackbarHostState,
         idOf = { it.id },
-        message = { entry -> "«${entry.recipeTitle}» убран из меню" },
+        message = { entry -> String.format(entryRemovedTemplate, entry.recipeTitle) },
         onRequestDelete = { id -> viewModel.requestDeleteEntry(id) },
         onUndo = { id -> viewModel.undoDeleteEntry(id) }
     )
@@ -141,7 +145,7 @@ fun WeekMenuScreen(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("Меню на неделю") },
+                title = { Text(stringResource(R.string.week_menu_title)) },
                 navigationIcon = {
                     GlassIconButton(
                         onClick = onBack,
@@ -149,7 +153,7 @@ fun WeekMenuScreen(
                     ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Назад"
+                            contentDescription = stringResource(R.string.back)
                         )
                     }
                 },
@@ -266,7 +270,10 @@ private fun WeekDaySelector(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = day.getDisplayName(TextStyle.SHORT, Locale.forLanguageTag("ru"))
+                        text = day.getDisplayName(
+                            TextStyle.SHORT,
+                            LocalLocale.current.platformLocale
+                        )
                             .replaceFirstChar { it.uppercase() },
                         style = MaterialTheme.typography.labelMedium,
                         color = if (isSelected) {
@@ -319,14 +326,14 @@ private fun WeekSwitcher(
             onClick = { onWeekSelected(0) },
             shape = SegmentedButtonDefaults.itemShape(index = 0, count = 2)
         ) {
-            Text("Эта неделя")
+            Text(stringResource(R.string.this_week))
         }
         SegmentedButton(
             selected = selectedWeekOffset == 1,
             onClick = { onWeekSelected(1) },
             shape = SegmentedButtonDefaults.itemShape(index = 1, count = 2)
         ) {
-            Text("Следующая неделя")
+            Text(stringResource(R.string.next_week))
         }
     }
 }
@@ -359,7 +366,7 @@ private fun MealSectionCard(
             IconButton(onClick = onAdd) {
                 Icon(
                     Icons.Filled.Add,
-                    contentDescription = "Добавить блюдо на «${meal.displayName}»"
+                    contentDescription = stringResource(R.string.add_meal_for, meal.displayName)
                 )
             }
         }
@@ -372,7 +379,7 @@ private fun MealSectionCard(
             Column(modifier = Modifier.padding(16.dp)) {
                 if (entries.isEmpty()) {
                     Text(
-                        "Не запланировано",
+                        text = stringResource(R.string.not_planned),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -413,7 +420,7 @@ private fun MenuEntryCard(
     val allAvailable = remember(recipe, fridgeItems, weekMenu, recipes) {
         recipe != null && recipe.ingredients.isNotEmpty() && run {
             val reservedFromEarlierEntries = computeReservedAmounts(
-                weekMenu.filter { it.id < entry.id },
+                weekMenu.filter { it.createdAt < entry.createdAt },
                 recipes
             )
             recipe.ingredients.all { ingredient ->
@@ -518,7 +525,11 @@ private fun MenuEntryCard(
                             if (recipe.ingredients.isNotEmpty()) {
                                 Icon(
                                     if (allAvailable) Icons.Filled.Restaurant else Icons.Filled.Warning,
-                                    contentDescription = if (allAvailable) "Все продукты есть" else "Не хватает продуктов",
+                                    contentDescription = if (allAvailable) {
+                                        stringResource(R.string.all_products_available)
+                                    } else {
+                                        stringResource(R.string.products_insufficient)
+                                    },
                                     modifier = Modifier.size(14.dp),
                                     tint = if (allAvailable) {
                                         MaterialTheme.colorScheme.primary
@@ -533,13 +544,16 @@ private fun MenuEntryCard(
 
                 IconButton(onClick = onCook) {
                     Icon(
-                        Icons.Filled.Restaurant,
-                        contentDescription = "Приготовить",
+                        imageVector = Icons.Filled.Restaurant,
+                        contentDescription = stringResource(R.string.cook),
                         tint = MaterialTheme.colorScheme.primary
                     )
                 }
                 IconButton(onClick = onRemove) {
-                    Icon(Icons.Filled.Close, contentDescription = "Убрать из меню")
+                    Icon(
+                        imageVector = Icons.Filled.Close,
+                        contentDescription = stringResource(R.string.remove_from_menu)
+                    )
                 }
             }
         }
@@ -553,13 +567,13 @@ private fun InsufficientIngredientsDialog(
 ) {
     AlertDialog(
         onDismissRequest = onGoToShopping,
-        title = { Text("Не хватает продуктов") },
-        text = { Text("В холодильнике недостаточно ингредиентов для этого рецепта. Продолжить готовку или сначала докупить продукты?") },
+        title = { Text(stringResource(R.string.products_insufficient)) },
+        text = { Text(stringResource(R.string.insufficient_ingredients_message)) },
         confirmButton = {
-            TextButton(onClick = onConfirmAnyway) { Text("Всё равно продолжить") }
+            TextButton(onClick = onConfirmAnyway) { Text(stringResource(R.string.continue_anyway)) }
         },
         dismissButton = {
-            TextButton(onClick = onGoToShopping) { Text("В магазин") }
+            TextButton(onClick = onGoToShopping) { Text(stringResource(R.string.go_shopping)) }
         }
     )
 }
@@ -576,26 +590,29 @@ private fun RecipePickerDialog(
     onSelect: (Recipe) -> Unit,
     onCreateNew: () -> Unit
 ) {
-    var expandedRecipeId by remember { mutableStateOf<Long?>(null) }
+    var expandedRecipeId by remember { mutableStateOf<String?>(null) }
     val (localSearchQuery, onLocalSearchQueryChange) = rememberDebouncedSearch(
         searchQuery,
         onSearchQueryChange
     )
 
     AppBottomSheet(
-        title = "Выбрать рецепт",
+        title = stringResource(R.string.select_recipe),
         fillMaxHeight = true,
         onDismissRequest = onDismiss
     ) { _ ->
         OutlinedTextField(
             value = localSearchQuery,
             onValueChange = onLocalSearchQueryChange,
-            placeholder = { Text("Поиск рецептов") },
-            leadingIcon = { Icon(Icons.Filled.Search, contentDescription = null) },
+            placeholder = { Text(stringResource(R.string.search_recipes)) },
+            leadingIcon = { Icon(imageVector = Icons.Filled.Search, contentDescription = null) },
             trailingIcon = {
                 if (localSearchQuery.isNotEmpty()) {
                     IconButton(onClick = { onLocalSearchQueryChange("") }) {
-                        Icon(Icons.Filled.Close, contentDescription = "Очистить")
+                        Icon(
+                            imageVector = Icons.Filled.Close,
+                            contentDescription = stringResource(R.string.clear)
+                        )
                     }
                 }
             },
@@ -612,7 +629,7 @@ private fun RecipePickerDialog(
         ) {
             Icon(Icons.Filled.Add, contentDescription = null, modifier = Modifier.size(18.dp))
             Spacer(Modifier.width(4.dp))
-            Text("Новый рецепт")
+            Text(stringResource(R.string.new_recipe))
         }
 
         if (filteredRecipes.isEmpty()) {
@@ -623,7 +640,11 @@ private fun RecipePickerDialog(
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    if (allRecipesEmpty) "У вас пока нет рецептов" else "Ничего не найдено",
+                    if (allRecipesEmpty) {
+                        stringResource(R.string.no_recipes_yet)
+                    } else {
+                        stringResource(R.string.nothing_found)
+                    },
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
@@ -747,7 +768,7 @@ private fun RecipePickerCard(
                     modifier = Modifier.padding(end = 12.dp),
                     onClick = onSelect
                 ) {
-                    Text("Выбрать")
+                    Text(stringResource(R.string.select))
                 }
             }
 
@@ -773,7 +794,12 @@ private fun RecipePickerCard(
                             IngredientAvailability.INSUFFICIENT -> MaterialTheme.colorScheme.error
                         }
                         Text(
-                            text = "${ingredient.product.name} — ${formatQty(ingredient.quantity)} ${ingredient.unit.displayName}",
+                            text = stringResource(
+                                R.string.ingredient_with_qty,
+                                ingredient.product.name,
+                                formatQty(ingredient.quantity),
+                                ingredient.unit.displayName
+                            ),
                             style = MaterialTheme.typography.bodySmall,
                             color = color
                         )

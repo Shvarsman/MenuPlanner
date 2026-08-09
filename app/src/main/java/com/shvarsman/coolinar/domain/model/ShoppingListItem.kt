@@ -3,7 +3,7 @@ package com.shvarsman.coolinar.domain.model
 import java.time.LocalDate
 
 data class ShoppingListItem(
-    val id: Long = 0,
+    val id: String = "",
     val product: Product,
     val unit: MeasureUnit,
     val quantity: Double,

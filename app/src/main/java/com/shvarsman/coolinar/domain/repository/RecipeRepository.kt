@@ -7,8 +7,8 @@ import kotlinx.coroutines.flow.Flow
 interface RecipeRepository {
     fun observeRecipeSummaries(): Flow<List<RecipeSummary>>
     fun observeRecipes(): Flow<List<Recipe>>
-    suspend fun getRecipe(id: Long): Recipe?
-    suspend fun addRecipe(recipe: Recipe): Long
+    suspend fun getRecipe(id: String): Recipe?
+    suspend fun addRecipe(recipe: Recipe): String
     suspend fun updateRecipe(recipe: Recipe)
-    suspend fun deleteRecipe(id: Long)
+    suspend fun deleteRecipe(id: String)
 }

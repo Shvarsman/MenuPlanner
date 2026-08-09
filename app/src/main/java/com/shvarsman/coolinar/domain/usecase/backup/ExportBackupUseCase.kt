@@ -12,7 +12,7 @@ class ExportBackupUseCase @Inject constructor(
     suspend operator fun invoke(
         destinationUri: Uri,
         type: BackupType,
-        singleRecipeId: Long? = null
+        singleRecipeId: String? = null
     ): BackupResult =
         repository.exportBackup(destinationUri, type, singleRecipeId)
 }

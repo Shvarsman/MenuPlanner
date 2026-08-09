@@ -27,8 +27,8 @@ import com.shvarsman.coolinar.presentation.ui.icons.RecipeCategoryIcon
 fun LazyListScope.recipeGroupedItems(
     grouped: Map<RecipeCategory, List<RecipeSummary>>,
     viewMode: RecipeViewMode,
-    onViewRecipe: (Long) -> Unit,
-    onEditRecipe: (Long) -> Unit,
+    onViewRecipe: (String) -> Unit,
+    onEditRecipe: (String) -> Unit,
     onDelete: (RecipeSummary) -> Unit
 ) {
     grouped.forEach { (category, categoryRecipes) ->

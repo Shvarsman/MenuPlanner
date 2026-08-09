@@ -77,11 +77,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.shvarsman.coolinar.R
 import com.shvarsman.coolinar.domain.model.Category
 import com.shvarsman.coolinar.domain.model.FridgeItem
 import com.shvarsman.coolinar.presentation.screens.common.DropdownFilterChip
@@ -128,6 +130,9 @@ fun FridgeScreen(
 
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
+    val itemDeletedTemplate = stringResource(R.string.item_deleted)
+    val itemsDeletedCountTemplate = stringResource(R.string.items_deleted_count)
+    val undoLabel = stringResource(R.string.undo)
 
     val (localSearchQuery, onLocalSearchQueryChange) = rememberDebouncedSearch(searchQuery) {
         viewModel.onSearchQueryChange(it)
@@ -135,10 +140,10 @@ fun FridgeScreen(
     val lazyListState = rememberLazyListState()
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
 
-    val requestDelete = rememberOptimisticDelete<FridgeItem, Long>(
+    val requestDelete = rememberOptimisticDelete<FridgeItem, String>(
         snackbarHostState = snackbarHostState,
         idOf = { it.id },
-        message = { item -> "«${item.product.name}» удалён" },
+        message = { item -> String.format(itemDeletedTemplate, item.product.name) },
         onRequestDelete = { id -> viewModel.requestDelete(id) },
         onUndo = { id -> viewModel.undoDelete(id) }
     )
@@ -151,13 +156,13 @@ fun FridgeScreen(
                 scrollBehavior = scrollBehavior,
                 title = {
                     if (isSelectionMode) {
-                        Text("Выбрано: ${selectedIds.size}")
+                        Text(stringResource(R.string.selected_count, selectedIds.size))
                     } else {
                         TopBarSearchField(
                             modifier = Modifier.padding(end = 8.dp),
                             query = localSearchQuery,
                             onQueryChange = onLocalSearchQueryChange,
-                            placeholder = "Поиск в холодильнике"
+                            placeholder = stringResource(R.string.search_fridge)
                         )
                     }
                 },
@@ -169,12 +174,15 @@ fun FridgeScreen(
                                 .padding(start = 16.dp)
                                 .clip(RoundedCornerShape(28.dp))
                                 .background(
-                                    MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.9f),
-                                    RoundedCornerShape(28.dp)
+                                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.9f),
+                                    shape = RoundedCornerShape(28.dp)
                                 )
                                 .gradientStyle(shape = RoundedCornerShape(28.dp)),
                         ) {
-                            Icon(Icons.Filled.Close, contentDescription = "Закрыть выбор")
+                            Icon(
+                                imageVector = Icons.Filled.Close,
+                                contentDescription = stringResource(R.string.close_selection)
+                            )
                         }
                     }
                 },
@@ -186,12 +194,15 @@ fun FridgeScreen(
                                 .padding(end = 16.dp)
                                 .clip(CornerShape)
                                 .background(
-                                    MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.9f),
-                                    CornerShape
+                                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.9f),
+                                    shape = CornerShape
                                 )
                                 .gradientStyle(shape = CornerShape),
                         ) {
-                            Icon(Icons.AutoMirrored.Filled.ListAlt, contentDescription = "Все продукты")
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ListAlt,
+                                contentDescription = stringResource(R.string.all_products)
+                            )
                         }
                     }
                 },
@@ -207,7 +218,10 @@ fun FridgeScreen(
                     onClick = { viewModel.openAddPicker() },
                     modifier = Modifier.padding(bottom = FloatingBottomBarClearance)
                 ) {
-                    Icon(Icons.Filled.Add, contentDescription = "Добавить продукт")
+                    Icon(
+                        imageVector = Icons.Filled.Add,
+                        contentDescription = stringResource(R.string.add_product)
+                    )
                 }
             }
         },
@@ -217,11 +231,14 @@ fun FridgeScreen(
                     TextButton(onClick = { viewModel.selectAll() }) {
                         Icon(Icons.Filled.SelectAll, contentDescription = null)
                         Spacer(Modifier.width(4.dp))
-                        Text("Выбрать все")
+                        Text(stringResource(R.string.select_all))
                     }
                     Spacer(Modifier.weight(1f))
                     IconButton(onClick = { viewModel.toggleFavoriteSelected() }) {
-                        Icon(Icons.Filled.Star, contentDescription = "Избранное")
+                        Icon(
+                            imageVector = Icons.Filled.Star,
+                            contentDescription = stringResource(R.string.favorite)
+                        )
                     }
                     IconButton(onClick = {
                         val ids = selectedIds.toList()
@@ -229,15 +246,20 @@ fun FridgeScreen(
                         viewModel.requestDeleteBulk(ids)
                         scope.launch {
                             val result = snackbarHostState.showSnackbar(
-                                message = "Удалено продуктов: ${ids.size}",
-                                actionLabel = "Отменить",
+                                message = String.format(itemsDeletedCountTemplate, ids.size),
+                                actionLabel = undoLabel,
                                 duration = SnackbarDuration.Short
                             )
                             if (result == SnackbarResult.ActionPerformed) viewModel.undoDeleteBulk(
                                 ids
                             )
                         }
-                    }) { Icon(Icons.Filled.Delete, contentDescription = "Удалить") }
+                    }) {
+                        Icon(
+                            imageVector = Icons.Filled.Delete,
+                            contentDescription = stringResource(R.string.delete)
+                        )
+                    }
                 }
             }
         }
@@ -256,12 +278,13 @@ fun FridgeScreen(
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     DropdownFilterChip(
-                        displayText = selectedCategory?.displayName ?: "Категория",
+                        displayText = selectedCategory?.displayName
+                            ?: stringResource(R.string.category_label),
                         isActive = selectedCategory != null
                     ) { close ->
                         DropdownMenuItem(
                             modifier = Modifier.padding(horizontal = 16.dp),
-                            text = { Text("Все категории") },
+                            text = { Text(stringResource(R.string.all_categories)) },
                             onClick = { viewModel.selectCategory(null); close() }
                         )
                         availableCategories.forEach { (category, count) ->
@@ -269,7 +292,11 @@ fun FridgeScreen(
                                 modifier = Modifier.padding(horizontal = 16.dp),
                                 text = {
                                     Text(
-                                        "${category.displayName} ($count)",
+                                        stringResource(
+                                            R.string.category_with_count,
+                                            category.displayName,
+                                            count
+                                        ),
                                         maxLines = 1,
                                         overflow = TextOverflow.Ellipsis
                                     )
@@ -293,13 +320,13 @@ fun FridgeScreen(
 
                     DropdownFilterChip(
                         modifier = Modifier.widthIn(max = 230.dp),
-                        displayText = sortOption.displayName,
+                        displayText = stringResource(sortOption.displayNameRes),
                         isActive = sortOption != FridgeSortOption.NAME_ASC
                     ) { close ->
                         FridgeSortOption.entries.forEach { option ->
                             DropdownMenuItem(
                                 modifier = Modifier.padding(horizontal = 16.dp),
-                                text = { Text(option.displayName) },
+                                text = { Text(stringResource(option.displayNameRes)) },
                                 trailingIcon = {
                                     if (option == sortOption) Icon(
                                         Icons.Filled.Check,
@@ -314,7 +341,7 @@ fun FridgeScreen(
                     FilterChip(
                         selected = groupByCategory,
                         onClick = { viewModel.toggleGroupByCategory() },
-                        label = { Text("По категориям") },
+                        label = { Text(stringResource(R.string.by_category)) },
                         shape = CornerShape,
                         colors = FilterChipDefaults.filterChipColors(
                             selectedContainerColor = MaterialTheme.colorScheme.surface,
@@ -404,8 +431,16 @@ fun FridgeScreen(
     errorMessage?.let { message ->
         AlertDialog(
             onDismissRequest = { viewModel.clearError() },
-            confirmButton = { TextButton(onClick = { viewModel.clearError() }) { Text("Ок") } },
-            title = { Text(text = "Ошибка") },
+            confirmButton = {
+                TextButton(onClick = { viewModel.clearError() }) {
+                    Text(
+                        stringResource(
+                            R.string.ok
+                        )
+                    )
+                }
+            },
+            title = { Text(text = stringResource(R.string.error)) },
             text = { Text(text = message) }
         )
     }
@@ -521,8 +556,8 @@ private fun FridgeItemRow(
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             if (item.isFavorite) {
                                 Icon(
-                                    Icons.Filled.Star,
-                                    contentDescription = "Избранное",
+                                    imageVector = Icons.Filled.Star,
+                                    contentDescription = stringResource(R.string.favorite),
                                     tint = MaterialTheme.colorScheme.primary,
                                     modifier = Modifier.size(20.dp)
                                 )
@@ -530,7 +565,10 @@ private fun FridgeItemRow(
                             }
                             Box {
                                 IconButton(onClick = { menuExpanded = true }) {
-                                    Icon(Icons.Filled.MoreVert, contentDescription = "Действия")
+                                    Icon(
+                                        imageVector = Icons.Filled.MoreVert,
+                                        contentDescription = stringResource(R.string.actions)
+                                    )
                                 }
                                 DropdownMenu(
                                     expanded = menuExpanded,
@@ -538,13 +576,15 @@ private fun FridgeItemRow(
                                     modifier = Modifier
                                         .clip(CornerShape)
                                         .gradientStyle(),
-                                    containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.9f),
+                                    containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(
+                                        alpha = 0.9f
+                                    ),
                                     shape = CornerShape,
                                     shadowElevation = 0.dp
                                 ) {
                                     DropdownMenuItem(
                                         modifier = Modifier.padding(horizontal = 16.dp),
-                                        text = { Text("Изменить") },
+                                        text = { Text(stringResource(R.string.edit_action)) },
                                         leadingIcon = {
                                             Icon(
                                                 Icons.Filled.Edit,
@@ -555,7 +595,13 @@ private fun FridgeItemRow(
                                     )
                                     DropdownMenuItem(
                                         modifier = Modifier.padding(horizontal = 16.dp),
-                                        text = { Text(if (item.isFavorite) "Убрать из избранного" else "Добавить в избранное") },
+                                        text = {
+                                            Text(
+                                                if (item.isFavorite) stringResource(R.string.remove_from_favorites) else stringResource(
+                                                    R.string.add_to_favorites
+                                                )
+                                            )
+                                        },
                                         leadingIcon = {
                                             Icon(
                                                 if (item.isFavorite) Icons.Filled.Star else Icons.Filled.StarBorder,
@@ -566,7 +612,7 @@ private fun FridgeItemRow(
                                     )
                                     DropdownMenuItem(
                                         modifier = Modifier.padding(horizontal = 16.dp),
-                                        text = { Text("Удалить") },
+                                        text = { Text(stringResource(R.string.delete)) },
                                         leadingIcon = {
                                             Icon(
                                                 Icons.Filled.Delete,
@@ -586,7 +632,7 @@ private fun FridgeItemRow(
                                     HorizontalDivider(Modifier.padding(horizontal = 24.dp))
                                     DropdownMenuItem(
                                         modifier = Modifier.padding(horizontal = 16.dp),
-                                        text = { Text("Выбрать") },
+                                        text = { Text(stringResource(R.string.select)) },
                                         leadingIcon = {
                                             Icon(
                                                 Icons.Filled.SelectAll,
@@ -620,8 +666,15 @@ private fun ExpirationBadge(date: LocalDate) {
         else -> MaterialTheme.colorScheme.onSurface
     }
     val text = when {
-        date.isBefore(today) -> "Срок истёк ${date.format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))}"
-        else -> "До ${date.format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))}"
+        date.isBefore(today) -> stringResource(
+            R.string.expired_on,
+            date.format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))
+        )
+
+        else -> stringResource(
+            R.string.until_date,
+            date.format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))
+        )
     }
     Text(text = text, style = MaterialTheme.typography.labelSmall, color = color)
 }
@@ -641,7 +694,7 @@ private fun EmptyFridgeState(modifier: Modifier = Modifier) {
         )
         Spacer(Modifier.height(12.dp))
         Text(
-            text = "В холодильнике пока пусто.\nДобавьте первый продукт.",
+            text = stringResource(R.string.fridge_empty),
             textAlign = TextAlign.Center,
             color = MaterialTheme.colorScheme.onBackground
         )

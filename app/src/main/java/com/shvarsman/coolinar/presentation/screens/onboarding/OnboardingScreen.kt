@@ -314,8 +314,11 @@ private fun AuthStepPage(
                 ) {
                     Text(
                         stringResource(
-                            if (formMode == AuthFormMode.SIGN_IN) R.string.profile_switch_to_sign_up
-                            else R.string.profile_switch_to_sign_in
+                            if (formMode == AuthFormMode.SIGN_IN) {
+                                R.string.profile_switch_to_sign_up
+                            } else {
+                                R.string.profile_switch_to_sign_in
+                            }
                         )
                     )
                 }

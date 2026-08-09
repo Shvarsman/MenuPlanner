@@ -30,7 +30,7 @@ class BackupViewModel @Inject constructor(
     private val _uiState = MutableStateFlow<BackupUiState>(BackupUiState.Idle)
     val uiState: StateFlow<BackupUiState> = _uiState
 
-    fun onExport(destinationUri: Uri, type: BackupType, singleRecipeId: Long? = null) {
+    fun onExport(destinationUri: Uri, type: BackupType, singleRecipeId: String? = null) {
         viewModelScope.launch {
             _uiState.value = BackupUiState.InProgress
             try {

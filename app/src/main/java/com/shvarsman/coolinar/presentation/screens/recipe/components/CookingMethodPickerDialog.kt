@@ -10,7 +10,9 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.shvarsman.coolinar.R
 import com.shvarsman.coolinar.domain.model.CookingMethod
 import com.shvarsman.coolinar.presentation.ui.theme.CornerShape
 
@@ -22,19 +24,19 @@ fun CookingMethodPickerDialog(
 ) {
     var query by remember { mutableStateOf("") }
     val filtered = remember(query) {
-        if (query.isBlank()) CookingMethod.values().toList()
-        else CookingMethod.values().filter { it.displayName.contains(query, ignoreCase = true) }
+        if (query.isBlank()) CookingMethod.entries
+        else CookingMethod.entries.filter { it.displayName.contains(query, ignoreCase = true) }
     }
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Способ приготовления") },
+        title = { Text(stringResource(R.string.cooking_method)) },
         text = {
             Column {
                 OutlinedTextField(
                     value = query,
                     onValueChange = { query = it },
-                    placeholder = { Text("Поиск") },
+                    placeholder = { Text(stringResource(R.string.search)) },
                     leadingIcon = { Icon(Icons.Filled.Search, contentDescription = null) },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
@@ -44,7 +46,7 @@ fun CookingMethodPickerDialog(
                     TextButton(
                         onClick = { onSelect(null) },
                         modifier = Modifier.fillMaxWidth()
-                    ) { Text("Очистить выбор") }
+                    ) { Text(stringResource(R.string.clear_selection)) }
                 }
                 Spacer(Modifier.height(8.dp))
                 LazyColumn(modifier = Modifier.heightIn(max = 400.dp)) {
@@ -67,6 +69,6 @@ fun CookingMethodPickerDialog(
             }
         },
         confirmButton = {},
-        dismissButton = { TextButton(onClick = onDismiss) { Text("Закрыть") } }
+        dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.close)) } }
     )
 }

@@ -26,7 +26,7 @@ class AssignRecipeToMenuUseCase @Inject constructor(
         day: DayOfWeek,
         mealType: MealType,
         recipe: Recipe
-    ): Long =
+    ): String =
         transactionRunner.runInTransaction {
             val reserved = getReservedQuantities(weekStart)
             val fridgeSnapshot = fridgeRepository.observeItems().first()

@@ -26,10 +26,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
+import com.shvarsman.coolinar.R
 import com.shvarsman.coolinar.domain.model.RecipeSummary
 import com.shvarsman.coolinar.presentation.screens.common.rememberSizedImageRequest
 
@@ -46,7 +48,7 @@ private const val CAROUSEL_PREVIEW_LIMIT = 15
 fun RecipeCarouselSection(
     title: String,
     recipes: List<RecipeSummary>,
-    onRecipeClick: (Long) -> Unit,
+    onRecipeClick: (String) -> Unit,
     onShowAllClick: () -> Unit
 ) {
     if (recipes.isEmpty()) return
@@ -63,7 +65,7 @@ fun RecipeCarouselSection(
         ) {
             Text(title, style = MaterialTheme.typography.titleMedium)
             TextButton(onClick = onShowAllClick) {
-                Text("Показать все")
+                Text(stringResource(R.string.show_all))
             }
         }
 

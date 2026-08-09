@@ -4,6 +4,7 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
+import com.shvarsman.coolinar.data.remote.sync.SyncableEntity
 import com.shvarsman.coolinar.domain.model.MeasureUnit
 import java.time.LocalDate
 
@@ -20,10 +21,12 @@ import java.time.LocalDate
     indices = [Index("productId")]
 )
 data class FridgeItemEntity(
-    @PrimaryKey(autoGenerate = true) val id: Long = 0,
-    val productId: Long,
+    @PrimaryKey override val id: String,
+    val productId: String,
     val unit: MeasureUnit,
     val quantity: Double,
     val expirationDate: LocalDate? = null,
-    val isFavorite: Boolean = false
-)
+    val isFavorite: Boolean = false,
+    override val updatedAt: Long = System.currentTimeMillis(),
+    override val isDeleted: Boolean = false
+) : SyncableEntity

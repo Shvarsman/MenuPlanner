@@ -21,7 +21,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.shvarsman.coolinar.R
 import com.shvarsman.coolinar.domain.model.RecipeCategory
 import com.shvarsman.coolinar.presentation.screens.common.CollapsingLargeTopAppBar
 import com.shvarsman.coolinar.presentation.screens.recipe.components.CategoryTile
@@ -40,7 +42,7 @@ fun AllCategoriesScreen(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             CollapsingLargeTopAppBar(
-                title = "Все категории",
+                title = stringResource(R.string.all_categories),
                 scrollBehavior = scrollBehavior,
                 navigationIcon = {
                     IconButton(
@@ -54,7 +56,10 @@ fun AllCategoriesScreen(
                             .gradientStyle(shape = CornerShape),
                         onClick = onBack
                     ) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад")
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = stringResource(R.string.back)
+                        )
                     }
                 }
             )

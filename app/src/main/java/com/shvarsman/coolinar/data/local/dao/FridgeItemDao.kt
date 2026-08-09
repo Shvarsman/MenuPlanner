@@ -14,22 +14,28 @@ data class FridgeItemWithProduct(
 @Dao
 interface FridgeItemDao {
     @Transaction
-    @Query("SELECT * FROM fridge_items")
+    @Query("SELECT * FROM fridge_items WHERE isDeleted = 0")
     fun observeAllWithProduct(): Flow<List<FridgeItemWithProduct>>
 
     @Transaction
+    @Query("SELECT * FROM fridge_items WHERE id = :id AND isDeleted = 0")
+    suspend fun getByIdWithProduct(id: String): FridgeItemWithProduct?
+
     @Query("SELECT * FROM fridge_items WHERE id = :id")
-    suspend fun getByIdWithProduct(id: Long): FridgeItemWithProduct?
+    suspend fun getByIdIncludingDeleted(id: String): FridgeItemEntity?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(item: FridgeItemEntity): Long
+    suspend fun insert(item: FridgeItemEntity)
 
     @Update
     suspend fun update(item: FridgeItemEntity)
 
-    @Query("DELETE FROM fridge_items WHERE id = :id")
-    suspend fun deleteById(id: Long)
+    @Query("UPDATE fridge_items SET isDeleted = 1, updatedAt = :updatedAt WHERE id = :id")
+    suspend fun softDeleteById(id: String, updatedAt: Long)
 
-    @Query("UPDATE fridge_items SET quantity = MAX(0, quantity - :amount) WHERE id = :id")
-    suspend fun decreaseQuantity(id: Long, amount: Double)
+    @Query("UPDATE fridge_items SET quantity = MAX(0, quantity - :amount), updatedAt = :updatedAt WHERE id = :id")
+    suspend fun decreaseQuantity(id: String, amount: Double, updatedAt: Long)
+
+    @Query("SELECT * FROM fridge_items")
+    suspend fun getAllIncludingDeleted(): List<FridgeItemEntity>
 }

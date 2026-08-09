@@ -136,9 +136,9 @@ fun AppNavGraph(showOnboarding: Boolean = false) {
 
             composable(
                 route = Destination.RecipeView.route,
-                arguments = listOf(navArgument("recipeId") { type = NavType.LongType })
+                arguments = listOf(navArgument("recipeId") { type = NavType.StringType })
             ) { backStackEntry ->
-                val recipeId = backStackEntry.arguments?.getLong("recipeId") ?: 0L
+                val recipeId = backStackEntry.arguments?.getString("recipeId") ?: ""
                 RecipeViewScreen(
                     recipeId = recipeId,
                     onBack = { rootNavController.popBackStack() },
@@ -150,9 +150,9 @@ fun AppNavGraph(showOnboarding: Boolean = false) {
 
             composable(
                 route = Destination.RecipeEditor.route,
-                arguments = listOf(navArgument("recipeId") { type = NavType.LongType })
+                arguments = listOf(navArgument("recipeId") { type = NavType.StringType })
             ) { backStackEntry ->
-                val recipeId = backStackEntry.arguments?.getLong("recipeId") ?: 0L
+                val recipeId = backStackEntry.arguments?.getString("recipeId") ?: ""
                 RecipeEditorScreen(
                     recipeId = recipeId,
                     onDone = { rootNavController.popBackStack() }
@@ -162,12 +162,12 @@ fun AppNavGraph(showOnboarding: Boolean = false) {
             composable(
                 route = Destination.Cooking.route,
                 arguments = listOf(
-                    navArgument("recipeId") { type = NavType.LongType },
-                    navArgument("menuEntryId") { type = NavType.LongType }
+                    navArgument("recipeId") { type = NavType.StringType },
+                    navArgument("menuEntryId") { type = NavType.StringType }
                 )
             ) { backStackEntry ->
-                val recipeId = backStackEntry.arguments?.getLong("recipeId") ?: 0L
-                val menuEntryId = backStackEntry.arguments?.getLong("menuEntryId") ?: 0L
+                val recipeId = backStackEntry.arguments?.getString("recipeId") ?: ""
+                val menuEntryId = backStackEntry.arguments?.getString("menuEntryId") ?: ""
                 CookingScreen(
                     recipeId = recipeId,
                     menuEntryId = menuEntryId,

@@ -1,7 +1,7 @@
 package com.shvarsman.coolinar.domain.model
 
 data class Product(
-    val id: Long = 0,
+    val id: String = "",
     val name: String,
     val category: Category,
     val defaultUnit: MeasureUnit,

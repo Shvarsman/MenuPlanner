@@ -11,7 +11,7 @@ class CompleteCookingUseCase @Inject constructor(
     private val fridgeRepository: FridgeRepository,
     private val menuRepository: MenuRepository
 ) {
-    suspend operator fun invoke(menuEntryId: Long, recipe: Recipe) {
+    suspend operator fun invoke(menuEntryId: String, recipe: Recipe) {
         val fridgeSnapshot = fridgeRepository.observeItems().first()
 
         recipe.ingredients.forEach { ingredient ->

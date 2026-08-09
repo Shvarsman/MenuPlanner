@@ -232,7 +232,7 @@ fun BackupScreen(
                         )
                     }
                 },
-                title = { Text(text = stringResource(R.string.backup_done)) },
+                title = { Text(text = stringResource(R.string.done)) },
                 text = { Text(text = exportSummary(state)) }
             )
         }
@@ -249,7 +249,7 @@ fun BackupScreen(
                         )
                     }
                 },
-                title = { Text(text = stringResource(R.string.backup_done)) },
+                title = { Text(text = stringResource(R.string.done)) },
                 text = { Text(text = importSummary(state.result)) }
             )
         }
@@ -266,7 +266,7 @@ fun BackupScreen(
                         )
                     }
                 },
-                title = { Text(text = stringResource(R.string.backup_error)) },
+                title = { Text(text = stringResource(R.string.error)) },
                 text = { Text(text = state.message) }
             )
         }

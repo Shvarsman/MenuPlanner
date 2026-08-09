@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.MenuBook
@@ -26,9 +27,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
+import com.shvarsman.coolinar.R
 import com.shvarsman.coolinar.domain.model.RecipeSummary
 import com.shvarsman.coolinar.presentation.screens.common.rememberSizedImageRequest
 import com.shvarsman.coolinar.presentation.ui.theme.CornerShape
@@ -81,7 +84,7 @@ fun RecipeCard(
                         ) {
                             Icon(
                                 modifier = Modifier.size(48.dp),
-                                imageVector = Icons.Filled.MenuBook,
+                                imageVector = Icons.AutoMirrored.Filled.MenuBook,
                                 contentDescription = null,
                                 tint = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.6f)
                             )
@@ -115,7 +118,12 @@ fun RecipeCard(
                     maxLines = 1
                 )
                 Text(
-                    text = "${recipe.ingredientCount} ингредиентов · ${recipe.stepCount} шагов · ${recipe.difficulty.displayName}",
+                    text = stringResource(
+                        R.string.recipe_stats,
+                        recipe.ingredientCount,
+                        recipe.stepCount,
+                        recipe.difficulty.displayName
+                    ),
                     style = MaterialTheme.typography.bodySmall,
                     color = Color.White.copy(alpha = 0.85f)
                 )
@@ -129,14 +137,14 @@ fun RecipeCard(
                 IconButton(onClick = onEdit) {
                     Icon(
                         imageVector = Icons.Filled.Edit,
-                        contentDescription = "Редактировать рецепт",
+                        contentDescription = stringResource(R.string.edit_recipe),
                         tint = Color.White
                     )
                 }
                 IconButton(onClick = onDelete) {
                     Icon(
                         imageVector = Icons.Filled.Delete,
-                        contentDescription = "Удалить рецепт",
+                        contentDescription = stringResource(R.string.delete_recipe),
                         tint = Color.White
                     )
                 }

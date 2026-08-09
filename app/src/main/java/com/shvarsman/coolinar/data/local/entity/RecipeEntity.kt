@@ -2,6 +2,7 @@ package com.shvarsman.coolinar.data.local.entity
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.shvarsman.coolinar.data.remote.sync.SyncableEntity
 import com.shvarsman.coolinar.domain.model.CookingMethod
 import com.shvarsman.coolinar.domain.model.RecipeCategory
 import com.shvarsman.coolinar.domain.model.RecipeDifficulty
@@ -9,7 +10,7 @@ import com.shvarsman.coolinar.domain.model.StepContentItem
 
 @Entity(tableName = "recipes")
 data class RecipeEntity(
-    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    @PrimaryKey override val id: String,
     val title: String,
     val category: RecipeCategory,
     val photoUri: String?,
@@ -18,5 +19,7 @@ data class RecipeEntity(
     val difficulty: RecipeDifficulty = RecipeDifficulty.EASY,
     val description: String = "",
     val steps: List<StepContentItem>,
-    val stepCount: Int
-)
+    val stepCount: Int,
+    override val updatedAt: Long = System.currentTimeMillis(),
+    override val isDeleted: Boolean = false
+) : SyncableEntity

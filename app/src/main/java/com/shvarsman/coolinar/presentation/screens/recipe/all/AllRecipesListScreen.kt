@@ -29,14 +29,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.shvarsman.coolinar.R
 import com.shvarsman.coolinar.domain.model.RecipeSummary
 import com.shvarsman.coolinar.presentation.screens.common.CollapsingLargeTopAppBar
+import com.shvarsman.coolinar.presentation.screens.recipe.components.recipeGroupedItems
 import com.shvarsman.coolinar.presentation.screens.recipe.list.RecipeListViewModel
 import com.shvarsman.coolinar.presentation.screens.recipe.list.RecipeViewMode
-import com.shvarsman.coolinar.presentation.screens.recipe.components.recipeGroupedItems
 import com.shvarsman.coolinar.presentation.ui.theme.CornerShape
 import com.shvarsman.coolinar.presentation.ui.theme.gradientStyle
 import com.shvarsman.coolinar.presentation.utils.rememberOptimisticDelete
@@ -45,19 +47,21 @@ import com.shvarsman.coolinar.presentation.utils.rememberOptimisticDelete
 @Composable
 fun AllRecipesListScreen(
     onBack: () -> Unit,
-    onViewRecipe: (Long) -> Unit,
-    onEditRecipe: (Long) -> Unit,
+    onViewRecipe: (String) -> Unit,
+    onEditRecipe: (String) -> Unit,
     viewModel: RecipeListViewModel = hiltViewModel()
 ) {
     val grouped by viewModel.allRecipesGrouped.collectAsStateWithLifecycle()
     var viewMode by rememberSaveable { mutableStateOf(RecipeViewMode.PHOTO_CARDS) }
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
 
+    val recipeDeletedTemplate = stringResource(R.string.recipe_deleted)
+
     val snackbarHostState = remember { SnackbarHostState() }
-    val requestDelete = rememberOptimisticDelete<RecipeSummary, Long>(
+    val requestDelete = rememberOptimisticDelete<RecipeSummary, String>(
         snackbarHostState = snackbarHostState,
         idOf = { it.id },
-        message = { recipe -> "«${recipe.title}» удалён" },
+        message = { recipe -> String.format(recipeDeletedTemplate, recipe.title) },
         onRequestDelete = { id -> viewModel.requestDelete(id) },
         onUndo = { id -> viewModel.undoDelete(id) }
     )
@@ -67,7 +71,7 @@ fun AllRecipesListScreen(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             CollapsingLargeTopAppBar(
-                title = "Все рецепты",
+                title = stringResource(R.string.all_recipes),
                 scrollBehavior = scrollBehavior,
                 navigationIcon = {
                     IconButton(
@@ -81,7 +85,10 @@ fun AllRecipesListScreen(
                             .gradientStyle(shape = CornerShape),
                         onClick = onBack
                     ) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад")
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = stringResource(R.string.back)
+                        )
                     }
                 },
                 actions = {
@@ -113,11 +120,11 @@ fun AllRecipesListScreen(
                     }
                 },
 
-            )
+                )
         },
 
 
-    ) { padding ->
+        ) { padding ->
         if (grouped.isEmpty()) {
             Box(
                 modifier = Modifier
@@ -125,7 +132,7 @@ fun AllRecipesListScreen(
                     .padding(padding),
                 contentAlignment = Alignment.Center
             ) {
-                Text("Рецептов пока нет")
+                Text(stringResource(R.string.no_recipes_at_all))
             }
         } else {
             LazyColumn(

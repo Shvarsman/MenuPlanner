@@ -30,13 +30,18 @@ class AppDatabaseCallback(private val context: Context) : RoomDatabase.Callback(
         try {
             rows.forEach { row ->
                 val values = ContentValues().apply {
+                    // Детерминированный id вместо случайного UUID — одинаковый на
+                    // любом устройстве при первом создании БД. Это важно для
+                    // будущей синхронизации: сидовые продукты не должны считаться
+                    // "разными" документами на разных устройствах одного аккаунта.
+                    put("id", "seed_${row.name.lowercase().replace(Regex("[^a-z0-9а-яё]+"), "_")}")
                     put("name", row.name)
                     put("category", row.category.name)
                     put("defaultUnit", row.unit.name)
                     put("iconKey", row.iconKey)
                     put("isDefault", 1)
                     put("isToTaste", if (row.isToTaste) 1 else 0)
-                    put("isAlwaysAvailable", if (row.isAlwaysAvailable) 1 else 0) // добавить
+                    put("isAlwaysAvailable", if (row.isAlwaysAvailable) 1 else 0)
                 }
                 db.insert("products", SQLiteDatabase.CONFLICT_IGNORE, values)
             }

@@ -20,8 +20,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.shvarsman.coolinar.R
 import com.shvarsman.coolinar.domain.model.FridgeItem
 import com.shvarsman.coolinar.domain.model.MeasureUnit
 import com.shvarsman.coolinar.presentation.screens.common.ExpirationDatePickerField
@@ -62,7 +64,7 @@ fun FridgeItemQuantityDialog(
         },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                FieldLabel("Количество")
+                FieldLabel(stringResource(R.string.quantity_label))
                 QuantityUnitField(
                     quantityText = quantityText,
                     onQuantityChange = { quantityText = it },
@@ -72,7 +74,7 @@ fun FridgeItemQuantityDialog(
 
                 Spacer(Modifier.height(8.dp))
 
-                FieldLabel("Срок годности")
+                FieldLabel(stringResource(R.string.expiration_date_label))
                 ExpirationDatePickerField(
                     value = expirationDate,
                     onValueChange = { expirationDate = it }
@@ -82,9 +84,9 @@ fun FridgeItemQuantityDialog(
         confirmButton = {
             TextButton(onClick = {
                 onConfirm(selectedUnit, quantityText.toDoubleOrNull() ?: 0.0, expirationDate)
-            }) { Text("Сохранить") }
+            }) { Text(stringResource(R.string.save)) }
         },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("Отмена") } },
+        dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) } },
         containerColor = MaterialTheme.colorScheme.surfaceContainer
     )
 }

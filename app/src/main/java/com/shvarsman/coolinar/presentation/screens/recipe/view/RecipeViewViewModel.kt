@@ -48,7 +48,7 @@ class RecipeViewViewModel @Inject constructor(
 
     private val _rawRecipe = MutableStateFlow<Recipe?>(null)
     private val _isLoading = MutableStateFlow(true)
-    private val pendingDeleteManager = PendingDeleteManager<Long>(viewModelScope)
+    private val pendingDeleteManager = PendingDeleteManager<String>(viewModelScope)
 
     val state: StateFlow<RecipeViewState> = combine(
         _rawRecipe, _isLoading, pendingDeleteManager.pendingIds
@@ -72,7 +72,7 @@ class RecipeViewViewModel @Inject constructor(
     val fridgeItems: StateFlow<List<FridgeItem>> = getFridgeItems()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    fun load(recipeId: Long) {
+    fun load(recipeId: String) {
         viewModelScope.launch {
             _isLoading.value = true
             _rawRecipe.value = recipeRepository.getRecipe(recipeId)
@@ -80,7 +80,7 @@ class RecipeViewViewModel @Inject constructor(
         }
     }
 
-    fun onShare(recipeId: Long, destinationUri: Uri) {
+    fun onShare(recipeId: String, destinationUri: Uri) {
         viewModelScope.launch {
             _shareState.value = RecipeShareState.InProgress
             try {
@@ -127,7 +127,7 @@ class RecipeViewViewModel @Inject constructor(
         viewModelScope.launch { recipeRepository.updateRecipe(updated) }
     }
 
-    fun requestDeleteIngredient(ingredientId: Long) {
+    fun requestDeleteIngredient(ingredientId: String) {
         pendingDeleteManager.requestDelete(ingredientId) {
             val recipe = _rawRecipe.value ?: return@requestDelete
             val updated =
@@ -137,7 +137,7 @@ class RecipeViewViewModel @Inject constructor(
         }
     }
 
-    fun undoDeleteIngredient(ingredientId: Long) {
+    fun undoDeleteIngredient(ingredientId: String) {
         pendingDeleteManager.undo(ingredientId)
     }
 }

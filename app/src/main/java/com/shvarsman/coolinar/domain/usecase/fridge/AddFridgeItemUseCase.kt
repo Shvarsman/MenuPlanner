@@ -7,7 +7,7 @@ import javax.inject.Inject
 class AddFridgeItemUseCase @Inject constructor(
     private val repository: FridgeRepository
 ) {
-    suspend operator fun invoke(item: FridgeItem): Long {
+    suspend operator fun invoke(item: FridgeItem): String {
         require(item.quantity >= 0) { "Количество не может быть отрицательным" }
         return repository.addItem(item)
     }

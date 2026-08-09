@@ -5,6 +5,9 @@
     <string name="cancel">Отмена</string>
     <string name="next">Далее</string>
     <string name="add">Добавить</string>
+    <string name="done">Готово</string>
+    <string name="ok">Ок</string>
+    <string name="error">Ошибка</string>
 
     <!-- Профиль-->
     <string name="app_name">Coolinar</string>
@@ -63,9 +66,7 @@
     <string name="backup_restore_button">Восстановить из файла</string>
     <string name="backup_please_wait">Подождите</string>
     <string name="backup_processing">Обработка резервной копии…</string>
-    <string name="ok">Ок</string>
-    <string name="backup_done">Готово</string>
-    <string name="backup_error">Ошибка</string>
+
     <string name="backup_export_summary_full">Сохранено: рецептов — %1$d, продуктов в холодильнике — %2$d, позиций в списке покупок — %3$d, записей в меню — %4$d</string>
     <string name="backup_export_summary_recipes">Сохранено рецептов: %1$d</string>
     <string name="backup_export_summary_single_recipe">Рецепт сохранён</string>
@@ -165,4 +166,98 @@
     <string name="purchased">Куплено</string>
     <string name="qty_with_unit">%1$s %2$s</string>
     <string name="shopping_item_deleted">\u00AB%1$s\u00BB удалён</string>
+
+    <!--Sort-->
+    <string name="sort_name_asc">По алфавиту (А-Я)</string>
+    <string name="sort_name_desc">По алфавиту (Я-А)</string>
+    <string name="sort_quantity_asc">По количеству (меньше→больше)</string>
+    <string name="sort_quantity_desc">По количеству (больше→меньше)</string>
+    <string name="sort_expiration_soon">Сначала истекающие</string>
+    <string name="sort_expiration_late">Сначала свежие</string>
+    <string name="sort_favorites_first">Сначала избранное</string>
+
+    <!--CookingScreen-->
+    <string name="cooking_title">Готовка</string>
+    <string name="recipe_not_found">Рецепт не найден</string>
+    <string name="ingredients">Ингредиенты</string>
+    <string name="ingredient_to_taste">%1$s — по вкусу</string>
+    <string name="ingredient_with_qty">%1$s — %2$s %3$s</string>
+    <string name="cooking_steps">Шаги приготовления</string>
+    <string name="time_up">Время вышло</string>
+    <string name="start_again">Запустить снова</string>
+    <string name="pause">Пауза</string>
+    <string name="start">Запустить</string>
+    <string name="resume">Продолжить</string>
+    <string name="reset">Сбросить</string>
+
+    <!--FridgeScreen-->
+    <string name="selected_count">Выбрано: %1$d</string>
+    <string name="search_fridge">Поиск в холодильнике</string>
+    <string name="close_selection">Закрыть выбор</string>
+    <string name="all_products">Все продукты</string>
+    <string name="select_all">Выбрать все</string>
+    <string name="favorite">Избранное</string>
+    <string name="by_category">По категориям</string>
+    <string name="edit_action">Изменить</string>
+    <string name="remove_from_favorites">Убрать из избранного</string>
+    <string name="add_to_favorites">Добавить в избранное</string>
+    <string name="select">Выбрать</string>
+    <string name="expired_on">Срок истёк %1$s</string>
+    <string name="until_date">До %1$s</string>
+    <string name="fridge_empty">В холодильнике пока пусто.\nДобавьте первый продукт.</string>
+    <string name="item_deleted">\u00AB%1$s\u00BB удалён</string>
+    <string name="items_deleted_count">Удалено продуктов: %1$d</string>
+    <string name="actions">Действия</string>
+
+    <!--HomeScreen-->
+    <string name="good_morning">Доброе утро</string>
+    <string name="good_afternoon">Добрый день</string>
+    <string name="good_evening">Добрый вечер</string>
+    <string name="greeting_with_name">%1$s, %2$s!</string>
+    <string name="greeting_no_name">%1$s!</string>
+    <string name="week_menu_summary">На следующей неделе запланировано %1$d из %2$d приёмов пищи</string>
+    <string name="shopping_list_empty_short">Список покупок пуст</string>
+    <string name="shopping_list_count">В списке покупок: %1$d</string>
+    <string name="can_cook_now">Можно приготовить прямо сейчас</string>
+    <string name="expiring_soon_title">Скоро истекает срок годности</string>
+    <string name="and_more">и ещё %1$d…</string>
+    <string name="week_menu_title">Меню на неделю</string>
+    <string name="this_week">Эта неделя</string>
+    <string name="next_week">Следующая неделя</string>
+    <string name="add_meal_for">Добавить блюдо на \u00AB%1$s\u00BB</string>
+    <string name="not_planned">Не запланировано</string>
+    <string name="all_products_available">Все продукты есть</string>
+    <string name="products_insufficient">Не хватает продуктов</string>
+    <string name="cook">Приготовить</string>
+    <string name="remove_from_menu">Убрать из меню</string>
+    <string name="insufficient_ingredients_message">В холодильнике недостаточно ингредиентов для этого рецепта. Продолжить готовку или сначала докупить продукты?</string>
+    <string name="continue_anyway">Всё равно продолжить</string>
+    <string name="go_shopping">В магазин</string>
+    <string name="select_recipe">Выбрать рецепт</string>
+    <string name="search_recipes">Поиск рецептов</string>
+    <string name="new_recipe">Новый рецепт</string>
+    <string name="no_recipes_yet">У вас пока нет рецептов</string>
+    <string name="menu_entry_removed">\u00AB%1$s\u00BB убран из меню</string>
+
+    <!--Recipe-->
+    <string name="all_recipes">Все рецепты</string>
+    <string name="no_recipes_at_all">Рецептов пока нет</string>
+    <string name="recipe_deleted">\u00AB%1$s\u00BB удалён</string>
+    <string name="show_as_list">Отображать списком</string>
+    <string name="show_as_cards">Отображать карточками</string>
+    <string name="no_recipes_in_category">В этой категории пока нет рецептов.</string>
+    <string name="cooking_method">Способ приготовления</string>
+    <string name="search">Поиск</string>
+    <string name="clear_selection">Очистить выбор</string>
+    <string name="close">Закрыть</string>
+    <string name="recipe_stats">%1$d ингредиентов · %2$d шагов · %3$s</string>
+    <string name="edit_recipe">Редактировать рецепт</string>
+    <string name="delete_recipe">Удалить рецепт</string>
+    <string name="show_all">Показать все</string>
+    <string name="categories">Категории</string>
+    <string name="recipe_stats_short">%1$d ингредиентов · %2$d шагов</string>
+    <string name="load_recipe_error">Не удалось загрузить рецепт: %1$s</string>
+    <string name="recipe_title_empty_error">Название рецепта не может быть пустым</string>
+    <string name="recipe_no_steps_error">Добавьте хотя бы один шаг приготовления</string>
+    <string name="save_recipe_error">Не удалось сохранить рецепт: %1$s</string>
 </resources>

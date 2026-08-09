@@ -6,5 +6,6 @@ import javax.inject.Inject
 class ToggleShoppingItemUseCase @Inject constructor(
     private val repository: ShoppingListRepository
 ) {
-    suspend operator fun invoke(itemId: Long, checked: Boolean) = repository.setChecked(itemId, checked)
+    suspend operator fun invoke(itemId: String, checked: Boolean) =
+        repository.setChecked(itemId, checked)
 }

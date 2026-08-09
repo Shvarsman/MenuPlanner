@@ -12,7 +12,7 @@ class ProductInUseException(val usagesCount: Int) : Exception(
 class DeleteProductUseCase @Inject constructor(
     private val repository: ProductRepository
 ) {
-    suspend operator fun invoke(productId: Long, force: Boolean = false) {
+    suspend operator fun invoke(productId: String, force: Boolean = false) {
         val product = repository.getProduct(productId)
         require(product == null || !product.isDefault) { "Стандартные продукты нельзя удалить" }
 

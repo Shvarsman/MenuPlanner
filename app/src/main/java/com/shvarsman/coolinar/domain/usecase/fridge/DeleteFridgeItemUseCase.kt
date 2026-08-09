@@ -6,5 +6,5 @@ import javax.inject.Inject
 class DeleteFridgeItemUseCase @Inject constructor(
     private val repository: FridgeRepository
 ) {
-    suspend operator fun invoke(itemId: Long) = repository.deleteItem(itemId)
+    suspend operator fun invoke(itemId: String) = repository.deleteItem(itemId)
 }

@@ -5,10 +5,20 @@ import coil3.ImageLoader
 import coil3.SingletonImageLoader
 import coil3.memory.MemoryCache
 import coil3.svg.SvgDecoder
+import com.shvarsman.coolinar.data.remote.sync.SyncCoordinator
 import dagger.hilt.android.HiltAndroidApp
+import javax.inject.Inject
 
 @HiltAndroidApp
 class CoolinarApp : Application(), SingletonImageLoader.Factory {
+
+    @Inject
+    lateinit var syncCoordinator: SyncCoordinator
+
+    override fun onCreate() {
+        super.onCreate()
+        syncCoordinator.start()
+    }
 
     override fun newImageLoader(context: android.content.Context): ImageLoader =
         ImageLoader.Builder(context)

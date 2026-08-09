@@ -27,7 +27,7 @@ class RemoveMenuEntryUseCase @Inject constructor(
     private val shoppingListRepository: ShoppingListRepository,
     private val transactionRunner: TransactionRunner
 ) {
-    suspend operator fun invoke(entryId: Long) {
+    suspend operator fun invoke(entryId: String) {
         transactionRunner.runInTransaction {
             val entry = menuRepository.getEntry(entryId) ?: run {
                 menuRepository.removeEntry(entryId)
@@ -71,7 +71,7 @@ class RemoveMenuEntryUseCase @Inject constructor(
 
     private suspend fun removeFromShoppingList(
         currentItems: List<com.shvarsman.coolinar.domain.model.ShoppingListItem>,
-        productId: Long,
+        productId: String,
         unit: com.shvarsman.coolinar.domain.model.MeasureUnit,
         amount: Double
     ) {

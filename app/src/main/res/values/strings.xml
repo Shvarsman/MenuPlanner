@@ -4,6 +4,10 @@
     <string name="cancel">Cancel</string>
     <string name="next">Next</string>
     <string name="add">Add</string>
+    <string name="done">Done</string>
+    <string name="error">Error</string>
+    <string name="ok">OK</string>
+
     <!-- Профиль-->
     <string name="app_name">Coolinar</string>
     <string name="profile_title">Profile</string>
@@ -61,9 +65,6 @@
     <string name="backup_restore_button">Restore from file</string>
     <string name="backup_please_wait">Please wait</string>
     <string name="backup_processing">Processing backup…</string>
-    <string name="ok">OK</string>
-    <string name="backup_done">Done</string>
-    <string name="backup_error">Error</string>
     <string name="backup_export_summary_full">Saved: recipes — %1$d, fridge items — %2$d, shopping list items — %3$d, menu entries — %4$d</string>
     <string name="backup_export_summary_recipes">Recipes saved: %1$d</string>
     <string name="backup_export_summary_single_recipe">Recipe saved</string>
@@ -163,4 +164,98 @@
     <string name="purchased">Purchased</string>
     <string name="qty_with_unit">%1$s %2$s</string>
     <string name="shopping_item_deleted">\u00AB%1$s\u00BB deleted</string>
+
+    <!--Sort-->
+    <string name="sort_name_asc">Alphabetical (A–Z)</string>
+    <string name="sort_name_desc">Alphabetical (Z–A)</string>
+    <string name="sort_quantity_asc">By quantity (low→high)</string>
+    <string name="sort_quantity_desc">By quantity (high→low)</string>
+    <string name="sort_expiration_soon">Expiring soon first</string>
+    <string name="sort_expiration_late">Freshest first</string>
+    <string name="sort_favorites_first">Favorites first</string>
+
+    <!--CookingScreen-->
+    <string name="cooking_title">Cooking</string>
+    <string name="recipe_not_found">Recipe not found</string>
+    <string name="ingredients">Ingredients</string>
+    <string name="ingredient_to_taste">%1$s — to taste</string>
+    <string name="ingredient_with_qty">%1$s — %2$s %3$s</string>
+    <string name="cooking_steps">Cooking steps</string>
+    <string name="time_up">Time\'s up</string>
+    <string name="start_again">Start again</string>
+    <string name="pause">Pause</string>
+    <string name="start">Start</string>
+    <string name="resume">Resume</string>
+    <string name="reset">Reset</string>
+
+    <!--FridgeScreen-->
+    <string name="selected_count">Selected: %1$d</string>
+    <string name="search_fridge">Search in fridge</string>
+    <string name="close_selection">Close selection</string>
+    <string name="all_products">All products</string>
+    <string name="select_all">Select all</string>
+    <string name="favorite">Favorite</string>
+    <string name="by_category">By category</string>
+    <string name="edit_action">Edit</string>
+    <string name="remove_from_favorites">Remove from favorites</string>
+    <string name="add_to_favorites">Add to favorites</string>
+    <string name="select">Select</string>
+    <string name="expired_on">Expired %1$s</string>
+    <string name="until_date">Until %1$s</string>
+    <string name="fridge_empty">Your fridge is empty.\nAdd your first product.</string>
+    <string name="item_deleted">\u00AB%1$s\u00BB deleted</string>
+    <string name="items_deleted_count">Items deleted: %1$d</string>
+    <string name="actions">Actions</string>
+
+    <!--HomeScreen-->
+    <string name="good_morning">Good morning</string>
+    <string name="good_afternoon">Good afternoon</string>
+    <string name="good_evening">Good evening</string>
+    <string name="greeting_with_name">%1$s, %2$s!</string>
+    <string name="greeting_no_name">%1$s!</string>
+    <string name="week_menu_summary">%1$d of %2$d meals planned for next week</string>
+    <string name="shopping_list_empty_short">Shopping list is empty</string>
+    <string name="shopping_list_count">In shopping list: %1$d</string>
+    <string name="can_cook_now">Can cook right now</string>
+    <string name="expiring_soon_title">Expiring soon</string>
+    <string name="and_more">and %1$d more…</string>
+    <string name="week_menu_title">Weekly menu</string>
+    <string name="this_week">This week</string>
+    <string name="next_week">Next week</string>
+    <string name="add_meal_for">Add a dish for \u00AB%1$s\u00BB</string>
+    <string name="not_planned">Not planned</string>
+    <string name="all_products_available">All products available</string>
+    <string name="products_insufficient">Not enough products</string>
+    <string name="cook">Cook</string>
+    <string name="remove_from_menu">Remove from menu</string>
+    <string name="insufficient_ingredients_message">The fridge doesn\'t have enough ingredients for this recipe. Continue cooking anyway, or buy the missing items first?</string>
+    <string name="continue_anyway">Continue anyway</string>
+    <string name="go_shopping">Go shopping</string>
+    <string name="select_recipe">Select recipe</string>
+    <string name="search_recipes">Search recipes</string>
+    <string name="new_recipe">New recipe</string>
+    <string name="no_recipes_yet">You don\'t have any recipes yet</string>
+    <string name="menu_entry_removed">\u00AB%1$s\u00BB removed from menu</string>
+
+    <!--Recipe-->
+    <string name="all_recipes">All recipes</string>
+    <string name="no_recipes_at_all">No recipes yet</string>
+    <string name="recipe_deleted">\u00AB%1$s\u00BB deleted</string>
+    <string name="show_as_list">Show as list</string>
+    <string name="show_as_cards">Show as cards</string>
+    <string name="no_recipes_in_category">There are no recipes in this category yet.</string>
+    <string name="cooking_method">Cooking method</string>
+    <string name="search">Search</string>
+    <string name="clear_selection">Clear selection</string>
+    <string name="close">Close</string>
+    <string name="recipe_stats">%1$d ingredients · %2$d steps · %3$s</string>
+    <string name="edit_recipe">Edit recipe</string>
+    <string name="delete_recipe">Delete recipe</string>
+    <string name="show_all">Show all</string>
+    <string name="categories">Categories</string>
+    <string name="recipe_stats_short">%1$d ingredients · %2$d steps</string>
+    <string name="load_recipe_error">Failed to load recipe: %1$s</string>
+    <string name="recipe_title_empty_error">Recipe title cannot be empty</string>
+    <string name="recipe_no_steps_error">Add at least one cooking step</string>
+    <string name="save_recipe_error">Failed to save recipe: %1$s</string>
 </resources>

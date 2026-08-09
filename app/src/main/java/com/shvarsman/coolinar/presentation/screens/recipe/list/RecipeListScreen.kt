@@ -67,8 +67,8 @@ import com.shvarsman.coolinar.presentation.utils.rememberOptimisticDelete
 @Composable
 fun RecipeListScreen(
     onAddRecipe: () -> Unit,
-    onViewRecipe: (Long) -> Unit,
-    onEditRecipe: (Long) -> Unit,
+    onViewRecipe: (String) -> Unit,
+    onEditRecipe: (String) -> Unit,
     onCategoryClick: (RecipeCategory) -> Unit,
     onShowAllCategories: () -> Unit,
     onShowAllSuggested: () -> Unit,
@@ -92,7 +92,7 @@ fun RecipeListScreen(
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
 
     val snackbarHostState = remember { SnackbarHostState() }
-    val requestDelete = rememberOptimisticDelete<RecipeSummary, Long>(
+    val requestDelete = rememberOptimisticDelete<RecipeSummary, String>(
         snackbarHostState = snackbarHostState,
         idOf = { it.id },
         message = { recipe -> "«${recipe.title}» удалён" },

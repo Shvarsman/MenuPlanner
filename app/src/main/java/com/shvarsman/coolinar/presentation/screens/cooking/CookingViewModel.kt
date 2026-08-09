@@ -27,14 +27,14 @@ class CookingViewModel @Inject constructor(
     private val _state = MutableStateFlow(CookingState())
     val state: StateFlow<CookingState> = _state.asStateFlow()
 
-    fun load(recipeId: Long) {
+    fun load(recipeId: String) {
         viewModelScope.launch {
             val recipe = recipeRepository.getRecipe(recipeId)
             _state.value = CookingState(recipe = recipe, isLoading = false)
         }
     }
 
-    fun finishCooking(menuEntryId: Long) {
+    fun finishCooking(menuEntryId: String) {
         val recipe = _state.value.recipe ?: return
         viewModelScope.launch {
             completeCookingUseCase(menuEntryId, recipe)

@@ -10,7 +10,7 @@ data class ReservedAmount(val unit: MeasureUnit, val amount: Double)
  * несовместимых единиц (например, продукт заказан то в граммах, то в столовых
  * ложках) — иначе один резерв тихо перезатирал бы другой.
  */
-data class ReservedKey(val productId: Long, val canonicalUnit: MeasureUnit)
+data class ReservedKey(val productId: String, val canonicalUnit: MeasureUnit)
 
 /**
  * Определяет, хватает ли ингредиента в холодильнике для этого рецепта.
@@ -53,7 +53,7 @@ fun RecipeIngredient.availability(
 fun computeReservedAmounts(
     menuEntries: List<MenuEntry>,
     recipes: List<Recipe>,
-    excludeMenuEntryId: Long? = null
+    excludeMenuEntryId: String? = null
 ): Map<ReservedKey, ReservedAmount> {
     val filteredEntries = if (excludeMenuEntryId != null)
         menuEntries.filter { it.id != excludeMenuEntryId } else menuEntries

@@ -7,13 +7,10 @@ import kotlinx.coroutines.flow.Flow
 
 interface ProductRepository {
     fun observeAllProducts(): Flow<List<Product>>
-    suspend fun getProduct(id: Long): Product?
-    suspend fun addProduct(product: Product): Long
+    suspend fun getProduct(id: String): Product?
+    suspend fun addProduct(product: Product): String
     suspend fun updateProduct(product: Product)
-    suspend fun deleteProduct(id: Long)
-
-    /** Возвращает существующий продукт по названию (без учёта регистра)
-     * либо создаёт новый в каталоге. */
+    suspend fun deleteProduct(id: String)
     suspend fun findOrCreate(
         name: String,
         category: Category,
@@ -21,7 +18,5 @@ interface ProductRepository {
         isToTaste: Boolean = false,
         isAlwaysAvailable: Boolean = false
     ): Product
-
-    /** Сколько раз продукт используется в рецептах, холодильнике и списке покупок суммарно. */
-    suspend fun countUsages(productId: Long): Int
+    suspend fun countUsages(productId: String): Int
 }

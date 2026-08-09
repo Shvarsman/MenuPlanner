@@ -6,7 +6,7 @@ import javax.inject.Inject
 class DeleteRecipeUseCase @Inject constructor(
     private val repository: RecipeRepository
 ) {
-    suspend operator fun invoke(recipeId: Long) {
+    suspend operator fun invoke(recipeId: String) {
         repository.deleteRecipe(recipeId)
     }
 }

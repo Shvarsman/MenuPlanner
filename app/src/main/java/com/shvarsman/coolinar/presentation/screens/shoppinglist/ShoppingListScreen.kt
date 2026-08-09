@@ -217,12 +217,12 @@ fun ShoppingListScreen(
                 }
 
                 DropdownFilterChip(
-                    displayText = sortOption.displayName,
+                    displayText = stringResource(sortOption.displayNameRes),
                     isActive = sortOption != ShoppingSortOption.NAME_ASC
                 ) { close ->
                     ShoppingSortOption.entries.forEach { option ->
                         DropdownMenuItem(
-                            text = { Text(option.displayName) },
+                            text = { Text(stringResource(option.displayNameRes)) },
                             trailingIcon = {
                                 if (option == sortOption) Icon(
                                     Icons.Filled.Check,

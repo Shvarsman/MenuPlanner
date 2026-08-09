@@ -6,10 +6,7 @@ import java.time.LocalDate
 
 interface MenuRepository {
     fun observeWeekMenu(weekStart: LocalDate): Flow<List<MenuEntry>>
-
-    suspend fun getEntry(id: Long): MenuEntry?
-
-    suspend fun addEntry(entry: MenuEntry): Long
-
-    suspend fun removeEntry(id: Long)
+    suspend fun getEntry(id: String): MenuEntry?
+    suspend fun addEntry(entry: MenuEntry): String
+    suspend fun removeEntry(id: String)
 }

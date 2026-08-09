@@ -23,9 +23,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.shvarsman.coolinar.R
 import com.shvarsman.coolinar.domain.model.RecipeCategory
 import com.shvarsman.coolinar.presentation.ui.icons.RecipeCategoryIcon
 
@@ -51,9 +53,9 @@ fun RecipeCategoryCarousel(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text("Категории", style = MaterialTheme.typography.titleMedium)
+            Text(stringResource(R.string.categories), style = MaterialTheme.typography.titleMedium)
             TextButton(onClick = onShowAllClick) {
-                Text("Показать все")
+                Text(stringResource(R.string.show_all))
             }
         }
 

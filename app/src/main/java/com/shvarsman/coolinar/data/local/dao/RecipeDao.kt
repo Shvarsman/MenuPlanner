@@ -32,7 +32,7 @@ data class RecipeWithIngredients(
 )
 
 data class RecipeSummaryRow(
-    val id: Long,
+    val id: String,
     val title: String,
     val category: RecipeCategory,
     val photoUri: String?,
@@ -54,42 +54,50 @@ interface RecipeDao {
         recipes.stepCount,
         (SELECT COUNT(*) FROM recipe_ingredients WHERE recipeId = recipes.id) AS ingredientCount
     FROM recipes
+    WHERE recipes.isDeleted = 0
     ORDER BY recipes.title ASC
     """
     )
     fun observeSummaries(): Flow<List<RecipeSummaryRow>>
 
     @Transaction
-    @Query("SELECT * FROM recipes ORDER BY title ASC")
+    @Query("SELECT * FROM recipes WHERE isDeleted = 0 ORDER BY title ASC")
     fun observeAllWithIngredients(): Flow<List<RecipeWithIngredients>>
 
     @Transaction
+    @Query("SELECT * FROM recipes WHERE id = :id AND isDeleted = 0")
+    suspend fun getByIdWithIngredients(id: String): RecipeWithIngredients?
+
+    @Transaction
     @Query("SELECT * FROM recipes WHERE id = :id")
-    suspend fun getByIdWithIngredients(id: Long): RecipeWithIngredients?
+    suspend fun getByIdWithIngredientsIncludingDeleted(id: String): RecipeWithIngredients?
+
+    @Transaction
+    @Query("SELECT * FROM recipes")
+    suspend fun getAllWithIngredientsIncludingDeleted(): List<RecipeWithIngredients>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertRecipe(recipe: RecipeEntity): Long
+    suspend fun insertRecipe(recipe: RecipeEntity)
 
     @Update
     suspend fun updateRecipe(recipe: RecipeEntity)
 
-    @Query("DELETE FROM recipes WHERE id = :id")
-    suspend fun deleteRecipe(id: Long)
+    @Query("UPDATE recipes SET isDeleted = 1, updatedAt = :updatedAt WHERE id = :id")
+    suspend fun softDeleteRecipe(id: String, updatedAt: Long)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertIngredients(ingredients: List<RecipeIngredientEntity>)
 
     @Query("DELETE FROM recipe_ingredients WHERE recipeId = :recipeId")
-    suspend fun deleteIngredientsForRecipe(recipeId: Long)
+    suspend fun deleteIngredientsForRecipe(recipeId: String)
 
     @Transaction
     suspend fun upsertRecipeWithIngredients(
         recipe: RecipeEntity,
         ingredients: List<RecipeIngredientEntity>
-    ): Long {
-        val recipeId = insertRecipe(recipe)
-        deleteIngredientsForRecipe(recipeId)
-        insertIngredients(ingredients.map { it.copy(recipeId = recipeId) })
-        return recipeId
+    ) {
+        insertRecipe(recipe)
+        deleteIngredientsForRecipe(recipe.id)
+        insertIngredients(ingredients)
     }
 }

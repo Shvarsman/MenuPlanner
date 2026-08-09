@@ -50,7 +50,7 @@ data class MenuUiState(
     val reservedQuantities: Map<ReservedKey, ReservedAmount> = emptyMap(),
     val pickerTarget: MenuSlot? = null,
     val insufficientDialogEntry: MenuEntry? = null,
-    val navigateToCooking: Pair<Long, Long>? = null,
+    val navigateToCooking: Pair<String, String>? = null,
     val recipeSearchQuery: String = "",
     val filteredPickerRecipes: List<Recipe> = emptyList(),
     val selectedDay: DayOfWeek = LocalDate.now().dayOfWeek,
@@ -87,7 +87,7 @@ class MenuViewModel @Inject constructor(
     private val _recipeSearchQuery = MutableStateFlow("")
     private val _pickerTarget = MutableStateFlow<MenuSlot?>(null)
     private val _insufficientDialogEntry = MutableStateFlow<MenuEntry?>(null)
-    private val _navigateToCooking = MutableStateFlow<Pair<Long, Long>?>(null)
+    private val _navigateToCooking = MutableStateFlow<Pair<String, String>?>(null)
     private val _selectedDay = MutableStateFlow<DayOfWeek>(LocalDate.now().dayOfWeek)
     private val _selectedWeekOffset = MutableStateFlow(0)
 
@@ -98,7 +98,7 @@ class MenuViewModel @Inject constructor(
     // Всегда следующая неделя — по ней считается прогресс на главном экране
     private val nextWeekMenuFlow: Flow<List<MenuEntry>> = getWeekMenu(weekStartFor(1))
 
-    private val pendingDeleteManager = PendingDeleteManager<Long>(viewModelScope)
+    private val pendingDeleteManager = PendingDeleteManager<String>(viewModelScope)
 
     private val visibleMenusFlow = combine(
         selectedWeekMenuFlow,
@@ -201,11 +201,11 @@ class MenuViewModel @Inject constructor(
         }
     }
 
-    fun requestDeleteEntry(id: Long) {
+    fun requestDeleteEntry(id: String) {
         pendingDeleteManager.requestDelete(id) { removeMenuEntry(id) }
     }
 
-    fun undoDeleteEntry(id: Long) {
+    fun undoDeleteEntry(id: String) {
         pendingDeleteManager.undo(id)
     }
 
@@ -213,7 +213,7 @@ class MenuViewModel @Inject constructor(
         val recipe = uiState.value.recipes.firstOrNull { it.id == entry.recipeId } ?: return
 
         val reservedFromEarlierEntries = computeReservedAmounts(
-            uiState.value.weekMenu.filter { it.id < entry.id },
+            uiState.value.weekMenu.filter { it.createdAt < entry.createdAt },
             uiState.value.recipes
         )
 

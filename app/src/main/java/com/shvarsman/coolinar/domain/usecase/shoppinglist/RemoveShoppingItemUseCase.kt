@@ -6,5 +6,5 @@ import javax.inject.Inject
 class RemoveShoppingItemUseCase @Inject constructor(
     private val repository: ShoppingListRepository
 ) {
-    suspend operator fun invoke(itemId: Long) = repository.removeItem(itemId)
+    suspend operator fun invoke(itemId: String) = repository.removeItem(itemId)
 }

@@ -43,7 +43,7 @@ class ProductCatalogViewModel @Inject constructor(
         _searchQuery.value = query
     }
 
-    private val pendingDeleteManager = PendingDeleteManager<Long>(viewModelScope)
+    private val pendingDeleteManager = PendingDeleteManager<String>(viewModelScope)
 
     private val _showOnlyCustom = MutableStateFlow(true)
     val showOnlyCustom: StateFlow<Boolean> = _showOnlyCustom
@@ -151,7 +151,7 @@ class ProductCatalogViewModel @Inject constructor(
         }
     }
 
-    fun undoDelete(id: Long) {
+    fun undoDelete(id: String) {
         pendingDeleteManager.undo(id)
     }
 

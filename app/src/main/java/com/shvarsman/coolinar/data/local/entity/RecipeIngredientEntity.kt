@@ -25,9 +25,9 @@ import com.shvarsman.coolinar.domain.model.MeasureUnit
     indices = [Index("recipeId"), Index("productId")]
 )
 data class RecipeIngredientEntity(
-    @PrimaryKey(autoGenerate = true) val id: Long = 0,
-    val recipeId: Long,
-    val productId: Long,
+    @PrimaryKey val id: String,
+    val recipeId: String,
+    val productId: String,
     val unit: MeasureUnit,
     val quantity: Double
 )

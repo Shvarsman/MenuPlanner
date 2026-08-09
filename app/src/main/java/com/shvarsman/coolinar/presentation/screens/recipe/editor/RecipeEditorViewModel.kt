@@ -1,8 +1,10 @@
 package com.shvarsman.coolinar.presentation.screens.recipe.editor
 
+import android.content.Context
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.shvarsman.coolinar.R
 import com.shvarsman.coolinar.data.local.ImageFileManager
 import com.shvarsman.coolinar.domain.model.Category
 import com.shvarsman.coolinar.domain.model.CookingMethod
@@ -20,6 +22,7 @@ import com.shvarsman.coolinar.domain.usecase.product.FindOrCreateProductUseCase
 import com.shvarsman.coolinar.domain.usecase.product.GetAllProductsUseCase
 import com.shvarsman.coolinar.domain.usecase.recipe.SaveRecipeUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -31,7 +34,7 @@ import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 data class RecipeEditorState(
-    val recipeId: Long = 0,
+    val recipeId: String = "",
     val title: String = "",
     val category: RecipeCategory = RecipeCategory.OTHER,
     val photoUri: String? = null,
@@ -51,6 +54,7 @@ data class RecipeEditorState(
 
 @HiltViewModel
 class RecipeEditorViewModel @Inject constructor(
+    @ApplicationContext private val context: Context,
     private val recipeRepository: RecipeRepository,
     private val saveRecipe: SaveRecipeUseCase,
     private val imageFileManager: ImageFileManager,
@@ -74,7 +78,7 @@ class RecipeEditorViewModel @Inject constructor(
     val fridgeItems: StateFlow<List<FridgeItem>> = getFridgeItems()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    private var loadedForRecipeId: Long? = null
+    private var loadedForRecipeId: String? = null
 
     // "Слепок" состояния сразу после загрузки — база для сравнения при вычислении isDirty
     private var initialSnapshot: RecipeEditorState? = null
@@ -105,12 +109,12 @@ class RecipeEditorViewModel @Inject constructor(
                 current.steps != base.steps
     }
 
-    fun load(recipeId: Long) {
+    fun load(recipeId: String) {
         if (loadedForRecipeId == recipeId) return
 
         loadedForRecipeId = recipeId
         viewModelScope.launch {
-            if (recipeId == 0L) {
+            if (recipeId.isBlank()) {
                 val fresh = RecipeEditorState(isLoading = false)
                 _state.value = fresh
                 initialSnapshot = fresh
@@ -149,7 +153,7 @@ class RecipeEditorViewModel @Inject constructor(
                 loadedForRecipeId = null
                 _state.value = _state.value.copy(
                     isLoading = false,
-                    errorMessage = "Не удалось загрузить рецепт: ${e.localizedMessage}"
+                    errorMessage = context.getString(R.string.load_recipe_error, e.localizedMessage)
                 )
             }
         }
@@ -344,12 +348,16 @@ class RecipeEditorViewModel @Inject constructor(
         viewModelScope.launch {
             _state.update { it.copy(isSaving = true) }
             try {
-                require(current.title.isNotBlank()) { "Название рецепта не может быть пустым" }
+                require(current.title.isNotBlank()) {
+                    context.getString(R.string.recipe_title_empty_error)
+                }
 
                 val stepsToSave = current.steps.filter {
                     it !is StepContentItem.Text || it.content.isNotBlank()
                 }
-                require(stepsToSave.isNotEmpty()) { "Добавьте хотя бы один шаг приготовления" }
+                require(stepsToSave.isNotEmpty()) {
+                    context.getString(R.string.recipe_no_steps_error)
+                }
 
                 val totalMinutes = current.cookingHours * 60 + current.cookingMinutes
 
@@ -374,7 +382,7 @@ class RecipeEditorViewModel @Inject constructor(
                 _state.update {
                     it.copy(
                         isSaving = false,
-                        errorMessage = "Не удалось сохранить рецепт: ${e.localizedMessage}"
+                        errorMessage = context.getString(R.string.save_recipe_error, e.localizedMessage)
                     )
                 }
             }
