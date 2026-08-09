@@ -260,4 +260,21 @@
     <string name="recipe_title_empty_error">Название рецепта не может быть пустым</string>
     <string name="recipe_no_steps_error">Добавьте хотя бы один шаг приготовления</string>
     <string name="save_recipe_error">Не удалось сохранить рецепт: %1$s</string>
+    <string name="edit_recipe_title">Редактировать рецепт</string>
+    <string name="recipe_title_label">Название рецепта</string>
+    <string name="recipe_category_label">Категория рецепта</string>
+    <string name="select_category_placeholder">Выберите категорию</string>
+    <string name="select_method_placeholder">Выберите способ</string>
+    <string name="difficulty_label">Сложность</string>
+    <string name="description_label">Описание</string>
+    <string name="recipe_description_placeholder">Коротко опишите рецепт</string>
+    <string name="add_step_photo">Добавить фото к шагу</string>
+    <string name="add_step_timer">Добавить таймер к шагу</string>
+    <string name="add_step">Добавить шаг</string>
+    <string name="recipe_photo">Фото рецепта</string>
+    <string name="add_cover_photo">Добавить фото обложки</string>
+    <string name="leave_editing_title">Покинуть редактирование?</string>
+    <string name="unsaved_changes_message">Несохранённые изменения будут потеряны.</string>
+    <string name="exit">Выйти</string>
+    <string name="search_method_placeholder">Поиск способа…</string>
 </resources>

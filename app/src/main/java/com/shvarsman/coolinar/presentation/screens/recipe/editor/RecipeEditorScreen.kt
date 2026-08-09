@@ -64,12 +64,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
+import com.shvarsman.coolinar.R
 import com.shvarsman.coolinar.domain.model.CookingMethod
 import com.shvarsman.coolinar.domain.model.RecipeCategory
 import com.shvarsman.coolinar.domain.model.RecipeDifficulty
@@ -145,7 +147,11 @@ fun RecipeEditorScreen(
             TopAppBar(
                 title = {
                     Text(
-                        if (state.recipeId == "") "Новый рецепт" else "Редактировать рецепт",
+                        text = if (state.recipeId == "") {
+                            stringResource(R.string.new_recipe)
+                        } else {
+                            stringResource(R.string.edit_recipe_title)
+                        },
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Medium
                     )
@@ -157,7 +163,10 @@ fun RecipeEditorScreen(
                         },
                         modifier = Modifier.padding(horizontal = 16.dp)
                     ) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад")
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = stringResource(R.string.back)
+                        )
                     }
                 },
                 actions = {
@@ -171,7 +180,7 @@ fun RecipeEditorScreen(
                                 strokeWidth = 2.dp
                             )
                         } else {
-                            Text("Сохранить")
+                            Text(stringResource(R.string.save))
                         }
                     }
                 },
@@ -224,10 +233,10 @@ fun RecipeEditorScreen(
 
                 item {
                     LabeledTextField(
-                        label = "Название рецепта",
+                        label = stringResource(R.string.recipe_title_label),
                         value = state.title,
                         onValueChange = viewModel::onTitleChange,
-                        placeholder = "Название рецепта",
+                        placeholder = stringResource(R.string.recipe_title_label),
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = 16.dp)
@@ -237,9 +246,9 @@ fun RecipeEditorScreen(
                 item {
                     SelectorField(
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
-                        label = "Категория рецепта",
+                        label = stringResource(R.string.recipe_category_label),
                         value = state.category.displayName,
-                        placeholder = "Выберите категорию",
+                        placeholder = stringResource(R.string.select_category_placeholder),
                         leadingIcon = state.category.icon,
                         onClick = { showCategoryBottomSheet = true },
                     )
@@ -248,9 +257,9 @@ fun RecipeEditorScreen(
                 item {
                     SelectorField(
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
-                        label = "Способ приготовления",
+                        label = stringResource(R.string.cooking_method),
                         value = state.cookingMethod?.displayName ?: "",
-                        placeholder = "Выберите способ",
+                        placeholder = stringResource(R.string.select_method_placeholder),
                         leadingIcon = Icons.Filled.Kitchen,
                         onClick = { showCookingMethodBottomSheet = true }
                     )
@@ -259,7 +268,7 @@ fun RecipeEditorScreen(
                 item {
                     DurationSelectorField(
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
-                        label = "Время приготовления",
+                        label = stringResource(R.string.duration_picker_title),
                         hours = state.cookingHours,
                         minutes = state.cookingMinutes,
                         leadingIcon = Icons.Outlined.Schedule,
@@ -269,7 +278,7 @@ fun RecipeEditorScreen(
 
                 item {
                     Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)) {
-                        FieldLabel("Сложность")
+                        FieldLabel(stringResource(R.string.difficulty_label))
                         SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
                             RecipeDifficulty.entries.forEachIndexed { index, difficulty ->
                                 SegmentedButton(
@@ -289,10 +298,10 @@ fun RecipeEditorScreen(
 
                 item {
                     LabeledTextField(
-                        label = "Описание",
+                        label = stringResource(R.string.description_label),
                         value = state.description,
                         onValueChange = viewModel::onDescriptionChange,
-                        placeholder = "Коротко опишите рецепт",
+                        placeholder = stringResource(R.string.recipe_description_placeholder),
                         singleLine = false,
                         minLines = 3,
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
@@ -307,7 +316,10 @@ fun RecipeEditorScreen(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text("Ингредиенты", style = MaterialTheme.typography.titleMedium)
+                        Text(
+                            stringResource(R.string.ingredients),
+                            style = MaterialTheme.typography.titleMedium
+                        )
                         TextButton(onClick = { viewModel.openIngredientPicker() }) {
                             Icon(
                                 Icons.Filled.Add,
@@ -315,7 +327,7 @@ fun RecipeEditorScreen(
                                 modifier = Modifier.size(18.dp)
                             )
                             Spacer(Modifier.width(4.dp))
-                            Text("Добавить")
+                            Text(stringResource(R.string.add))
                         }
                     }
                 }
@@ -367,23 +379,23 @@ fun RecipeEditorScreen(
     if (showExitConfirmation) {
         AlertDialog(
             onDismissRequest = { showExitConfirmation = false },
-            title = { Text("Покинуть редактирование?") },
-            text = { Text("Несохранённые изменения будут потеряны.") },
+            title = { Text(stringResource(R.string.leave_editing_title)) },
+            text = { Text(stringResource(R.string.unsaved_changes_message)) },
             confirmButton = {
                 TextButton(onClick = {
                     showExitConfirmation = false
                     onDone()
-                }) { Text("Выйти") }
+                }) { Text(stringResource(R.string.exit)) }
             },
             dismissButton = {
-                TextButton(onClick = { showExitConfirmation = false }) { Text("Отмена") }
+                TextButton(onClick = { showExitConfirmation = false }) { Text(stringResource(R.string.cancel)) }
             }
         )
     }
 
     if (showCategoryBottomSheet) {
         AppBottomSheet(
-            title = "Выберите категорию",
+            title = stringResource(R.string.select_category_placeholder),
             onDismissRequest = { showCategoryBottomSheet = false }
         ) { onClose ->
             LazyVerticalGrid(
@@ -419,14 +431,14 @@ fun RecipeEditorScreen(
         }
 
         AppBottomSheet(
-            title = "Способ приготовления",
+            title = stringResource(R.string.cooking_method),
             fillMaxHeight = true,
             onDismissRequest = { showCookingMethodBottomSheet = false }
         ) { onClose ->
             TopBarSearchField(
                 query = searchQuery,
                 onQueryChange = { searchQuery = it },
-                placeholder = "Поиск способа...",
+                placeholder = stringResource(R.string.search_method_placeholder),
                 modifier = Modifier.fillMaxWidth()
             )
 
@@ -445,7 +457,7 @@ fun RecipeEditorScreen(
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            "Ничего не найдено",
+                            text = stringResource(R.string.nothing_found),
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
@@ -462,7 +474,7 @@ fun RecipeEditorScreen(
                                 icon = {
                                     if (isSelected) {
                                         Icon(
-                                            Icons.Default.Check,
+                                            imageVector = Icons.Default.Check,
                                             contentDescription = null,
                                             tint = MaterialTheme.colorScheme.primary
                                         )
@@ -516,8 +528,12 @@ fun RecipeEditorScreen(
     state.errorMessage?.let { message ->
         AlertDialog(
             onDismissRequest = { viewModel.clearError() },
-            confirmButton = { TextButton(onClick = { viewModel.clearError() }) { Text("Ок") } },
-            title = { Text("Ошибка") },
+            confirmButton = {
+                TextButton(onClick = { viewModel.clearError() }) {
+                    Text(stringResource(R.string.ok))
+                }
+            },
+            title = { Text(stringResource(R.string.error)) },
             text = { Text(message) }
         )
     }
@@ -526,7 +542,7 @@ fun RecipeEditorScreen(
 @Composable
 private fun StepsSectionTitle(modifier: Modifier = Modifier) {
     Text(
-        text = "Шаги приготовления",
+        text = stringResource(R.string.cooking_steps),
         style = MaterialTheme.typography.titleMedium,
         modifier = modifier
             .fillMaxWidth()
@@ -545,12 +561,12 @@ private fun StepsBottomAppBar(
         actions = {
             ToolbarTooltipIconButton(
                 icon = Icons.Filled.AddAPhoto,
-                label = "Добавить фото к шагу",
+                label = stringResource(R.string.add_step_photo),
                 onClick = onAddPhoto
             )
             ToolbarTooltipIconButton(
                 icon = Icons.Filled.Timer,
-                label = "Добавить таймер к шагу",
+                label = stringResource(R.string.add_step_timer),
                 onClick = onAddTimer
             )
         },
@@ -559,7 +575,7 @@ private fun StepsBottomAppBar(
                 positionProvider = TooltipDefaults.rememberTooltipPositionProvider(
                     TooltipAnchorPosition.Above
                 ),
-                tooltip = { PlainTooltip { Text("Добавить шаг") } },
+                tooltip = { PlainTooltip { Text(stringResource(R.string.add_step)) } },
                 state = rememberTooltipState()
             ) {
                 FloatingActionButton(
@@ -568,7 +584,10 @@ private fun StepsBottomAppBar(
                     contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
                     elevation = FloatingActionButtonDefaults.bottomAppBarFabElevation()
                 ) {
-                    Icon(Icons.Filled.Add, contentDescription = "Добавить шаг")
+                    Icon(
+                        imageVector = Icons.Filled.Add,
+                        contentDescription = stringResource(R.string.add_step)
+                    )
                 }
             }
         }
@@ -590,7 +609,10 @@ private fun ToolbarTooltipIconButton(
         state = rememberTooltipState()
     ) {
         IconButton(onClick = onClick) {
-            Icon(icon, contentDescription = label)
+            Icon(
+                imageVector = icon,
+                contentDescription = label
+            )
         }
     }
 }
@@ -613,7 +635,7 @@ private fun CoverPhotoPicker(
             if (photoUri != null) {
                 AsyncImage(
                     model = rememberSizedImageRequest(photoUri, 400.dp, 180.dp),
-                    contentDescription = "Фото рецепта",
+                    contentDescription = stringResource(R.string.recipe_photo),
                     contentScale = ContentScale.Crop,
                     modifier = Modifier.fillMaxSize()
                 )
@@ -621,7 +643,7 @@ private fun CoverPhotoPicker(
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Icon(Icons.Filled.AddAPhoto, contentDescription = null)
                     Spacer(Modifier.height(4.dp))
-                    Text("Добавить фото обложки")
+                    Text(stringResource(R.string.add_cover_photo))
                 }
             }
         }

@@ -258,4 +258,21 @@
     <string name="recipe_title_empty_error">Recipe title cannot be empty</string>
     <string name="recipe_no_steps_error">Add at least one cooking step</string>
     <string name="save_recipe_error">Failed to save recipe: %1$s</string>
+    <string name="edit_recipe_title">Edit recipe</string>
+    <string name="recipe_title_label">Recipe title</string>
+    <string name="recipe_category_label">Recipe category</string>
+    <string name="select_category_placeholder">Select category</string>
+    <string name="select_method_placeholder">Select method</string>
+    <string name="difficulty_label">Difficulty</string>
+    <string name="description_label">Description</string>
+    <string name="recipe_description_placeholder">Briefly describe the recipe</string>
+    <string name="add_step_photo">Add photo to step</string>
+    <string name="add_step_timer">Add timer to step</string>
+    <string name="add_step">Add step</string>
+    <string name="recipe_photo">Recipe photo</string>
+    <string name="add_cover_photo">Add cover photo</string>
+    <string name="leave_editing_title">Leave editing?</string>
+    <string name="unsaved_changes_message">Unsaved changes will be lost.</string>
+    <string name="exit">Exit</string>
+    <string name="search_method_placeholder">Search method…</string>
 </resources>
