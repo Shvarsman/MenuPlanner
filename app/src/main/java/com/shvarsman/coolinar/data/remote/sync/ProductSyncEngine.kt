@@ -47,4 +47,7 @@ class ProductSyncEngine @Inject constructor(
 
     override suspend fun getAllLocalIncludingDeleted(): List<ProductEntity> =
         dao.getAllIncludingDeleted()
+
+    override suspend fun getLocalById(id: String): ProductEntity? =
+        dao.getByIdIncludingDeleted(id)
 }

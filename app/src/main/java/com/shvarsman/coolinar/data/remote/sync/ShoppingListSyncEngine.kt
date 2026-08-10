@@ -44,4 +44,7 @@ class ShoppingListSyncEngine @Inject constructor(
 
     override suspend fun getAllLocalIncludingDeleted(): List<ShoppingListItemEntity> =
         dao.getAllIncludingDeleted()
+
+    override suspend fun getLocalById(id: String): ShoppingListItemEntity? =
+        dao.getByIdIncludingDeleted(id)
 }

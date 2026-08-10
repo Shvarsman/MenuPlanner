@@ -99,7 +99,6 @@ class RecipeRepositoryImpl @Inject constructor(
                     if (uri.isLocalFile()) {
                         val remoteUrl = imageUploader.upload(uid, entity.id, uri)
                         changed = true
-                        imageFileManager.deleteImage(uri)
                         remoteUrl
                     } else uri
                 }
@@ -108,11 +107,16 @@ class RecipeRepositoryImpl @Inject constructor(
                     if (step is StepContentItem.Image && step.url.isLocalFile()) {
                         val remoteUrl = imageUploader.upload(uid, entity.id, step.url)
                         changed = true
-                        imageFileManager.deleteImage(step.url)
                         step.copy(url = remoteUrl)
                     } else step
                 }
 
+                // Локальный файл НЕ удаляем: экраны, уже открытые в момент этой
+                // фоновой загрузки (RecipeEditorViewModel/RecipeViewViewModel),
+                // держат одноразовый снимок Recipe со старым file:// URI, а не
+                // постоянную подписку на Room — если стереть файл сейчас, у них
+                // под ногами пропадает картинка, хотя в БД уже всё корректно.
+                // Небольшой лишний файл на диске безопаснее сломанного UI.
                 if (changed) {
                     val updated = entity.copy(
                         photoUri = newPhotoUri,

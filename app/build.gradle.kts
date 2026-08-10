@@ -52,6 +52,7 @@ dependencies {
     implementation(libs.firebase.firestore)
     implementation(libs.firebase.storage)
     implementation(libs.androidx.datastore.preferences)
+    implementation(libs.coil.network.okhttp)
     coreLibraryDesugaring(libs.desugar.jdk.libs)
     implementation(libs.androidx.compose.runtime.tracing)
     implementation(platform(libs.androidx.compose.bom))

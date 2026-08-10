@@ -45,4 +45,7 @@ class MenuEntrySyncEngine @Inject constructor(
 
     override suspend fun getAllLocalIncludingDeleted(): List<MenuEntryEntity> =
         dao.getAllIncludingDeleted()
+
+    override suspend fun getLocalById(id: String): MenuEntryEntity? =
+        dao.getByIdIncludingDeleted(id)
 }

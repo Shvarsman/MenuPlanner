@@ -90,4 +90,7 @@ class RecipeSyncEngine @Inject constructor(
 
     override suspend fun getAllLocalIncludingDeleted(): List<RecipeEntity> =
         dao.getAllWithIngredientsIncludingDeleted().map { it.recipe }
+
+    override suspend fun getLocalById(id: String): RecipeEntity? =
+        dao.getByIdWithIngredientsIncludingDeleted(id)?.recipe
 }

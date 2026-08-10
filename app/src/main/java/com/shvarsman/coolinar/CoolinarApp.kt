@@ -4,6 +4,7 @@ import android.app.Application
 import coil3.ImageLoader
 import coil3.SingletonImageLoader
 import coil3.memory.MemoryCache
+import coil3.network.okhttp.OkHttpNetworkFetcherFactory
 import coil3.svg.SvgDecoder
 import com.shvarsman.coolinar.data.remote.sync.SyncCoordinator
 import dagger.hilt.android.HiltAndroidApp
@@ -28,6 +29,7 @@ class CoolinarApp : Application(), SingletonImageLoader.Factory {
                     .build()
             }
             .components {
+                add(OkHttpNetworkFetcherFactory())
                 add(SvgDecoder.Factory())
             }
             .build()

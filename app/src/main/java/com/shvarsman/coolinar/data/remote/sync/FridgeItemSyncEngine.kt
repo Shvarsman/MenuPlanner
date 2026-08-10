@@ -3,6 +3,7 @@ package com.shvarsman.coolinar.data.remote.sync
 import com.google.firebase.firestore.FirebaseFirestore
 import com.shvarsman.coolinar.data.local.dao.FridgeItemDao
 import com.shvarsman.coolinar.data.local.entity.FridgeItemEntity
+import com.shvarsman.coolinar.data.local.entity.RecipeEntity
 import com.shvarsman.coolinar.data.remote.sync.dto.FridgeItemDto
 import com.shvarsman.coolinar.domain.model.MeasureUnit
 import java.time.LocalDate
@@ -44,4 +45,7 @@ class FridgeItemSyncEngine @Inject constructor(
 
     override suspend fun getAllLocalIncludingDeleted(): List<FridgeItemEntity> =
         dao.getAllIncludingDeleted()
+
+    override suspend fun getLocalById(id: String): FridgeItemEntity? =
+        dao.getByIdIncludingDeleted(id)
 }
