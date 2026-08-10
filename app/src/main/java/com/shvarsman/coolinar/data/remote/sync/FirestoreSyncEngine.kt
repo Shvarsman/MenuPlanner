@@ -6,8 +6,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
-import kotlinx.coroutines.withTimeoutOrNull
-import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * Синхронизирует одну коллекцию users/{uid}/{collectionName} с локальной Room-таблицей.
@@ -20,7 +18,8 @@ import kotlin.time.Duration.Companion.milliseconds
 abstract class FirestoreSyncEngine<Local : SyncableEntity, Dto : Any>(
     private val firestore: FirebaseFirestore,
     private val collectionName: String,
-    private val dtoClass: Class<Dto>
+    private val dtoClass: Class<Dto>,
+    private val syncScope: SyncScope
 ) {
     private var listenerRegistration: ListenerRegistration? = null
 
@@ -69,25 +68,21 @@ abstract class FirestoreSyncEngine<Local : SyncableEntity, Dto : Any>(
      * записи в Room. */
     suspend fun push(uid: String, entity: Local) {
         val dto = with(entity) { toDto() }
-        // Не ждём дольше отведённого времени — Firestore сам сохранил запись
-        // в офлайн-кэш и отправит её, когда соединение действительно появится.
-        // Без таймаута .await() виснет навсегда при сломанном GMS/сети (реальное
-        // устройство), хотя на эмуляторе с нормальной сетью это незаметно.
-        val result = withTimeoutOrNull(PUSH_TIMEOUT_MS.milliseconds) {
+        syncScope.onPushStarted()
+        try {
+            // Никакого искусственного таймаута: push() и так вызывается
+            // fire-and-forget из SyncScope — ничего в UI это ожидание не блокирует.
+            // На реальной мобильной сети (в отличие от почти мгновенной сети
+            // эмулятора) документ с фото может доезжать заметно дольше пары
+            // секунд — обрубать ожидание раньше времени только вредило: реальная
+            // передача продолжалась бы в фоне средствами самого Firestore SDK
+            // в любом случае, а мы теряли бы отметку "подтверждено сервером".
             collection(uid).document(entity.id).set(dto).await()
+        } catch (e: Exception) {
+            android.util.Log.w("FirestoreSync", "push failed for $collectionName/${entity.id}, will retry via Firestore's own offline queue", e)
+        } finally {
+            syncScope.onPushFinished()
         }
-        if (result == null) {
-            android.util.Log.w(
-                "FirestoreSync",
-                "push TIMED OUT for $collectionName/${entity.id} after ${PUSH_TIMEOUT_MS}ms — write is queued in Firestore's local cache, will send automatically once server acks it, but this may take a while"
-            )
-        } else {
-            android.util.Log.d("FirestoreSync", "push CONFIRMED by server for $collectionName/${entity.id}")
-        }
-    }
-
-    companion object {
-        private const val PUSH_TIMEOUT_MS = 10_000L
     }
 
     /**

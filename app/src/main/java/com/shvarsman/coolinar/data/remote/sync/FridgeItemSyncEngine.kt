@@ -12,9 +12,10 @@ import javax.inject.Singleton
 @Singleton
 class FridgeItemSyncEngine @Inject constructor(
     firestore: FirebaseFirestore,
-    private val dao: FridgeItemDao
+    private val dao: FridgeItemDao,
+    syncScope: SyncScope
 ) : FirestoreSyncEngine<FridgeItemEntity, FridgeItemDto>(
-    firestore, "fridgeItems", FridgeItemDto::class.java
+    firestore, "fridgeItems", FridgeItemDto::class.java, syncScope
 ) {
     override suspend fun FridgeItemEntity.toDto() = FridgeItemDto(
         productId = productId,

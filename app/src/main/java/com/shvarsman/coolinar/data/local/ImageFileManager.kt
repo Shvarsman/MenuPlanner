@@ -66,53 +66,6 @@ class ImageFileManager @Inject constructor(
         }
     }
 
-    /**
-     * Читает локальный файл по [uriString] и сжимает до примерно [maxBytes] —
-     * используется для встраивания фото в документ Firestore как base64
-     * (бесплатный план без Storage: лимит 1 МиБ на весь документ, поэтому
-     * каждая картинка внутри него должна быть заметно меньше). Итеративно
-     * снижает JPEG-качество, а если этого не хватает — уменьшает разрешение.
-     * Возвращает null, если файл не читается (например, был удалён).
-     */
-    suspend fun readCompressedBytes(uriString: String, maxBytes: Int): ByteArray? =
-        withContext(Dispatchers.IO) {
-            try {
-                val uri = uriString.toUri()
-                var dimension = MAX_DIMENSION_PX
-                var bitmap = decodeSampledBitmap(uri, dimension) ?: return@withContext null
-                try {
-                    var quality = JPEG_QUALITY
-                    var bytes = compressToBytes(bitmap, quality)
-                    while (bytes.size > maxBytes && (quality > MIN_JPEG_QUALITY || dimension > MIN_DIMENSION_PX)) {
-                        if (quality > MIN_JPEG_QUALITY) {
-                            quality -= 15
-                        } else {
-                            dimension = (dimension * 0.75f).toInt().coerceAtLeast(MIN_DIMENSION_PX)
-                            bitmap.recycle()
-                            bitmap = decodeSampledBitmap(uri, dimension) ?: return@withContext bytes
-                        }
-                        bytes = compressToBytes(bitmap, quality)
-                    }
-                    bytes
-                } finally {
-                    bitmap.recycle()
-                }
-            } catch (e: Exception) {
-                // Файл мог быть удалён между тем, как мы решили его синхронизировать,
-                // и моментом фактического чтения (замена обложки на другом потоке,
-                // конкурентная синхронизация) — это не должно ронять приложение,
-                // просто это фото не попадёт в этот цикл отправки.
-                android.util.Log.w("ImageFileManager", "readCompressedBytes failed for $uriString", e)
-                null
-            }
-        }
-
-    private fun compressToBytes(bitmap: Bitmap, quality: Int): ByteArray {
-        val stream = java.io.ByteArrayOutputStream()
-        bitmap.compress(Bitmap.CompressFormat.JPEG, quality, stream)
-        return stream.toByteArray()
-    }
-
     private fun decodeSampledBitmap(sourceUri: Uri, maxDimension: Int): Bitmap? {
         val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
         try {
@@ -163,7 +116,5 @@ class ImageFileManager @Inject constructor(
     companion object {
         private const val MAX_DIMENSION_PX = 1600
         private const val JPEG_QUALITY = 85
-        private const val MIN_JPEG_QUALITY = 40
-        private const val MIN_DIMENSION_PX = 400
     }
 }

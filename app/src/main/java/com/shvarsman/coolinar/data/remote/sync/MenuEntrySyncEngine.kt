@@ -13,9 +13,10 @@ import javax.inject.Singleton
 @Singleton
 class MenuEntrySyncEngine @Inject constructor(
     firestore: FirebaseFirestore,
-    private val dao: MenuDao
+    private val dao: MenuDao,
+    syncScope: SyncScope
 ) : FirestoreSyncEngine<MenuEntryEntity, MenuEntryDto>(
-    firestore, "menuEntries", MenuEntryDto::class.java
+    firestore, "menuEntries", MenuEntryDto::class.java, syncScope
 ) {
     override suspend fun MenuEntryEntity.toDto() = MenuEntryDto(
         weekStartEpochDay = weekStartDate.toEpochDay(),

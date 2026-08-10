@@ -12,8 +12,9 @@ import javax.inject.Singleton
 @Singleton
 class ProductSyncEngine @Inject constructor(
     firestore: FirebaseFirestore,
-    private val dao: ProductDao
-) : FirestoreSyncEngine<ProductEntity, ProductDto>(firestore, "products", ProductDto::class.java) {
+    private val dao: ProductDao,
+    syncScope: SyncScope
+) : FirestoreSyncEngine<ProductEntity, ProductDto>(firestore, "products", ProductDto::class.java, syncScope) {
 
     override suspend fun ProductEntity.toDto() = ProductDto(
         name = name,

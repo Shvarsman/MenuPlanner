@@ -1,11 +1,13 @@
 package com.shvarsman.coolinar.data.repository
 
+import com.shvarsman.coolinar.data.local.ImageFileManager
 import com.shvarsman.coolinar.data.local.dao.RecipeDao
 import com.shvarsman.coolinar.data.local.dao.RecipeIngredientWithProduct
 import com.shvarsman.coolinar.data.local.dao.RecipeSummaryRow
 import com.shvarsman.coolinar.data.local.dao.RecipeWithIngredients
 import com.shvarsman.coolinar.data.local.entity.RecipeEntity
 import com.shvarsman.coolinar.data.local.entity.RecipeIngredientEntity
+import com.shvarsman.coolinar.data.remote.storage.RemoteImageUploader
 import com.shvarsman.coolinar.data.remote.sync.RecipeSyncEngine
 import com.shvarsman.coolinar.data.remote.sync.SyncScope
 import com.shvarsman.coolinar.domain.model.Product
@@ -27,7 +29,9 @@ class RecipeRepositoryImpl @Inject constructor(
     private val dao: RecipeDao,
     private val syncEngine: RecipeSyncEngine,
     private val authRepository: AuthRepository,
-    private val syncScope: SyncScope
+    private val syncScope: SyncScope,
+    private val imageUploader: RemoteImageUploader,
+    private val imageFileManager: ImageFileManager
 ) : RecipeRepository {
 
     override fun observeRecipeSummaries(): Flow<List<RecipeSummary>> =
@@ -50,6 +54,7 @@ class RecipeRepositoryImpl @Inject constructor(
         val entity = recipe.toEntity().copy(id = recipeId, updatedAt = System.currentTimeMillis())
         dao.upsertRecipeWithIngredients(entity, ingredientsWithIds)
         pushIfSignedIn(entity)
+        uploadImagesIfSignedIn(entity)
         return recipeId
     }
 
@@ -60,6 +65,7 @@ class RecipeRepositoryImpl @Inject constructor(
         val entity = recipe.toEntity().copy(updatedAt = System.currentTimeMillis())
         dao.upsertRecipeWithIngredients(entity, ingredientsWithIds)
         pushIfSignedIn(entity)
+        uploadImagesIfSignedIn(entity)
     }
 
     override suspend fun deleteRecipe(id: String) {
@@ -75,8 +81,55 @@ class RecipeRepositoryImpl @Inject constructor(
                 .onFailure { e -> android.util.Log.e("FirestoreSync", "push failed for recipe ${entity.id}", e) }
         }
     }
-}
 
+    /**
+     * После сохранения — в фоне загружает ещё не загруженные (file://) фото
+     * в Storage, подменяет их на постоянные https-ссылки в Room и досылает
+     * обновлённый документ в Firestore. Не блокирует save(): putFile()
+     * стримит файл с диска напрямую, никакого decode в Bitmap в памяти —
+     * не подвержено OutOfMemoryError, в отличие от прежнего base64-подхода.
+     */
+    private fun uploadImagesIfSignedIn(entity: RecipeEntity) {
+        val uid = authRepository.currentUserId ?: return
+        syncScope.scope.launch {
+            try {
+                var changed = false
+
+                val newPhotoUri = entity.photoUri?.let { uri ->
+                    if (uri.isLocalFile()) {
+                        val remoteUrl = imageUploader.upload(uid, entity.id, uri)
+                        changed = true
+                        imageFileManager.deleteImage(uri)
+                        remoteUrl
+                    } else uri
+                }
+
+                val newSteps = entity.steps.map { step ->
+                    if (step is StepContentItem.Image && step.url.isLocalFile()) {
+                        val remoteUrl = imageUploader.upload(uid, entity.id, step.url)
+                        changed = true
+                        imageFileManager.deleteImage(step.url)
+                        step.copy(url = remoteUrl)
+                    } else step
+                }
+
+                if (changed) {
+                    val updated = entity.copy(
+                        photoUri = newPhotoUri,
+                        steps = newSteps,
+                        updatedAt = System.currentTimeMillis()
+                    )
+                    dao.updateRecipe(updated)
+                    syncEngine.push(uid, updated)
+                }
+            } catch (t: Throwable) {
+                android.util.Log.w("RecipeUpload", "image upload failed for recipe ${entity.id}", t)
+            }
+        }
+    }
+
+    private fun String.isLocalFile(): Boolean = startsWith("file://")
+}
 private fun RecipeSummaryRow.toSummary() = RecipeSummary(
     id = id,
     title = title,
