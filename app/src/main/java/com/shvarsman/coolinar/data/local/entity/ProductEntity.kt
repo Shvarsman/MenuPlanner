@@ -11,6 +11,7 @@ import com.shvarsman.coolinar.domain.model.Product
 data class ProductEntity(
     @PrimaryKey override val id: String,
     val name: String,
+    val nameEn: String,
     val category: Category,
     val defaultUnit: MeasureUnit,
     val iconKey: String = Product.DEFAULT_ICON_KEY,

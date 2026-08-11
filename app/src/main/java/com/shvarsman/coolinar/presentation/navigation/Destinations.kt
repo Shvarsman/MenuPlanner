@@ -19,9 +19,9 @@ sealed class Destination(val route: String) {
 
     object ProductCatalog : Destination("product_catalog")
 
-    object Cooking : Destination("cooking/{recipeId}/{menuEntryId}") {
-        fun createRoute(recipeId: String, menuEntryId: String) = "cooking/$recipeId/$menuEntryId"
-    }
+    object Cooking : Destination("cooking")
+
+    object CookSelection : Destination("cook_selection")
 
     object RecipeView : Destination("recipe_view/{recipeId}") {
         fun createRoute(recipeId: String) = "recipe_view/$recipeId"

@@ -67,6 +67,7 @@ import com.shvarsman.coolinar.presentation.screens.common.ProductPickerDialog
 import com.shvarsman.coolinar.presentation.screens.common.QuantityUnitField
 import com.shvarsman.coolinar.presentation.screens.common.SwipeToDeleteRow
 import com.shvarsman.coolinar.presentation.screens.common.TopBarSearchField
+import com.shvarsman.coolinar.presentation.screens.common.localizedName
 import com.shvarsman.coolinar.presentation.ui.icons.CategoryIcon
 import com.shvarsman.coolinar.presentation.ui.icons.ProductIcon
 import kotlinx.coroutines.launch
@@ -178,7 +179,7 @@ fun ShoppingListScreen(
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 DropdownFilterChip(
-                    displayText = selectedCategory?.displayName
+                    displayText = selectedCategory?.labelRes?.let { stringResource(it) }
                         ?: stringResource(R.string.category_label),
                     isActive = selectedCategory != null
                 ) { close ->
@@ -192,7 +193,7 @@ fun ShoppingListScreen(
                                 Text(
                                     stringResource(
                                         R.string.category_with_count,
-                                        category.displayName,
+                                        stringResource(category.labelRes),
                                         count
                                     ),
                                     maxLines = 1,
@@ -346,7 +347,7 @@ private fun CategoryHeader(category: Category) {
             category = category
         )
         Text(
-            category.displayName,
+            text = stringResource(category.labelRes),
             style = MaterialTheme.typography.titleSmall,
             color = MaterialTheme.colorScheme.onBackground
         )
@@ -386,7 +387,7 @@ private fun ShoppingItemRow(
         ),
         headlineContent = {
             Text(
-                item.product.name,
+                text = item.product.localizedName(),
                 style = MaterialTheme.typography.titleMedium,
                 textDecoration = if (item.isChecked) TextDecoration.LineThrough else TextDecoration.None,
                 color = if (item.isChecked) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface,
@@ -406,7 +407,7 @@ private fun ShoppingItemRow(
                 text = stringResource(
                     R.string.qty_with_unit,
                     formatQty(item.quantity),
-                    item.unit.displayName
+                    stringResource(item.unit.labelRes)
                 ),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant

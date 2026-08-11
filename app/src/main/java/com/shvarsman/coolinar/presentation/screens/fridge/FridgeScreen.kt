@@ -90,6 +90,7 @@ import com.shvarsman.coolinar.presentation.screens.common.DropdownFilterChip
 import com.shvarsman.coolinar.presentation.screens.common.GlassFab
 import com.shvarsman.coolinar.presentation.screens.common.ProductPickerDialog
 import com.shvarsman.coolinar.presentation.screens.common.TopBarSearchField
+import com.shvarsman.coolinar.presentation.screens.common.localizedName
 import com.shvarsman.coolinar.presentation.ui.icons.CategoryIcon
 import com.shvarsman.coolinar.presentation.ui.icons.ProductIcon
 import com.shvarsman.coolinar.presentation.ui.theme.CornerShape
@@ -278,7 +279,7 @@ fun FridgeScreen(
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     DropdownFilterChip(
-                        displayText = selectedCategory?.displayName
+                        displayText = selectedCategory?.let { stringResource(it.labelRes) }
                             ?: stringResource(R.string.category_label),
                         isActive = selectedCategory != null
                     ) { close ->
@@ -294,7 +295,7 @@ fun FridgeScreen(
                                     Text(
                                         stringResource(
                                             R.string.category_with_count,
-                                            category.displayName,
+                                            stringResource(category.labelRes),
                                             count
                                         ),
                                         maxLines = 1,
@@ -457,7 +458,7 @@ private fun CategoryHeader(modifier: Modifier = Modifier, category: Category) {
     ) {
         CategoryIcon(category = category, modifier = Modifier.size(20.dp))
         Text(
-            category.displayName,
+            stringResource(category.labelRes),
             style = MaterialTheme.typography.titleSmall,
             color = MaterialTheme.colorScheme.onBackground
         )
@@ -526,7 +527,7 @@ private fun FridgeItemRow(
             modifier = Modifier.combinedClickable(onClick = onClick, onLongClick = onLongClick),
             headlineContent = {
                 Text(
-                    text = item.product.name,
+                    text = item.product.localizedName(),
                     style = MaterialTheme.typography.titleMedium,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
@@ -546,7 +547,7 @@ private fun FridgeItemRow(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     if (!item.product.isToTaste) {
                         Text(
-                            text = "${formatQty(item.quantity)} ${item.unit.displayName}",
+                            text = "${formatQty(item.quantity)} ${stringResource(item.unit.labelRes)}",
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurface
                         )

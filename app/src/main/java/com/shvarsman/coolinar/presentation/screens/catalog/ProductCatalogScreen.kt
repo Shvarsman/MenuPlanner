@@ -69,6 +69,7 @@ import com.shvarsman.coolinar.presentation.screens.common.AppBottomSheet
 import com.shvarsman.coolinar.presentation.screens.common.DropdownFilterChip
 import com.shvarsman.coolinar.presentation.screens.common.ProductFormFields
 import com.shvarsman.coolinar.presentation.screens.common.TopBarSearchField
+import com.shvarsman.coolinar.presentation.screens.common.localizedName
 import com.shvarsman.coolinar.presentation.ui.icons.CategoryIcon
 import com.shvarsman.coolinar.presentation.ui.icons.ProductIcon
 import com.shvarsman.coolinar.presentation.ui.theme.CornerShape
@@ -187,7 +188,7 @@ fun ProductCatalogScreen(
                     )
                 )
                 DropdownFilterChip(
-                    displayText = selectedCategory?.displayName
+                    displayText = selectedCategory?.labelRes?.let { stringResource(it) }
                         ?: stringResource(R.string.category_label),
                     isActive = selectedCategory != null
                 ) { close ->
@@ -205,7 +206,7 @@ fun ProductCatalogScreen(
                                     Text(
                                         stringResource(
                                             R.string.category_with_count,
-                                            category.displayName,
+                                            stringResource(category.labelRes),
                                             count
                                         ),
                                         maxLines = 1,
@@ -362,7 +363,7 @@ private fun CatalogCategoryHeader(category: Category) {
     ) {
         CategoryIcon(category = category, modifier = Modifier.size(20.dp))
         Text(
-            text = category.displayName,
+            text = stringResource(category.labelRes),
             style = MaterialTheme.typography.titleSmall,
             color = MaterialTheme.colorScheme.primary
         )
@@ -373,12 +374,12 @@ private fun CatalogCategoryHeader(category: Category) {
 @Composable
 private fun CatalogProductRow(product: Product, onEdit: () -> Unit, onDelete: () -> Unit) {
     ListItem(
-        headlineContent = { Text(text = product.name) },
+        headlineContent = { Text(text = product.localizedName()) },
         supportingContent = {
             Text(
                 text = stringResource(
                     R.string.default_unit,
-                    product.defaultUnit.displayName
+                    stringResource(product.defaultUnit.labelRes)
                 )
             )
         },

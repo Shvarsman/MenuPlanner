@@ -49,8 +49,6 @@ data class MenuUiState(
     val fridgeItems: List<FridgeItem> = emptyList(),
     val reservedQuantities: Map<ReservedKey, ReservedAmount> = emptyMap(),
     val pickerTarget: MenuSlot? = null,
-    val insufficientDialogEntry: MenuEntry? = null,
-    val navigateToCooking: Pair<String, String>? = null,
     val recipeSearchQuery: String = "",
     val filteredPickerRecipes: List<Recipe> = emptyList(),
     val selectedDay: DayOfWeek = LocalDate.now().dayOfWeek,
@@ -62,6 +60,7 @@ data class MenuUiState(
     val shoppingListCount: Int = 0,
     val userName: String? = null
 )
+
 @HiltViewModel
 class MenuViewModel @Inject constructor(
     getWeekMenu: GetWeekMenuUseCase,
@@ -86,8 +85,6 @@ class MenuViewModel @Inject constructor(
 
     private val _recipeSearchQuery = MutableStateFlow("")
     private val _pickerTarget = MutableStateFlow<MenuSlot?>(null)
-    private val _insufficientDialogEntry = MutableStateFlow<MenuEntry?>(null)
-    private val _navigateToCooking = MutableStateFlow<Pair<String, String>?>(null)
     private val _selectedDay = MutableStateFlow<DayOfWeek>(LocalDate.now().dayOfWeek)
     private val _selectedWeekOffset = MutableStateFlow(0)
 
@@ -143,14 +140,12 @@ class MenuViewModel @Inject constructor(
     val uiState: StateFlow<MenuUiState> = combine(
         coreMenuData,
         _pickerTarget,
-        _insufficientDialogEntry,
-        _navigateToCooking,
         combine(
             _recipeSearchQuery.debounceSearch(),
             _selectedDay,
             _selectedWeekOffset
         ) { query, day, weekOffset -> Triple(query, day, weekOffset) }
-    ) { core, picker, dialog, nav, (query, selectedDay, weekOffset) ->
+    ) { core, picker, (query, selectedDay, weekOffset) ->
         val filtered = if (query.isBlank()) core.recipes
         else core.recipes.filter { it.title.contains(query, ignoreCase = true) }
 
@@ -160,8 +155,6 @@ class MenuViewModel @Inject constructor(
             fridgeItems = core.fridgeItems,
             reservedQuantities = core.reservedQuantities,
             pickerTarget = picker,
-            insufficientDialogEntry = dialog,
-            navigateToCooking = nav,
             recipeSearchQuery = query,
             filteredPickerRecipes = filtered,
             selectedDay = selectedDay,
@@ -172,8 +165,7 @@ class MenuViewModel @Inject constructor(
             shoppingListCount = core.shoppingListCount,
             userName = core.userName
         )
-    }
-        .mapOnDefault { it }
+    }.mapOnDefault { it }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), MenuUiState())
 
     fun selectDay(day: DayOfWeek) {
@@ -207,41 +199,6 @@ class MenuViewModel @Inject constructor(
 
     fun undoDeleteEntry(id: String) {
         pendingDeleteManager.undo(id)
-    }
-
-    fun onCookClick(entry: MenuEntry) {
-        val recipe = uiState.value.recipes.firstOrNull { it.id == entry.recipeId } ?: return
-
-        val reservedFromEarlierEntries = computeReservedAmounts(
-            uiState.value.weekMenu.filter { it.createdAt < entry.createdAt },
-            uiState.value.recipes
-        )
-
-        val allAvailable = recipe.ingredients.all { ingredient ->
-            val canonical = UnitConversion.canonicalUnit(ingredient.unit)
-            val reserved = reservedFromEarlierEntries[ReservedKey(ingredient.product.id, canonical)]
-            ingredient.availability(uiState.value.fridgeItems, reserved) == IngredientAvailability.AVAILABLE
-        }
-
-        if (allAvailable) {
-            _navigateToCooking.value = recipe.id to entry.id
-        } else {
-            _insufficientDialogEntry.value = entry
-        }
-    }
-
-    fun confirmCookAnyway() {
-        val entry = _insufficientDialogEntry.value ?: return
-        _navigateToCooking.value = entry.recipeId to entry.id
-        _insufficientDialogEntry.value = null
-    }
-
-    fun dismissInsufficientDialog() {
-        _insufficientDialogEntry.value = null
-    }
-
-    fun onNavigateToCookingConsumed() {
-        _navigateToCooking.value = null
     }
 
     fun onRecipeSearchQueryChange(query: String) {

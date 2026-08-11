@@ -86,6 +86,7 @@ import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
@@ -94,6 +95,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
+import com.shvarsman.coolinar.R
 import com.shvarsman.coolinar.domain.model.FridgeItem
 import com.shvarsman.coolinar.domain.model.IngredientAvailability
 import com.shvarsman.coolinar.domain.model.MealType
@@ -105,6 +107,7 @@ import com.shvarsman.coolinar.presentation.screens.common.AppBottomSheet
 import com.shvarsman.coolinar.presentation.screens.common.FieldLabel
 import com.shvarsman.coolinar.presentation.screens.common.QuantityUnitField
 import com.shvarsman.coolinar.presentation.screens.common.ReadOnlyField
+import com.shvarsman.coolinar.presentation.screens.common.localizedName
 import com.shvarsman.coolinar.presentation.screens.common.rememberSizedImageRequest
 import com.shvarsman.coolinar.presentation.screens.cooking.CookingStepsReadOnly
 import com.shvarsman.coolinar.presentation.ui.icons.CookingMethodIcon
@@ -538,7 +541,7 @@ private fun DescriptionPage(
             ReadOnlyField(label = "Способ приготовления") {
                 CookingMethodIcon(method = method, modifier = Modifier.size(24.dp))
                 Spacer(Modifier.width(12.dp))
-                Text(method.displayName)
+                Text(stringResource(method.labelRes))
             }
         }
         recipe.cookingTimeMinutes?.let { minutes ->
@@ -551,7 +554,7 @@ private fun DescriptionPage(
         ReadOnlyField(label = "Сложность") {
             Icon(Icons.Filled.Speed, contentDescription = null)
             Spacer(Modifier.width(12.dp))
-            Text(recipe.difficulty.displayName)
+            Text(stringResource(recipe.difficulty.labelRes))
         }
         ReadOnlyField(label = "Описание") {
             Text(
@@ -663,11 +666,11 @@ private fun IngredientViewRow(
                     modifier = Modifier.size(40.dp)
                 )
             },
-            headlineContent = { Text(ingredient.product.name) },
+            headlineContent = { Text(ingredient.product.localizedName()) },
             supportingContent = {
                 Text(
-                    if (ingredient.product.isToTaste) "По вкусу"
-                    else "${formatQty(scaledQuantity)} ${ingredient.unit.displayName}",
+                    if (ingredient.product.isToTaste) stringResource(R.string.to_taste)
+                    else "${formatQty(scaledQuantity)} ${stringResource(ingredient.unit.labelRes)}",
                     color = if (ingredient.product.isToTaste) MaterialTheme.colorScheme.onSurfaceVariant else color
                 )
             },

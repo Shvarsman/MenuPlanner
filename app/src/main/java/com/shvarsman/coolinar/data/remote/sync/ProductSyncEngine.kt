@@ -18,6 +18,7 @@ class ProductSyncEngine @Inject constructor(
 
     override suspend fun ProductEntity.toDto() = ProductDto(
         name = name,
+        nameEn = nameEn,
         category = category.name,
         defaultUnit = defaultUnit.name,
         iconKey = iconKey,
@@ -31,6 +32,7 @@ class ProductSyncEngine @Inject constructor(
     override fun ProductDto.toLocal(id: String) = ProductEntity(
         id = id,
         name = name,
+        nameEn = nameEn,
         category = Category.entries.first { it.name == category },
         defaultUnit = MeasureUnit.entries.first { it.name == defaultUnit },
         iconKey = iconKey,

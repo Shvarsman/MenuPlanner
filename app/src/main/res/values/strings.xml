@@ -187,6 +187,14 @@
     <string name="start">Start</string>
     <string name="resume">Resume</string>
     <string name="reset">Reset</string>
+    <string name="cook_selection_title">Choose dishes to cook</string>
+    <string name="include_next_week">Include next week</string>
+    <string name="start_cooking">Cook</string>
+    <string name="duplicate_recipe_title">"%1$s" is planned again</string>
+    <string name="duplicate_recipe_message">This recipe is planned %1$d time(s). Choose which meals to cook together:</string>
+    <string name="cooking_dishes_count">Cooking %1$d dishes</string>
+    <string name="cooking_portions_count">×%1$d servings of this recipe</string>
+    <string name="mark_dish_done">Mark as done</string>
 
     <!--FridgeScreen-->
     <string name="selected_count">Selected: %1$d</string>
@@ -275,4 +283,92 @@
     <string name="unsaved_changes_message">Unsaved changes will be lost.</string>
     <string name="exit">Exit</string>
     <string name="search_method_placeholder">Search method…</string>
+
+    <!-- Product categories -->
+    <string name="category_fruits">Fruits</string>
+    <string name="category_berries">Berries</string>
+    <string name="category_citrus">Citrus</string>
+    <string name="category_vegetables">Vegetables</string>
+    <string name="category_herbs">Herbs</string>
+    <string name="category_mushrooms">Mushrooms</string>
+    <string name="category_meat">Meat</string>
+    <string name="category_poultry">Poultry</string>
+    <string name="category_offal">Offal</string>
+    <string name="category_fish">Fish</string>
+    <string name="category_seafood">Seafood</string>
+    <string name="category_canned">Canned goods</string>
+    <string name="category_dairy">Dairy</string>
+    <string name="category_cheese">Cheese</string>
+    <string name="category_eggs">Eggs</string>
+    <string name="category_bread_baking">Bread &amp; baking</string>
+    <string name="category_grocery">Grocery</string>
+    <string name="category_sauces">Sauces</string>
+    <string name="category_grains">Grains</string>
+    <string name="category_legumes">Legumes</string>
+    <string name="category_pasta">Pasta</string>
+    <string name="category_spices">Spices</string>
+    <string name="category_nuts_seeds">Nuts &amp; seeds</string>
+    <string name="category_dried_fruits">Dried fruits</string>
+    <string name="category_frozen">Frozen foods</string>
+    <string name="category_coffee_tea">Coffee &amp; tea</string>
+    <string name="category_drinks_non_alcohol">Non-alcoholic drinks</string>
+    <string name="category_drinks_alcohol">Alcoholic drinks</string>
+    <string name="category_honey_sweets">Honey &amp; sweets</string>
+    <string name="category_snacks">Snacks</string>
+
+    <!-- Measure units -->
+    <string name="unit_gram">g</string>
+    <string name="unit_kilogram">kg</string>
+    <string name="unit_milliliter">ml</string>
+    <string name="unit_liter">l</string>
+    <string name="unit_piece">pc</string>
+    <string name="unit_tablespoon">tbsp</string>
+    <string name="unit_teaspoon">tsp</string>
+    <string name="unit_pack">pack</string>
+
+    <!-- Cooking methods -->
+    <string name="cooking_method_boiling">Boiling</string>
+    <string name="cooking_method_steaming">Steaming</string>
+    <string name="cooking_method_frying">Frying</string>
+    <string name="cooking_method_deep_frying">Deep frying</string>
+    <string name="cooking_method_stewing">Stewing</string>
+    <string name="cooking_method_oven_baking">Oven baking</string>
+    <string name="cooking_method_baking_in_pots">Baking in pots</string>
+    <string name="cooking_method_grilling">Grilling</string>
+    <string name="cooking_method_barbecue">Barbecue / Open fire</string>
+    <string name="cooking_method_smoking">Smoking</string>
+    <string name="cooking_method_simmering">Simmering</string>
+    <string name="cooking_method_confit">Confit</string>
+    <string name="cooking_method_sous_vide">Sous vide</string>
+    <string name="cooking_method_blanching">Blanching</string>
+    <string name="cooking_method_flambeing">Flambéing</string>
+    <string name="cooking_method_microwave">Microwave</string>
+    <string name="cooking_method_slow_cooker">Slow cooker</string>
+    <string name="cooking_method_air_fryer">Air fryer</string>
+    <string name="cooking_method_bread_maker">Bread maker</string>
+    <string name="cooking_method_toaster_waffle">Toaster / Waffle maker</string>
+    <string name="cooking_method_no_cooking">No cooking (assembly, slicing)</string>
+    <string name="cooking_method_marinating">Marinating</string>
+    <string name="cooking_method_salting_fermenting">Salting / Fermenting</string>
+    <string name="cooking_method_curing_drying">Curing / Drying</string>
+    <string name="cooking_method_freezing">Freezing</string>
+
+    <!-- Recipe difficulty -->
+    <string name="difficulty_easy">Easy</string>
+    <string name="difficulty_medium">Medium</string>
+    <string name="difficulty_hard">Hard</string>
+
+    <!-- Recipe categories -->
+    <string name="recipe_category_salads_and_appetizers">Salads &amp; appetizers</string>
+    <string name="recipe_category_soups">Soups</string>
+    <string name="recipe_category_main_meat">Main dishes. Meat</string>
+    <string name="recipe_category_main_poultry">Main dishes. Poultry</string>
+    <string name="recipe_category_main_fish_seafood">Main dishes. Fish &amp; seafood</string>
+    <string name="recipe_category_main_vegetarian">Main dishes. Vegetarian</string>
+    <string name="recipe_category_sides_sauces">Sides, sauces, condiments</string>
+    <string name="recipe_category_bread_baking">Bread &amp; baking</string>
+    <string name="recipe_category_desserts">Desserts</string>
+    <string name="recipe_category_drinks_alcohol">Drinks. Alcoholic</string>
+    <string name="recipe_category_drinks_non_alcohol">Drinks. Non-alcoholic</string>
+    <string name="recipe_category_other">Other</string>
 </resources>

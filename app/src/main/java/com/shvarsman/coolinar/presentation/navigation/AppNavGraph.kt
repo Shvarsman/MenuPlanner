@@ -47,6 +47,7 @@ import androidx.navigation.navArgument
 import com.shvarsman.coolinar.presentation.screens.backup.BackupScreen
 import com.shvarsman.coolinar.presentation.screens.catalog.ProductCatalogScreen
 import com.shvarsman.coolinar.presentation.screens.cooking.CookingScreen
+import com.shvarsman.coolinar.presentation.screens.cookselection.CookSelectionScreen
 import com.shvarsman.coolinar.presentation.screens.fridge.FridgeScreen
 import com.shvarsman.coolinar.presentation.screens.home.HomeScreen
 import com.shvarsman.coolinar.presentation.screens.home.WeekMenuScreen
@@ -159,23 +160,19 @@ fun AppNavGraph(showOnboarding: Boolean = false) {
                 )
             }
 
-            composable(
-                route = Destination.Cooking.route,
-                arguments = listOf(
-                    navArgument("recipeId") { type = NavType.StringType },
-                    navArgument("menuEntryId") { type = NavType.StringType }
-                )
-            ) { backStackEntry ->
-                val recipeId = backStackEntry.arguments?.getString("recipeId") ?: ""
-                val menuEntryId = backStackEntry.arguments?.getString("menuEntryId") ?: ""
+            composable(Destination.Cooking.route) {
                 CookingScreen(
-                    recipeId = recipeId,
-                    menuEntryId = menuEntryId,
                     onBack = { rootNavController.popBackStack() },
                     onFinished = { rootNavController.popBackStack() }
                 )
             }
 
+            composable(Destination.CookSelection.route) {
+                CookSelectionScreen(
+                    onBack = { rootNavController.popBackStack() },
+                    onNavigateToCooking = { rootNavController.navigate(Destination.Cooking.route) }
+                )
+            }
             composable(Destination.Backup.route) {
                 BackupScreen(onBack = { rootNavController.popBackStack() })
             }
@@ -241,11 +238,7 @@ fun AppNavGraph(showOnboarding: Boolean = false) {
                             Destination.RecipeEditor.createRoute(Destination.RecipeEditor.NEW_RECIPE_ID)
                         )
                     },
-                    onNavigateToCooking = { recipeId, menuEntryId ->
-                        rootNavController.navigate(
-                            Destination.Cooking.createRoute(recipeId, menuEntryId)
-                        )
-                    },
+                    onOpenCookSelection = { rootNavController.navigate(Destination.CookSelection.route) },
                     onViewRecipe = { recipeId ->
                         rootNavController.navigate(Destination.RecipeView.createRoute(recipeId))
                     },

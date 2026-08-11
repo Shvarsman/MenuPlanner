@@ -78,7 +78,7 @@ fun RecipeCategoryScreen(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             CollapsingLargeTopAppBar(
-                title = viewModel.category.displayName,
+                title = stringResource(viewModel.category.labelRes),
                 scrollBehavior = scrollBehavior,
                 navigationIcon = {
                     IconButton(

@@ -75,7 +75,7 @@ fun CategoryPickerList(
         ) {
             items(Category.entries.toTypedArray()) { category ->
                 ListItem(
-                    headlineContent = { Text(category.displayName) },
+                    headlineContent = { Text(stringResource(category.labelRes)) },
                     leadingContent = {
                         CategoryIcon(category = category, modifier = Modifier.size(24.dp))
                     },
@@ -120,7 +120,7 @@ fun MeasureUnitField(
                     ),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(selectedUnit.displayName, modifier = Modifier.weight(1f))
+                    Text(stringResource(selectedUnit.labelRes), modifier = Modifier.weight(1f))
                     Icon(
                         Icons.Filled.ArrowDropDown,
                         contentDescription = null,
@@ -131,7 +131,7 @@ fun MeasureUnitField(
             DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
                 MeasureUnit.entries.forEach { unit ->
                     DropdownMenuItem(
-                        text = { Text(unit.displayName) },
+                        text = { Text(stringResource(unit.labelRes)) },
                         onClick = { onUnitChange(unit); expanded = false }
                     )
                 }

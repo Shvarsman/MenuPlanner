@@ -83,9 +83,13 @@ fun ProductPickerDialog(
     val createProductErrorTemplate = stringResource(R.string.create_product_error)
 
     val filtered = remember(query, catalog) {
-        if (query.isBlank()) catalog else catalog.filter {
-            it.name.contains(query, ignoreCase = true)
+        val bySearch = if (query.isBlank()) catalog else catalog.filter {
+            it.name.contains(query, ignoreCase = true) || it.nameEn.contains(
+                query,
+                ignoreCase = true
+            )
         }
+        bySearch.sortedBy { it.sortName().lowercase() }
     }
 
     val parsedQuantity = quantityText.toDoubleOrNull()
@@ -148,8 +152,8 @@ fun ProductPickerDialog(
                         ) {
                             items(filtered, key = { it.id }) { product ->
                                 ListItem(
-                                    headlineContent = { Text(product.name) },
-                                    supportingContent = { Text(product.category.displayName) },
+                                    headlineContent = { Text(product.localizedName()) },
+                                    supportingContent = { Text(stringResource(product.category.labelRes)) },
                                     leadingContent = {
                                         ProductIcon(
                                             product = product,
@@ -218,7 +222,7 @@ fun ProductPickerDialog(
                             ) {
                                 Text(
                                     modifier = Modifier.weight(1f),
-                                    text = product.name,
+                                    text = product.localizedName(),
                                     style = MaterialTheme.typography.titleLarge,
                                     color = MaterialTheme.colorScheme.onSurface,
                                     maxLines = 1,
@@ -287,14 +291,21 @@ fun ProductPickerDialog(
                         isCreating = true
                         coroutineScope.launch {
                             try {
-                                val created = onCreateProduct(newName.trim(), newCategory, selectedUnit, newIsToTaste, newIsAlwaysAvailable)
+                                val created = onCreateProduct(
+                                    newName.trim(),
+                                    newCategory,
+                                    selectedUnit,
+                                    newIsToTaste,
+                                    newIsAlwaysAvailable
+                                )
                                 selectedProduct = created
                                 quantityText = "1"
                                 expirationDate = null
                                 createError = null
                                 step = PickerStep.QUANTITY
                             } catch (e: Exception) {
-                                createError = String.format(createProductErrorTemplate, e.localizedMessage)
+                                createError =
+                                    String.format(createProductErrorTemplate, e.localizedMessage)
                             } finally {
                                 isCreating = false
                             }

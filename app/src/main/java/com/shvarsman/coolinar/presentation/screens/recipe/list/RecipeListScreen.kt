@@ -43,6 +43,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -180,7 +181,7 @@ fun RecipeListScreen(
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     DropdownFilterChip(
-                        displayText = selectedCategory?.displayName ?: "Категория",
+                        displayText = selectedCategory?.labelRes?.let { stringResource(it) } ?: "Категория",
                         isActive = selectedCategory != null
                     ) { close ->
                         DropdownMenuItem(
@@ -191,7 +192,7 @@ fun RecipeListScreen(
                             DropdownMenuItem(
                                 text = {
                                     Text(
-                                        "${category.displayName} ($count)",
+                                        "${category.labelRes} ($count)",
                                         maxLines = 1,
                                         overflow = TextOverflow.Ellipsis
                                     )

@@ -2,6 +2,7 @@ package com.shvarsman.coolinar.data.remote.sync.dto
 
 data class ProductDto(
     val name: String = "",
+    val nameEn: String = "",
     val category: String = "",
     val defaultUnit: String = "",
     val iconKey: String = "",

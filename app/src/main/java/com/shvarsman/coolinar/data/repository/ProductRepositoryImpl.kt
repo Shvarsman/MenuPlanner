@@ -26,7 +26,7 @@ class ProductRepositoryImpl @Inject constructor(
 
     override fun observeAllProducts(): Flow<List<Product>> =
         dao.observeAll()
-            .map { list -> list.map { it.toDomain() } }
+            .map { list -> list.map { it.toDomain() }.sortedBy { it.sortName().lowercase() } }
             .flowOn(Dispatchers.Default)
 
     override suspend fun getProduct(id: String): Product? = dao.getById(id)?.toDomain()
@@ -58,13 +58,13 @@ class ProductRepositoryImpl @Inject constructor(
         dao.findByName(name)?.let { return it.toDomain() }
         val newId = UUID.randomUUID().toString()
         val entity = ProductEntity(
-            id = newId, name = name, category = category, defaultUnit = defaultUnit,
+            id = newId, name = name, nameEn = name, category = category, defaultUnit = defaultUnit,
             isToTaste = isToTaste, isAlwaysAvailable = isAlwaysAvailable
         )
         dao.insert(entity)
         pushIfSignedIn(entity)
         return Product(
-            id = newId, name = name, category = category, defaultUnit = defaultUnit,
+            id = newId, name = name, nameEn = name, category = category, defaultUnit = defaultUnit,
             isToTaste = isToTaste, isAlwaysAvailable = isAlwaysAvailable
         )
     }
@@ -80,13 +80,13 @@ class ProductRepositoryImpl @Inject constructor(
 }
 
 private fun ProductEntity.toDomain() = Product(
-    id = id, name = name, category = category, defaultUnit = defaultUnit,
+    id = id, name = name, nameEn = nameEn, category = category, defaultUnit = defaultUnit,
     iconKey = iconKey, isDefault = isDefault, isToTaste = isToTaste,
     isAlwaysAvailable = isAlwaysAvailable
 )
 
 private fun Product.toEntity() = ProductEntity(
-    id = id, name = name, category = category, defaultUnit = defaultUnit,
+    id = id, name = name, nameEn = nameEn, category = category, defaultUnit = defaultUnit,
     iconKey = iconKey, isDefault = isDefault, isToTaste = isToTaste,
     isAlwaysAvailable = isAlwaysAvailable
 )

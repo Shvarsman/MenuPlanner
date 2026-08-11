@@ -26,7 +26,7 @@ class ShoppingListRepositoryImpl @Inject constructor(
         dao.observeAllWithProduct().map { list ->
             list.map { it.toDomain() }
                 .sortedWith(
-                    compareBy({ it.isChecked }, { it.product.name })
+                    compareBy({ it.isChecked }, { it.product.sortName() })
                 )
         }
 
@@ -76,6 +76,7 @@ private fun ShoppingListItemWithProduct.toDomain() = ShoppingListItem(
     product = Product(
         id = product.id,
         name = product.name,
+        nameEn = product.nameEn,
         category = product.category,
         defaultUnit = product.defaultUnit,
         iconKey = product.iconKey,

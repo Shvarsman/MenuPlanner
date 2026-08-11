@@ -53,7 +53,7 @@ fun IngredientListItem(
 
         Column(modifier = Modifier.weight(1f)) {
             Text(
-                text = ingredient.product.name,
+                text = ingredient.product.localizedName(),
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.Medium,
                 color = MaterialTheme.colorScheme.onSurface
@@ -62,7 +62,7 @@ fun IngredientListItem(
                 text = if (ingredient.product.isToTaste) {
                     stringResource(R.string.to_taste)
                 } else {
-                    "${formatIngredientQty(ingredient.quantity)} ${ingredient.unit.displayName}"
+                    "${formatIngredientQty(ingredient.quantity)} ${stringResource(ingredient.unit.labelRes)}"
                 },
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant

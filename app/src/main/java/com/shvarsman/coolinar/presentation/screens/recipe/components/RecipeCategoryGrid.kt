@@ -120,7 +120,7 @@ internal fun CategoryTile(
         )
 
         Text(
-            text = category.displayName,
+            text = stringResource(category.labelRes),
             color = Color.White,
             style = MaterialTheme.typography.labelMedium,
             fontWeight = FontWeight.Medium,

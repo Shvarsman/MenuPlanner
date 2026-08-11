@@ -25,6 +25,7 @@ class AppDatabaseCallback(private val context: Context) : RoomDatabase.Callback(
         val csvText =
             context.assets.open("seed_products.csv").bufferedReader().use { it.readText() }
         val rows = SeedProductCsvParser.parse(csvText)
+        val seedTimestamp = System.currentTimeMillis()
 
         db.beginTransaction()
         try {
@@ -36,14 +37,26 @@ class AppDatabaseCallback(private val context: Context) : RoomDatabase.Callback(
                     // "разными" документами на разных устройствах одного аккаунта.
                     put("id", "seed_${row.name.lowercase().replace(Regex("[^a-z0-9а-яё]+"), "_")}")
                     put("name", row.name)
+                    put("nameEn", row.nameEn)
                     put("category", row.category.name)
                     put("defaultUnit", row.unit.name)
                     put("iconKey", row.iconKey)
                     put("isDefault", 1)
                     put("isToTaste", if (row.isToTaste) 1 else 0)
                     put("isAlwaysAvailable", if (row.isAlwaysAvailable) 1 else 0)
+                    // ProductEntity реализует SyncableEntity — колонки updatedAt/isDeleted
+                    // NOT NULL на уровне SQL. Kotlin-дефолты (System.currentTimeMillis(),
+                    // false) в конструкторе ProductEntity здесь не действуют: этот insert
+                    // сырой, в обход конструктора. Без явного put() ниже db.insert() тихо
+                    // проваливался бы на NOT NULL constraint для всех строк, возвращая -1
+                    // без исключения — так и остались пустой таблицей products.
+                    put("updatedAt", seedTimestamp)
+                    put("isDeleted", 0)
                 }
-                db.insert("products", SQLiteDatabase.CONFLICT_IGNORE, values)
+                val rowId = db.insert("products", SQLiteDatabase.CONFLICT_IGNORE, values)
+                if (rowId == -1L) {
+                    android.util.Log.e("AppDatabaseCallback", "Failed to seed product: ${row.name}")
+                }
             }
             db.setTransactionSuccessful()
         } finally {

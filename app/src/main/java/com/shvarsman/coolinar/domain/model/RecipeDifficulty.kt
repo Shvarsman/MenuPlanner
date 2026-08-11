@@ -1,7 +1,10 @@
 package com.shvarsman.coolinar.domain.model
 
-enum class RecipeDifficulty(val displayName: String) {
-    EASY("Легко"),
-    MEDIUM("Средне"),
-    HARD("Сложно")
+import androidx.annotation.StringRes
+import com.shvarsman.coolinar.R
+
+enum class RecipeDifficulty(@StringRes val labelRes: Int) {
+    EASY(R.string.difficulty_easy),
+    MEDIUM(R.string.difficulty_medium),
+    HARD(R.string.difficulty_hard)
 }

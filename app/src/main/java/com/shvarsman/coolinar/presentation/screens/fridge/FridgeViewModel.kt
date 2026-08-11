@@ -145,22 +145,20 @@ class FridgeViewModel @Inject constructor(
             .let { if (state.category != null) it.filter { i -> i.product.category == state.category } else it }
             .let {
                 if (state.query.isBlank()) it else it.filter { i ->
-                    i.product.name.contains(
-                        state.query,
-                        ignoreCase = true
-                    )
+                    i.product.name.contains(state.query, ignoreCase = true) ||
+                            i.product.nameEn.contains(state.query, ignoreCase = true)
                 }
             }
 
         val sorted = when (state.sort) {
-            FridgeSortOption.NAME_ASC -> filtered.sortedBy { it.product.name.lowercase() }
-            FridgeSortOption.NAME_DESC -> filtered.sortedByDescending { it.product.name.lowercase() }
+            FridgeSortOption.NAME_ASC -> filtered.sortedBy { it.product.sortName().lowercase() }
+            FridgeSortOption.NAME_DESC -> filtered.sortedByDescending { it.product.sortName().lowercase() }
             FridgeSortOption.EXPIRATION_SOON -> filtered.sortedWith(compareBy(nullsLast()) { it.expirationDate })
             FridgeSortOption.EXPIRATION_LATE -> filtered.sortedWith(compareByDescending(nullsFirst()) { it.expirationDate })
             FridgeSortOption.QUANTITY_ASC -> filtered.sortedBy { it.quantity }
             FridgeSortOption.QUANTITY_DESC -> filtered.sortedByDescending { it.quantity }
             FridgeSortOption.FAVORITES_FIRST -> filtered.sortedWith(
-                compareByDescending<FridgeItem> { it.isFavorite }.thenBy { it.product.name.lowercase() }
+                compareByDescending<FridgeItem> { it.isFavorite }.thenBy { it.product.sortName().lowercase() }
             )
         }
 

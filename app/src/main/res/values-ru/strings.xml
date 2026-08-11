@@ -189,6 +189,14 @@
     <string name="start">Запустить</string>
     <string name="resume">Продолжить</string>
     <string name="reset">Сбросить</string>
+    <string name="cook_selection_title">Выбор блюд для готовки</string>
+    <string name="include_next_week">Учитывать след. неделю</string>
+    <string name="start_cooking">Готовить</string>
+    <string name="duplicate_recipe_title">«%1$s» запланирован ещё раз</string>
+    <string name="duplicate_recipe_message">Этот рецепт запланирован %1$d раз(а). Выберите, какие приёмы пищи закрыть этой готовкой:</string>
+    <string name="cooking_dishes_count">Готовим %1$d блюд</string>
+    <string name="cooking_portions_count">×%1$d порции по рецепту</string>
+    <string name="mark_dish_done">Отметить готовым</string>
 
     <!--FridgeScreen-->
     <string name="selected_count">Выбрано: %1$d</string>
@@ -277,4 +285,92 @@
     <string name="unsaved_changes_message">Несохранённые изменения будут потеряны.</string>
     <string name="exit">Выйти</string>
     <string name="search_method_placeholder">Поиск способа…</string>
+
+    <!-- Категории продуктов -->
+    <string name="category_fruits">Фрукты</string>
+    <string name="category_berries">Ягоды</string>
+    <string name="category_citrus">Цитрусовые</string>
+    <string name="category_vegetables">Овощи</string>
+    <string name="category_herbs">Зелень и травы</string>
+    <string name="category_mushrooms">Грибы</string>
+    <string name="category_meat">Мясо</string>
+    <string name="category_poultry">Птица</string>
+    <string name="category_offal">Субпродукты</string>
+    <string name="category_fish">Рыба</string>
+    <string name="category_seafood">Морепродукты</string>
+    <string name="category_canned">Консервы</string>
+    <string name="category_dairy">Молочная продукция</string>
+    <string name="category_cheese">Сыры</string>
+    <string name="category_eggs">Яйца</string>
+    <string name="category_bread_baking">Хлеб и выпечка</string>
+    <string name="category_grocery">Бакалея</string>
+    <string name="category_sauces">Соусы</string>
+    <string name="category_grains">Крупы</string>
+    <string name="category_legumes">Бобовые</string>
+    <string name="category_pasta">Макароны</string>
+    <string name="category_spices">Специи</string>
+    <string name="category_nuts_seeds">Орехи и семена</string>
+    <string name="category_dried_fruits">Сухофрукты</string>
+    <string name="category_frozen">Заморозка</string>
+    <string name="category_coffee_tea">Кофе и чай</string>
+    <string name="category_drinks_non_alcohol">Напитки безалкогольные</string>
+    <string name="category_drinks_alcohol">Напитки алкогольные</string>
+    <string name="category_honey_sweets">Мёд и сладости</string>
+    <string name="category_snacks">Снеки</string>
+
+    <!-- Единицы измерения -->
+    <string name="unit_gram">г</string>
+    <string name="unit_kilogram">кг</string>
+    <string name="unit_milliliter">мл</string>
+    <string name="unit_liter">л</string>
+    <string name="unit_piece">шт</string>
+    <string name="unit_tablespoon">ст.л.</string>
+    <string name="unit_teaspoon">ч.л.</string>
+    <string name="unit_pack">уп</string>
+
+    <!-- Способы приготовления -->
+    <string name="cooking_method_boiling">Варка</string>
+    <string name="cooking_method_steaming">Варка на пару</string>
+    <string name="cooking_method_frying">Жарка</string>
+    <string name="cooking_method_deep_frying">Жарка во фритюре</string>
+    <string name="cooking_method_stewing">Тушение</string>
+    <string name="cooking_method_oven_baking">Запекание в духовке</string>
+    <string name="cooking_method_baking_in_pots">Запекание в горшочках</string>
+    <string name="cooking_method_grilling">Гриль</string>
+    <string name="cooking_method_barbecue">Мангал / Открытый огонь</string>
+    <string name="cooking_method_smoking">Копчение</string>
+    <string name="cooking_method_simmering">Томление</string>
+    <string name="cooking_method_confit">Конфи</string>
+    <string name="cooking_method_sous_vide">Су-вид (Sous vide)</string>
+    <string name="cooking_method_blanching">Бланширование</string>
+    <string name="cooking_method_flambeing">Фламбирование</string>
+    <string name="cooking_method_microwave">Микроволновка (СВЧ)</string>
+    <string name="cooking_method_slow_cooker">Мультиварка</string>
+    <string name="cooking_method_air_fryer">Аэрогриль</string>
+    <string name="cooking_method_bread_maker">Хлебопечка</string>
+    <string name="cooking_method_toaster_waffle">Тостер / Вафельница</string>
+    <string name="cooking_method_no_cooking">Без приготовления (сборка, нарезка)</string>
+    <string name="cooking_method_marinating">Маринование</string>
+    <string name="cooking_method_salting_fermenting">Соление / Ферментация</string>
+    <string name="cooking_method_curing_drying">Вяление / Сушка</string>
+    <string name="cooking_method_freezing">Заморозка</string>
+
+    <!-- Сложность рецепта -->
+    <string name="difficulty_easy">Легко</string>
+    <string name="difficulty_medium">Средне</string>
+    <string name="difficulty_hard">Сложно</string>
+
+    <!-- Категории рецептов -->
+    <string name="recipe_category_salads_and_appetizers">Салаты и закуски</string>
+    <string name="recipe_category_soups">Супы</string>
+    <string name="recipe_category_main_meat">Вторые блюда. Мясо</string>
+    <string name="recipe_category_main_poultry">Вторые блюда. Птица</string>
+    <string name="recipe_category_main_fish_seafood">Вторые блюда. Рыба и морепродукты</string>
+    <string name="recipe_category_main_vegetarian">Вторые блюда. Вегетарианские</string>
+    <string name="recipe_category_sides_sauces">Гарниры, соусы, приправы</string>
+    <string name="recipe_category_bread_baking">Хлеб и выпечка</string>
+    <string name="recipe_category_desserts">Десерты</string>
+    <string name="recipe_category_drinks_alcohol">Напитки. Алкоголь</string>
+    <string name="recipe_category_drinks_non_alcohol">Напитки. Без алкоголя</string>
+    <string name="recipe_category_other">Другое</string>
 </resources>

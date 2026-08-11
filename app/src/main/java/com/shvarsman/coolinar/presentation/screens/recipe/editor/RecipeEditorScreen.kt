@@ -247,7 +247,7 @@ fun RecipeEditorScreen(
                     SelectorField(
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
                         label = stringResource(R.string.recipe_category_label),
-                        value = state.category.displayName,
+                        value = stringResource(state.category.labelRes),
                         placeholder = stringResource(R.string.select_category_placeholder),
                         leadingIcon = state.category.icon,
                         onClick = { showCategoryBottomSheet = true },
@@ -258,7 +258,7 @@ fun RecipeEditorScreen(
                     SelectorField(
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
                         label = stringResource(R.string.cooking_method),
-                        value = state.cookingMethod?.displayName ?: "",
+                        value = state.cookingMethod?.labelRes?.let { stringResource(it) } ?: "",
                         placeholder = stringResource(R.string.select_method_placeholder),
                         leadingIcon = Icons.Filled.Kitchen,
                         onClick = { showCookingMethodBottomSheet = true }
@@ -289,7 +289,7 @@ fun RecipeEditorScreen(
                                         count = RecipeDifficulty.entries.size
                                     )
                                 ) {
-                                    Text(difficulty.displayName)
+                                    Text(stringResource(difficulty.labelRes))
                                 }
                             }
                         }
@@ -408,7 +408,7 @@ fun RecipeEditorScreen(
             ) {
                 items(RecipeCategory.entries) { category ->
                     SelectionTile(
-                        text = category.displayName,
+                        text = stringResource(category.labelRes),
                         icon = { RecipeCategoryIcon(category = category) },
                         isSelected = state.category == category,
                         onClick = {
@@ -424,10 +424,8 @@ fun RecipeEditorScreen(
 
     if (showCookingMethodBottomSheet) {
         var searchQuery by remember { mutableStateOf("") }
-        val filteredMethods = remember(searchQuery) {
-            CookingMethod.entries.filter { method ->
-                method.displayName.contains(searchQuery, ignoreCase = true)
-            }
+        val filteredMethods = CookingMethod.entries.filter { method ->
+            stringResource(method.labelRes).contains(searchQuery, ignoreCase = true)
         }
 
         AppBottomSheet(
@@ -470,7 +468,7 @@ fun RecipeEditorScreen(
                         items(filteredMethods) { method ->
                             val isSelected = state.cookingMethod == method
                             SelectionTile(
-                                text = method.displayName,
+                                text = stringResource(method.labelRes),
                                 icon = {
                                     if (isSelected) {
                                         Icon(

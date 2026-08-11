@@ -10,7 +10,8 @@ data class SeedProductRow(
     val unit: MeasureUnit,
     val isToTaste: Boolean,
     val iconKey: String,
-    val isAlwaysAvailable: Boolean
+    val isAlwaysAvailable: Boolean,
+    val nameEn: String
 )
 
 /** Разбирает CSV вида "продукт;категория;ед_измерения;по_вкусу;иконка"
@@ -33,7 +34,8 @@ object SeedProductCsvParser {
                     isToTaste = parts.getOrNull(3)?.trim() == "1",
                     iconKey = parts.getOrNull(4)?.trim()?.takeIf { it.isNotBlank() }
                         ?: Product.DEFAULT_ICON_KEY,
-                    isAlwaysAvailable = parts.getOrNull(5)?.trim() == "1" // новая колонка
+                    isAlwaysAvailable = parts.getOrNull(5)?.trim() == "1",
+                    nameEn = parts.getOrNull(6)?.trim()?.takeIf { it.isNotBlank() } ?: name
                 )
             }
             .toList()

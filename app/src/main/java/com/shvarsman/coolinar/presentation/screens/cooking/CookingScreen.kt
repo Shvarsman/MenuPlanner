@@ -1,70 +1,146 @@
 package com.shvarsman.coolinar.presentation.screens.cooking
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.ScrollableTabRow
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Tab
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
+import androidx.compose.ui.input.nestedscroll.NestedScrollSource
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
+import com.shvarsman.coolinar.R
 import com.shvarsman.coolinar.presentation.screens.common.rememberSizedImageRequest
 import com.shvarsman.coolinar.presentation.ui.theme.CornerShape
-import com.shvarsman.coolinar.R
+import kotlinx.coroutines.launch
+import kotlin.math.roundToInt
+
+private val PhotoHeight = 260.dp
+private val ContentOverlap = 28.dp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CookingScreen(
-    recipeId: String,
-    menuEntryId: String,
     onBack: () -> Unit,
     onFinished: () -> Unit,
     viewModel: CookingViewModel = hiltViewModel()
 ) {
-    LaunchedEffect(recipeId) { viewModel.load(recipeId) }
+    LaunchedEffect(Unit) { viewModel.load() }
 
     val state by viewModel.state.collectAsStateWithLifecycle()
 
-    LaunchedEffect(state.isCompleted) {
-        if (state.isCompleted) onFinished()
+    if (state.isLoading) {
+        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            CircularProgressIndicator()
+        }
+        return
     }
+
+    if (state.dishes.isEmpty()) {
+        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Text(stringResource(R.string.recipe_not_found))
+        }
+        return
+    }
+
+    val dishes = state.dishes
+    val pagerState = rememberPagerState(pageCount = { dishes.size })
+    val scope = rememberCoroutineScope()
+    val density = LocalDensity.current
+
+    val maxOffsetPx = with(density) { (PhotoHeight - ContentOverlap).toPx() }
+    val statusBarHeightDp = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+    val minOffsetPx = with(density) { (statusBarHeightDp + 56.dp).toPx() }
+    var offsetPx by remember { mutableFloatStateOf(maxOffsetPx) }
+
+    val collapseConnection = remember(minOffsetPx, maxOffsetPx) {
+        object : NestedScrollConnection {
+            override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
+                val delta = available.y
+                return if (delta < 0) {
+                    val newOffset = (offsetPx + delta).coerceIn(minOffsetPx, maxOffsetPx)
+                    val consumedByHeader = newOffset - offsetPx
+                    offsetPx = newOffset
+                    Offset(0f, consumedByHeader)
+                } else Offset.Zero
+            }
+
+            override fun onPostScroll(
+                consumed: Offset,
+                available: Offset,
+                source: NestedScrollSource
+            ): Offset {
+                val delta = available.y
+                return if (delta > 0) {
+                    val newOffset = (offsetPx + delta).coerceIn(minOffsetPx, maxOffsetPx)
+                    val consumedByHeader = newOffset - offsetPx
+                    offsetPx = newOffset
+                    Offset(0f, consumedByHeader)
+                } else Offset.Zero
+            }
+        }
+    }
+
+    val currentDish = dishes[pagerState.currentPage]
 
     Scaffold(
         contentWindowInsets = WindowInsets(0),
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = state.recipe?.title ?: stringResource(R.string.cooking_title),
-                        fontSize = 24.sp,
-                        fontWeight = FontWeight.Medium
-                    )
-                },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = stringResource(R.string.back)
-                        )
-                    }
-                }
-            )
-        },
         bottomBar = {
-            if (!state.isLoading && state.recipe != null) {
+            Surface(color = MaterialTheme.colorScheme.background) {
                 Button(
-                    onClick = { viewModel.finishCooking(menuEntryId) },
+                    onClick = onFinished,
+                    enabled = state.allDone,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(16.dp)
@@ -76,84 +152,188 @@ fun CookingScreen(
             }
         }
     ) { padding ->
-        if (state.isLoading) {
-            Box(
-                Modifier
-                    .fillMaxSize()
-                    .padding(padding), contentAlignment = Alignment.Center
-            ) {
-                CircularProgressIndicator()
-            }
-            return@Scaffold
-        }
-
-        val recipe = state.recipe
-        if (recipe == null) {
-            Box(
-                Modifier
-                    .fillMaxSize()
-                    .padding(padding), contentAlignment = Alignment.Center
-            ) {
-                Text(stringResource(R.string.recipe_not_found))
-            }
-            return@Scaffold
-        }
-
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(
-                top = padding.calculateTopPadding() + 8.dp,
-                bottom = padding.calculateBottomPadding() + 16.dp
-            )
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(bottom = padding.calculateBottomPadding())
+                .nestedScroll(collapseConnection)
         ) {
-            item {
-                if (recipe.photoUri != null) {
-                    AsyncImage(
-                        model = rememberSizedImageRequest(recipe.photoUri, 400.dp, 200.dp),
-                        contentDescription = recipe.title,
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp)
-                            .height(200.dp)
-                            .clip(CornerShape)
+            if (currentDish.recipe.photoUri != null) {
+                AsyncImage(
+                    model = rememberSizedImageRequest(currentDish.recipe.photoUri, 480.dp, PhotoHeight),
+                    contentDescription = currentDish.recipe.title,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(PhotoHeight)
+                        .align(Alignment.TopCenter)
+                )
+            } else {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(PhotoHeight)
+                        .align(Alignment.TopCenter)
+                        .background(MaterialTheme.colorScheme.secondaryContainer)
+                )
+            }
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(PhotoHeight)
+                    .align(Alignment.TopCenter)
+                    .background(
+                        Brush.verticalGradient(
+                            colors = listOf(Color.Black.copy(alpha = 0.45f), Color.Transparent),
+                            endY = with(density) { 140.dp.toPx() }
+                        )
                     )
-                    Spacer(Modifier.height(12.dp))
+            )
+
+            Surface(
+                shape = RoundedCornerShape(topStart = ContentOverlap, topEnd = ContentOverlap),
+                color = MaterialTheme.colorScheme.background,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .offset { IntOffset(0, offsetPx.roundToInt()) }
+            ) {
+                Column(modifier = Modifier.fillMaxSize()) {
+                    Text(
+                        text = if (dishes.size == 1) {
+                            currentDish.recipe.title
+                        } else {
+                            stringResource(R.string.cooking_dishes_count, dishes.size)
+                        },
+                        style = MaterialTheme.typography.headlineSmall,
+                        fontWeight = FontWeight.Medium,
+                        maxLines = 2,
+                        modifier = Modifier.padding(start = 16.dp, top = 16.dp, bottom = 12.dp, end = 16.dp)
+                    )
+
+                    if (dishes.size > 1) {
+                        ScrollableTabRow(
+                            selectedTabIndex = pagerState.currentPage,
+                            containerColor = MaterialTheme.colorScheme.background,
+                            edgePadding = 16.dp
+                        ) {
+                            dishes.forEachIndexed { index, dish ->
+                                Tab(
+                                    selected = pagerState.currentPage == index,
+                                    onClick = { scope.launch { pagerState.animateScrollToPage(index) } },
+                                    text = {
+                                        Row(verticalAlignment = Alignment.CenterVertically) {
+                                            if (dish.isDone) {
+                                                Icon(
+                                                    Icons.Filled.Check,
+                                                    contentDescription = null,
+                                                    tint = MaterialTheme.colorScheme.primary,
+                                                    modifier = Modifier.padding(end = 4.dp)
+                                                )
+                                            }
+                                            Text(dish.recipe.title, maxLines = 1)
+                                        }
+                                    }
+                                )
+                            }
+                        }
+                        Spacer(Modifier.height(8.dp))
+                    }
+
+                    HorizontalPager(state = pagerState, modifier = Modifier.weight(1f)) { page ->
+                        DishContent(
+                            dish = dishes[page],
+                            onMarkDone = { viewModel.markDishDone(dishes[page].recipe) }
+                        )
+                    }
                 }
             }
 
+            IconButton(
+                modifier = Modifier
+                    .padding(start = 16.dp)
+                    .statusBarsPadding()
+                    .clip(CornerShape)
+                    .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.9f), CornerShape),
+                onClick = onBack
+            ) {
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
+            }
+        }
+    }
+}
+
+@Composable
+private fun DishContent(
+    dish: CookingDishUiState,
+    onMarkDone: () -> Unit
+) {
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(top = 8.dp, bottom = 16.dp)
+    ) {
+        if (dish.menuEntryIds.size > 1) {
             item {
                 Text(
-                    text = stringResource(R.string.ingredients),
-                    style = MaterialTheme.typography.titleMedium,
+                    text = stringResource(R.string.cooking_portions_count, dish.menuEntryIds.size),
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
                 )
             }
-            items(recipe.ingredients) { ingredient ->
-                Text(
-                    if (ingredient.product.isToTaste)
-                        stringResource(R.string.ingredient_to_taste, ingredient.product.name)
-                    else
-                        stringResource(
-                            R.string.ingredient_with_qty,
-                            ingredient.product.name,
-                            formatQty(ingredient.quantity),
-                            ingredient.unit.displayName
-                        ),
-                    style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 2.dp)
-                )
-            }
+        }
 
-            item {
-                Text(
-                    text = stringResource(R.string.cooking_steps),
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-                )
-            }
+        item {
+            Text(
+                text = stringResource(R.string.ingredients),
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
+            )
+        }
+        items(dish.recipe.ingredients) { ingredient ->
+            val scaled = ingredient.quantity * dish.menuEntryIds.size
+            Text(
+                if (ingredient.product.isToTaste) {
+                    stringResource(R.string.ingredient_to_taste, ingredient.product.name)
+                } else {
+                    stringResource(
+                        R.string.ingredient_with_qty,
+                        ingredient.product.name,
+                        formatQty(scaled),
+                        stringResource(ingredient.unit.labelRes)
+                    )
+                },
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 2.dp)
+            )
+        }
 
-            CookingStepsReadOnly(steps = recipe.steps)
+        item {
+            Text(
+                text = stringResource(R.string.cooking_steps),
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+            )
+        }
+
+        CookingStepsReadOnly(steps = dish.recipe.steps)
+
+        item {
+            Spacer(Modifier.height(12.dp))
+            Button(
+                onClick = onMarkDone,
+                enabled = !dish.isDone,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
+            ) {
+                if (dish.isDone) {
+                    Icon(Icons.Filled.Check, contentDescription = null)
+                    Spacer(Modifier.width(8.dp))
+                    Text(stringResource(R.string.done))
+                } else {
+                    Text(stringResource(R.string.mark_dish_done))
+                }
+            }
         }
     }
 }

@@ -122,7 +122,7 @@ fun RecipeCard(
                         R.string.recipe_stats,
                         recipe.ingredientCount,
                         recipe.stepCount,
-                        recipe.difficulty.displayName
+                        stringResource(recipe.difficulty.labelRes)
                     ),
                     style = MaterialTheme.typography.bodySmall,
                     color = Color.White.copy(alpha = 0.85f)

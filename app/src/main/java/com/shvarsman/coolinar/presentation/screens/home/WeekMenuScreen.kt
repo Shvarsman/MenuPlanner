@@ -31,7 +31,6 @@ import androidx.compose.material.icons.filled.Restaurant
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Speed
 import androidx.compose.material.icons.filled.Warning
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -52,7 +51,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -81,6 +79,7 @@ import com.shvarsman.coolinar.domain.model.availability
 import com.shvarsman.coolinar.domain.model.computeReservedAmounts
 import com.shvarsman.coolinar.presentation.screens.common.AppBottomSheet
 import com.shvarsman.coolinar.presentation.screens.common.GlassIconButton
+import com.shvarsman.coolinar.presentation.screens.common.NavRow
 import com.shvarsman.coolinar.presentation.screens.common.rememberSizedImageRequest
 import com.shvarsman.coolinar.presentation.ui.theme.CornerShape
 import com.shvarsman.coolinar.presentation.utils.rememberDebouncedSearch
@@ -102,7 +101,7 @@ fun WeekMenuScreen(
     modifier: Modifier = Modifier,
     onBack: () -> Unit,
     onCreateRecipe: () -> Unit,
-    onNavigateToCooking: (recipeId: String, menuEntryId: String) -> Unit,
+    onOpenCookSelection: () -> Unit,
     onViewRecipe: (recipeId: String) -> Unit,
     onOpenShoppingList: () -> Unit,
     viewModel: MenuViewModel = hiltViewModel()
@@ -112,8 +111,6 @@ fun WeekMenuScreen(
     val recipes = uiState.recipes
     val fridgeItems = uiState.fridgeItems
     val pickerTarget = uiState.pickerTarget
-    val insufficientDialogEntry = uiState.insufficientDialogEntry
-    val navigateToCooking = uiState.navigateToCooking
     val reservedQuantities = uiState.reservedQuantities
     val recipeSearchQuery = uiState.recipeSearchQuery
     val filteredPickerRecipes = uiState.filteredPickerRecipes
@@ -131,18 +128,21 @@ fun WeekMenuScreen(
         onUndo = { id -> viewModel.undoDeleteEntry(id) }
     )
 
-    LaunchedEffect(navigateToCooking) {
-        navigateToCooking?.let { (recipeId, menuEntryId) ->
-            onNavigateToCooking(recipeId, menuEntryId)
-            viewModel.onNavigateToCookingConsumed()
-        }
-    }
-
     val entriesByKey = remember(weekMenu) { weekMenu.groupBy { it.dayOfWeek to it.mealType } }
 
     Scaffold(
         modifier = modifier,
         snackbarHost = { SnackbarHost(snackbarHostState) },
+        bottomBar = {
+            Surface(color = MaterialTheme.colorScheme.background) {
+                NavRow(
+                    icon = Icons.Filled.Restaurant,
+                    text = stringResource(R.string.start_cooking),
+                    modifier = Modifier.padding(16.dp),
+                    onClick = onOpenCookSelection
+                )
+            }
+        },
         topBar = {
             CenterAlignedTopAppBar(
                 title = { Text(stringResource(R.string.week_menu_title)) },
@@ -200,7 +200,6 @@ fun WeekMenuScreen(
                         fridgeItems = fridgeItems,
                         onAdd = { viewModel.openRecipePicker(selectedDay, meal) },
                         onRemove = { requestDelete(it) },
-                        onCook = { viewModel.onCookClick(it) },
                         onView = { entry -> onViewRecipe(entry.recipeId) }
                     )
                 }
@@ -221,16 +220,6 @@ fun WeekMenuScreen(
             onCreateNew = {
                 viewModel.closeRecipePicker()
                 onCreateRecipe()
-            }
-        )
-    }
-
-    if (insufficientDialogEntry != null) {
-        InsufficientIngredientsDialog(
-            onConfirmAnyway = { viewModel.confirmCookAnyway() },
-            onGoToShopping = {
-                viewModel.dismissInsufficientDialog()
-                onOpenShoppingList()
             }
         )
     }
@@ -348,7 +337,6 @@ private fun MealSectionCard(
     fridgeItems: List<FridgeItem>,
     onAdd: () -> Unit,
     onRemove: (MenuEntry) -> Unit,
-    onCook: (MenuEntry) -> Unit,
     onView: (MenuEntry) -> Unit
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
@@ -394,7 +382,6 @@ private fun MealSectionCard(
                                 recipes = recipes,
                                 fridgeItems = fridgeItems,
                                 onRemove = { onRemove(entry) },
-                                onCook = { onCook(entry) },
                                 onView = { onView(entry) }
                             )
                         }
@@ -414,7 +401,6 @@ private fun MenuEntryCard(
     recipes: List<Recipe>,
     fridgeItems: List<FridgeItem>,
     onRemove: () -> Unit,
-    onCook: () -> Unit,
     onView: () -> Unit
 ) {
     val allAvailable = remember(recipe, fridgeItems, weekMenu, recipes) {
@@ -518,7 +504,7 @@ private fun MenuEntryCard(
                                 tint = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                             Text(
-                                recipe.difficulty.displayName,
+                                text = stringResource(recipe.difficulty.labelRes),
                                 style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -542,13 +528,6 @@ private fun MenuEntryCard(
                     }
                 }
 
-                IconButton(onClick = onCook) {
-                    Icon(
-                        imageVector = Icons.Filled.Restaurant,
-                        contentDescription = stringResource(R.string.cook),
-                        tint = MaterialTheme.colorScheme.primary
-                    )
-                }
                 IconButton(onClick = onRemove) {
                     Icon(
                         imageVector = Icons.Filled.Close,
@@ -558,24 +537,6 @@ private fun MenuEntryCard(
             }
         }
     }
-}
-
-@Composable
-private fun InsufficientIngredientsDialog(
-    onConfirmAnyway: () -> Unit,
-    onGoToShopping: () -> Unit
-) {
-    AlertDialog(
-        onDismissRequest = onGoToShopping,
-        title = { Text(stringResource(R.string.products_insufficient)) },
-        text = { Text(stringResource(R.string.insufficient_ingredients_message)) },
-        confirmButton = {
-            TextButton(onClick = onConfirmAnyway) { Text(stringResource(R.string.continue_anyway)) }
-        },
-        dismissButton = {
-            TextButton(onClick = onGoToShopping) { Text(stringResource(R.string.go_shopping)) }
-        }
-    )
 }
 
 @Composable
@@ -798,7 +759,7 @@ private fun RecipePickerCard(
                                 R.string.ingredient_with_qty,
                                 ingredient.product.name,
                                 formatQty(ingredient.quantity),
-                                ingredient.unit.displayName
+                                stringResource(ingredient.unit.labelRes)
                             ),
                             style = MaterialTheme.typography.bodySmall,
                             color = color

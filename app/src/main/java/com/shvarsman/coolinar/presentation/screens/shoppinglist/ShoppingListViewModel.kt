@@ -99,16 +99,14 @@ class ShoppingListViewModel @Inject constructor(
             .let { if (category != null) it.filter { i -> i.product.category == category } else it }
             .let {
                 if (query.isBlank()) it else it.filter { i ->
-                    i.product.name.contains(
-                        query,
-                        ignoreCase = true
-                    )
+                    i.product.name.contains(query, ignoreCase = true) ||
+                            i.product.nameEn.contains(query, ignoreCase = true)
                 }
             }
             .let { filtered ->
                 when (sort) {
-                    ShoppingSortOption.NAME_ASC -> filtered.sortedBy { it.product.name.lowercase() }
-                    ShoppingSortOption.NAME_DESC -> filtered.sortedByDescending { it.product.name.lowercase() }
+                    ShoppingSortOption.NAME_ASC -> filtered.sortedBy { it.product.sortName().lowercase() }
+                    ShoppingSortOption.NAME_DESC -> filtered.sortedByDescending { it.product.sortName().lowercase() }
                     ShoppingSortOption.QUANTITY_ASC -> filtered.sortedBy { it.quantity }
                     ShoppingSortOption.QUANTITY_DESC -> filtered.sortedByDescending { it.quantity }
                 }

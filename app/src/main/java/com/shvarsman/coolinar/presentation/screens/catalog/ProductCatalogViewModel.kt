@@ -87,10 +87,8 @@ class ProductCatalogViewModel @Inject constructor(
             .let { if (category != null) it.filter { p -> p.category == category } else it }
             .let {
                 if (query.isBlank()) it else it.filter { p ->
-                    p.name.contains(
-                        query,
-                        ignoreCase = true
-                    )
+                    p.name.contains(query, ignoreCase = true) ||
+                            p.nameEn.contains(query, ignoreCase = true)
                 }
             }
     }

@@ -122,7 +122,7 @@ fun QuantityUnitField(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        selectedUnit.displayName,
+                        stringResource(selectedUnit.labelRes),
                         color = MaterialTheme.colorScheme.onSurface
                     )
                     Spacer(Modifier.width(2.dp))
@@ -138,7 +138,7 @@ fun QuantityUnitField(
                     onDismissRequest = { unitMenuExpanded = false }) {
                     MeasureUnit.entries.forEach { unit ->
                         DropdownMenuItem(
-                            text = { Text(unit.displayName) },
+                            text = { Text(stringResource(unit.labelRes)) },
                             onClick = { onUnitChange(unit); unitMenuExpanded = false }
                         )
                     }

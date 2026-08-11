@@ -26,7 +26,7 @@ class FridgeRepositoryImpl @Inject constructor(
 
     override fun observeItems(): Flow<List<FridgeItem>> =
         dao.observeAllWithProduct()
-            .map { list -> list.map { it.toDomain() }.sortedBy { it.product.name } }
+            .map { list -> list.map { it.toDomain() }.sortedBy { it.product.sortName() } }
             .flowOn(Dispatchers.Default)
 
     override suspend fun getItem(id: String): FridgeItem? = dao.getByIdWithProduct(id)?.toDomain()
@@ -70,6 +70,7 @@ private fun FridgeItemWithProduct.toDomain() = FridgeItem(
     product = Product(
         id = product.id,
         name = product.name,
+        nameEn = product.nameEn,
         category = product.category,
         defaultUnit = product.defaultUnit,
         iconKey = product.iconKey,
