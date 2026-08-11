@@ -3,7 +3,6 @@ package com.shvarsman.coolinar.data.remote.sync
 import com.google.firebase.firestore.FirebaseFirestore
 import com.shvarsman.coolinar.data.local.dao.FridgeItemDao
 import com.shvarsman.coolinar.data.local.entity.FridgeItemEntity
-import com.shvarsman.coolinar.data.local.entity.RecipeEntity
 import com.shvarsman.coolinar.data.remote.sync.dto.FridgeItemDto
 import com.shvarsman.coolinar.domain.model.MeasureUnit
 import java.time.LocalDate

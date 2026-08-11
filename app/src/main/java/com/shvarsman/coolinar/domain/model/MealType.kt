@@ -1,8 +1,11 @@
 package com.shvarsman.coolinar.domain.model
 
-enum class MealType(val displayName: String) {
-    BREAKFAST("Завтрак"),
-    LUNCH("Обед"),
-    DINNER("Ужин"),
-    SNACK("Перекус")
+import androidx.annotation.StringRes
+import com.shvarsman.coolinar.R
+
+enum class MealType(@StringRes val labelRes: Int) {
+    BREAKFAST(R.string.meal_type_breakfast),
+    LUNCH(R.string.meal_type_lunch),
+    DINNER(R.string.meal_type_dinner),
+    SNACK(R.string.meal_type_snack)
 }

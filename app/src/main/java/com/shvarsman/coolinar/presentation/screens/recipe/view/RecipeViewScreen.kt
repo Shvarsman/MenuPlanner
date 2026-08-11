@@ -794,7 +794,7 @@ private fun AddToMenuBottomSheet(
                 FilterChip(
                     selected = meal == selectedMeal,
                     onClick = { selectedMeal = meal },
-                    label = { Text(meal.displayName) }
+                    label = { Text(stringResource(meal.labelRes)) }
                 )
             }
         }

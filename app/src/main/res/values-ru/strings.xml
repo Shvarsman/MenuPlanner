@@ -246,6 +246,10 @@
     <string name="new_recipe">Новый рецепт</string>
     <string name="no_recipes_yet">У вас пока нет рецептов</string>
     <string name="menu_entry_removed">\u00AB%1$s\u00BB убран из меню</string>
+    <string name="meal_type_breakfast">Завтрак</string>
+    <string name="meal_type_lunch">Обед</string>
+    <string name="meal_type_dinner">Ужин</string>
+    <string name="meal_type_snack">Перекус</string>
 
     <!--Recipe-->
     <string name="all_recipes">Все рецепты</string>

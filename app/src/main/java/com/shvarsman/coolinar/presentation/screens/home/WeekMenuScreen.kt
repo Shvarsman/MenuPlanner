@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -20,17 +21,25 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Cookie
+import androidx.compose.material.icons.filled.DinnerDining
+import androidx.compose.material.icons.filled.LunchDining
 import androidx.compose.material.icons.filled.Restaurant
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Speed
 import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material.icons.filled.WbSunny
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -51,10 +60,12 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -80,6 +91,7 @@ import com.shvarsman.coolinar.domain.model.computeReservedAmounts
 import com.shvarsman.coolinar.presentation.screens.common.AppBottomSheet
 import com.shvarsman.coolinar.presentation.screens.common.GlassIconButton
 import com.shvarsman.coolinar.presentation.screens.common.NavRow
+import com.shvarsman.coolinar.presentation.screens.common.localizedName
 import com.shvarsman.coolinar.presentation.screens.common.rememberSizedImageRequest
 import com.shvarsman.coolinar.presentation.ui.theme.CornerShape
 import com.shvarsman.coolinar.presentation.utils.rememberDebouncedSearch
@@ -95,6 +107,13 @@ private val weekDays = listOf(
 )
 private val mealTypes = listOf(MealType.BREAKFAST, MealType.LUNCH, MealType.DINNER, MealType.SNACK)
 
+private fun mealIcon(meal: MealType) = when (meal) {
+    MealType.BREAKFAST -> Icons.Filled.WbSunny
+    MealType.LUNCH -> Icons.Filled.LunchDining
+    MealType.DINNER -> Icons.Filled.DinnerDining
+    MealType.SNACK -> Icons.Filled.Cookie
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WeekMenuScreen(
@@ -103,7 +122,6 @@ fun WeekMenuScreen(
     onCreateRecipe: () -> Unit,
     onOpenCookSelection: () -> Unit,
     onViewRecipe: (recipeId: String) -> Unit,
-    onOpenShoppingList: () -> Unit,
     viewModel: MenuViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -134,12 +152,17 @@ fun WeekMenuScreen(
         modifier = modifier,
         snackbarHost = { SnackbarHost(snackbarHostState) },
         bottomBar = {
-            Surface(color = MaterialTheme.colorScheme.background) {
+            Surface(
+                color = MaterialTheme.colorScheme.background,
+                modifier = Modifier.navigationBarsPadding()
+            ) {
                 NavRow(
                     icon = Icons.Filled.Restaurant,
                     text = stringResource(R.string.start_cooking),
                     modifier = Modifier.padding(16.dp),
-                    onClick = onOpenCookSelection
+                    onClick = onOpenCookSelection,
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    tint = MaterialTheme.colorScheme.onPrimary
                 )
             }
         },
@@ -164,44 +187,71 @@ fun WeekMenuScreen(
             )
         }
     ) { padding ->
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(
-                top = padding.calculateTopPadding() + 8.dp,
-                bottom = padding.calculateBottomPadding() + 16.dp
-            ),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(top = padding.calculateTopPadding() + 8.dp)
         ) {
-            item(key = "week_switcher") {
-                WeekSwitcher(
-                    selectedWeekOffset = selectedWeekOffset,
-                    onWeekSelected = { viewModel.selectWeek(it) },
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-                )
+            WeekSwitcher(
+                selectedWeekOffset = selectedWeekOffset,
+                onWeekSelected = { viewModel.selectWeek(it) },
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+            )
+
+            WeekDaySelector(
+                weekStart = LocalDate.now()
+                    .with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
+                    .plusWeeks(selectedWeekOffset.toLong()),
+                selectedDay = selectedDay,
+                entriesByKey = entriesByKey,
+                onDaySelected = { viewModel.selectDay(it) }
+            )
+
+            Spacer(Modifier.height(8.dp))
+
+            val pagerState = rememberPagerState(
+                initialPage = weekDays.indexOf(selectedDay).coerceAtLeast(0)
+            ) { weekDays.size }
+
+            LaunchedEffect(pagerState) {
+                snapshotFlow { pagerState.settledPage }.collect { page ->
+                    val day = weekDays.getOrNull(page) ?: return@collect
+                    if (day != selectedDay) viewModel.selectDay(day)
+                }
             }
 
-            item(key = "day_selector") {
-                WeekDaySelector(
-                    weekStart = LocalDate.now()
-                        .with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
-                        .plusWeeks(selectedWeekOffset.toLong()),
-                    selectedDay = selectedDay,
-                    onDaySelected = { viewModel.selectDay(it) }
-                )
+            LaunchedEffect(selectedDay) {
+                val targetPage = weekDays.indexOf(selectedDay)
+                if (targetPage >= 0 && pagerState.currentPage != targetPage) {
+                    pagerState.animateScrollToPage(targetPage)
+                }
             }
-            mealTypes.forEach { meal ->
-                item(key = "${selectedDay.name}_${meal.name}") {
-                    MealSectionCard(
-                        modifier = Modifier.padding(horizontal = 16.dp),
-                        meal = meal,
-                        entries = entriesByKey[selectedDay to meal].orEmpty(),
-                        weekMenu = weekMenu,
-                        recipes = recipes,
-                        fridgeItems = fridgeItems,
-                        onAdd = { viewModel.openRecipePicker(selectedDay, meal) },
-                        onRemove = { requestDelete(it) },
-                        onView = { entry -> onViewRecipe(entry.recipeId) }
-                    )
+
+            HorizontalPager(
+                state = pagerState,
+                modifier = Modifier.weight(1f)
+            ) { page ->
+                val day = weekDays[page]
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .verticalScroll(rememberScrollState())
+                        .padding(horizontal = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    mealTypes.forEach { meal ->
+                        MealSectionCard(
+                            meal = meal,
+                            entries = entriesByKey[day to meal].orEmpty(),
+                            weekMenu = weekMenu,
+                            recipes = recipes,
+                            fridgeItems = fridgeItems,
+                            onAdd = { viewModel.openRecipePicker(day, meal) },
+                            onRemove = { requestDelete(it) },
+                            onView = { entry -> onViewRecipe(entry.recipeId) }
+                        )
+                    }
+                    Spacer(Modifier.height(padding.calculateBottomPadding() + 16.dp))
                 }
             }
         }
@@ -229,6 +279,7 @@ fun WeekMenuScreen(
 private fun WeekDaySelector(
     weekStart: LocalDate,
     selectedDay: DayOfWeek,
+    entriesByKey: Map<Pair<DayOfWeek, MealType>, List<MenuEntry>>,
     onDaySelected: (DayOfWeek) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -243,6 +294,9 @@ private fun WeekDaySelector(
             val date = weekStart.plusDays(index.toLong())
             val isSelected = day == selectedDay
             val isToday = date == today
+            val hasAnyPlanned = remember(entriesByKey, day) {
+                mealTypes.any { meal -> entriesByKey[day to meal]?.isNotEmpty() == true }
+            }
 
             Surface(
                 onClick = { onDaySelected(day) },
@@ -292,6 +346,20 @@ private fun WeekDaySelector(
                                         MaterialTheme.colorScheme.onPrimary
                                     } else {
                                         MaterialTheme.colorScheme.primary
+                                    },
+                                    CircleShape
+                                )
+                        )
+                    } else if (hasAnyPlanned) {
+                        Spacer(Modifier.height(3.dp))
+                        Box(
+                            modifier = Modifier
+                                .size(4.dp)
+                                .background(
+                                    if (isSelected) {
+                                        MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.6f)
+                                    } else {
+                                        MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
                                     },
                                     CircleShape
                                 )
@@ -346,45 +414,81 @@ private fun MealSectionCard(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
-                text = meal.displayName,
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-            IconButton(onClick = onAdd) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 Icon(
-                    Icons.Filled.Add,
-                    contentDescription = stringResource(R.string.add_meal_for, meal.displayName)
+                    imageVector = mealIcon(meal),
+                    contentDescription = null,
+                    modifier = Modifier.size(20.dp),
+                    tint = MaterialTheme.colorScheme.primary
                 )
+                Text(
+                    text = stringResource(meal.labelRes),
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            }
+            if (entries.isNotEmpty()) {
+                IconButton(onClick = onAdd) {
+                    Icon(
+                        Icons.Filled.Add,
+                        contentDescription = stringResource(
+                            R.string.add_meal_for,
+                            stringResource(meal.labelRes)
+                        )
+                    )
+                }
             }
         }
 
-        Surface(
-            shape = CornerShape,
-            color = MaterialTheme.colorScheme.surfaceContainerHighest,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                if (entries.isEmpty()) {
-                    Text(
-                        text = stringResource(R.string.not_planned),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+        if (entries.isEmpty()) {
+            Surface(
+                onClick = onAdd,
+                shape = CornerShape,
+                color = MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.5f),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 20.dp, horizontal = 16.dp),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        Icons.Filled.Add,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp),
+                        tint = MaterialTheme.colorScheme.primary
                     )
-                } else {
-                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        entries.forEach { entry ->
-                            val recipe = recipes.firstOrNull { it.id == entry.recipeId }
-                            MenuEntryCard(
-                                entry = entry,
-                                recipe = recipe,
-                                weekMenu = weekMenu,
-                                recipes = recipes,
-                                fridgeItems = fridgeItems,
-                                onRemove = { onRemove(entry) },
-                                onView = { onView(entry) }
-                            )
-                        }
+                    Spacer(Modifier.width(6.dp))
+                    Text(
+                        text = stringResource(R.string.add_meal_for, stringResource(meal.labelRes)),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+            }
+        } else {
+            Surface(
+                shape = CornerShape,
+                color = MaterialTheme.colorScheme.surfaceContainerHighest,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    entries.forEach { entry ->
+                        val recipe = recipes.firstOrNull { it.id == entry.recipeId }
+                        MenuEntryCard(
+                            entry = entry,
+                            recipe = recipe,
+                            weekMenu = weekMenu,
+                            recipes = recipes,
+                            fridgeItems = fridgeItems,
+                            onRemove = { onRemove(entry) },
+                            onView = { onView(entry) }
+                        )
                     }
                 }
             }
@@ -416,7 +520,10 @@ private fun MenuEntryCard(
                         UnitConversion.canonicalUnit(ingredient.unit)
                     )
                 ]
-                ingredient.availability(fridgeItems, reserved) == IngredientAvailability.AVAILABLE
+                ingredient.availability(
+                    fridgeItems,
+                    reserved
+                ) == IngredientAvailability.AVAILABLE
             }
         }
     }
@@ -430,24 +537,53 @@ private fun MenuEntryCard(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(88.dp),
+                    .height(104.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 if (entry.recipePhotoUri != null) {
-                    AsyncImage(
-                        model = rememberSizedImageRequest(entry.recipePhotoUri, 88.dp, 88.dp),
-                        contentDescription = entry.recipeTitle,
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier
-                            .fillMaxHeight()
-                            .aspectRatio(1f)
-                            .clip(
-                                RoundedCornerShape(
-                                    topEnd = 28.dp,
-                                    bottomEnd = 28.dp
+                    Box(modifier = Modifier
+                        .fillMaxHeight()
+                        .aspectRatio(1f)) {
+                        AsyncImage(
+                            model = rememberSizedImageRequest(entry.recipePhotoUri, 104.dp, 104.dp),
+                            contentDescription = entry.recipeTitle,
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .clip(
+                                    RoundedCornerShape(
+                                        topEnd = 28.dp,
+                                        bottomEnd = 28.dp
+                                    )
                                 )
-                            )
-                    )
+                        )
+                        if (recipe != null && recipe.ingredients.isNotEmpty()) {
+                            Surface(
+                                shape = CircleShape,
+                                color = if (allAvailable) {
+                                    MaterialTheme.colorScheme.primary
+                                } else {
+                                    MaterialTheme.colorScheme.error
+                                },
+                                modifier = Modifier
+                                    .padding(6.dp)
+                                    .align(Alignment.TopStart)
+                            ) {
+                                Icon(
+                                    if (allAvailable) Icons.Filled.Restaurant else Icons.Filled.Warning,
+                                    contentDescription = if (allAvailable) {
+                                        stringResource(R.string.all_products_available)
+                                    } else {
+                                        stringResource(R.string.products_insufficient)
+                                    },
+                                    modifier = Modifier
+                                        .padding(4.dp)
+                                        .size(12.dp),
+                                    tint = MaterialTheme.colorScheme.surface
+                                )
+                            }
+                        }
+                    }
                 } else {
                     Box(
                         modifier = Modifier
@@ -473,7 +609,9 @@ private fun MenuEntryCard(
                                     Icons.Filled.Restaurant,
                                     contentDescription = null,
                                     modifier = Modifier.size(32.dp),
-                                    tint = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.6f)
+                                    tint = MaterialTheme.colorScheme.onSecondaryContainer.copy(
+                                        alpha = 0.6f
+                                    )
                                 )
                             }
                         }
@@ -508,22 +646,6 @@ private fun MenuEntryCard(
                                 style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
-                            if (recipe.ingredients.isNotEmpty()) {
-                                Icon(
-                                    if (allAvailable) Icons.Filled.Restaurant else Icons.Filled.Warning,
-                                    contentDescription = if (allAvailable) {
-                                        stringResource(R.string.all_products_available)
-                                    } else {
-                                        stringResource(R.string.products_insufficient)
-                                    },
-                                    modifier = Modifier.size(14.dp),
-                                    tint = if (allAvailable) {
-                                        MaterialTheme.colorScheme.primary
-                                    } else {
-                                        MaterialTheme.colorScheme.error
-                                    }
-                                )
-                            }
                         }
                     }
                 }
@@ -566,7 +688,12 @@ private fun RecipePickerDialog(
             value = localSearchQuery,
             onValueChange = onLocalSearchQueryChange,
             placeholder = { Text(stringResource(R.string.search_recipes)) },
-            leadingIcon = { Icon(imageVector = Icons.Filled.Search, contentDescription = null) },
+            leadingIcon = {
+                Icon(
+                    imageVector = Icons.Filled.Search,
+                    contentDescription = null
+                )
+            },
             trailingIcon = {
                 if (localSearchQuery.isNotEmpty()) {
                     IconButton(onClick = { onLocalSearchQueryChange("") }) {
@@ -757,7 +884,7 @@ private fun RecipePickerCard(
                         Text(
                             text = stringResource(
                                 R.string.ingredient_with_qty,
-                                ingredient.product.name,
+                                ingredient.product.localizedName(),
                                 formatQty(ingredient.quantity),
                                 stringResource(ingredient.unit.labelRes)
                             ),

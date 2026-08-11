@@ -24,6 +24,7 @@ import androidx.compose.material.icons.filled.Event
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDefaults
 import androidx.compose.material3.DatePickerDialog
@@ -363,9 +364,17 @@ fun NavRow(
     text: String,
     modifier: Modifier = Modifier,
     tint: Color = MaterialTheme.colorScheme.onSurface,
+    containerColor: Color = MaterialTheme.colorScheme.surfaceContainerHighest,
     onClick: () -> Unit
 ) {
-    Card(onClick = onClick, modifier = modifier.fillMaxWidth(), shape = CornerShape) {
+    Card(
+        onClick = onClick,
+        modifier = modifier.fillMaxWidth(),
+        shape = CornerShape,
+        colors = CardDefaults.cardColors(
+            containerColor = containerColor
+        )
+    ) {
         Row(
             modifier = Modifier
                 .padding(16.dp)

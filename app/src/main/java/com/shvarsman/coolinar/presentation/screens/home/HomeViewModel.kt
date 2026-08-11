@@ -12,7 +12,6 @@ import com.shvarsman.coolinar.domain.model.Recipe
 import com.shvarsman.coolinar.domain.model.RecipeSummary
 import com.shvarsman.coolinar.domain.model.ReservedAmount
 import com.shvarsman.coolinar.domain.model.ReservedKey
-import com.shvarsman.coolinar.domain.model.UnitConversion
 import com.shvarsman.coolinar.domain.model.availability
 import com.shvarsman.coolinar.domain.model.computeReservedAmounts
 import com.shvarsman.coolinar.domain.usecase.fridge.GetFridgeItemsUseCase

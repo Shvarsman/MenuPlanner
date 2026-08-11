@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -95,7 +96,10 @@ fun CookSelectionScreen(
             )
         },
         bottomBar = {
-            Surface(color = MaterialTheme.colorScheme.background) {
+            Surface(
+                color = MaterialTheme.colorScheme.background,
+                modifier = Modifier.navigationBarsPadding()
+            ) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -121,7 +125,10 @@ fun CookSelectionScreen(
                         },
                         modifier = Modifier.size(48.dp)
                     ) {
-                        Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
+                        Box(
+                            contentAlignment = Alignment.Center,
+                            modifier = Modifier.fillMaxSize()
+                        ) {
                             Text(
                                 text = uiState.selectedCount.toString(),
                                 style = MaterialTheme.typography.titleMedium,
@@ -207,7 +214,8 @@ fun CookSelectionScreen(
         val recipeId = dialogEntries.first().entry.recipeId
         DuplicateRecipeDialog(
             occurrences = dialogEntries,
-            alreadySelectedIds = uiState.selectedByRecipeId[recipeId]?.menuEntryIds?.toSet().orEmpty(),
+            alreadySelectedIds = uiState.selectedByRecipeId[recipeId]?.menuEntryIds?.toSet()
+                .orEmpty(),
             onConfirm = { chosen -> viewModel.confirmDuplicateSelection(recipeId, chosen) },
             onDismiss = { viewModel.dismissDuplicateDialog() }
         )
@@ -278,7 +286,7 @@ private fun CookSelectionCard(
                 )
                 Spacer(Modifier.height(2.dp))
                 Text(
-                    entry.mealType.displayName,
+                    stringResource(entry.mealType.labelRes),
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -317,7 +325,12 @@ private fun DuplicateRecipeDialog(
 ) {
     val checkedIds = remember(occurrences) {
         mutableStateMapOf<String, Boolean>().apply {
-            occurrences.forEach { put(it.entry.id, it.entry.id in alreadySelectedIds || alreadySelectedIds.isEmpty()) }
+            occurrences.forEach {
+                put(
+                    it.entry.id,
+                    it.entry.id in alreadySelectedIds || alreadySelectedIds.isEmpty()
+                )
+            }
         }
     }
     val recipeTitle = occurrences.first().entry.recipeTitle
@@ -346,22 +359,30 @@ private fun DuplicateRecipeDialog(
                             onCheckedChange = { checkedIds[entry.id] = it }
                         )
                         Spacer(Modifier.width(8.dp))
-                        Text(dateAndMealLabel(cookable))
+                        Text(
+                            dateAndMealLabel(
+                                cookable,
+                                stringResource(cookable.entry.mealType.labelRes)
+                            )
+                        )
                     }
                 }
             }
         },
         confirmButton = {
             TextButton(onClick = {
-                onConfirm(occurrences.filter { checkedIds[it.entry.id] == true }.map { it.entry.id })
+                onConfirm(occurrences.filter { checkedIds[it.entry.id] == true }
+                    .map { it.entry.id })
             }) { Text(stringResource(R.string.save)) }
         },
         dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) } }
     )
 }
 
-private fun dateAndMealLabel(cookable: CookableEntry): String {
+private fun dateAndMealLabel(cookable: CookableEntry, mealLabel: String): String {
     val date = cookable.date
-    val dateStr = "${date.dayOfMonth.toString().padStart(2, '0')}.${date.monthValue.toString().padStart(2, '0')}"
-    return "$dateStr — ${cookable.entry.mealType.displayName}"
+    val dateStr = "${date.dayOfMonth.toString().padStart(2, '0')}.${
+        date.monthValue.toString().padStart(2, '0')
+    }"
+    return "$dateStr — $mealLabel"
 }

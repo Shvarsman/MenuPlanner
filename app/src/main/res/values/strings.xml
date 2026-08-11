@@ -244,6 +244,10 @@
     <string name="new_recipe">New recipe</string>
     <string name="no_recipes_yet">You don\'t have any recipes yet</string>
     <string name="menu_entry_removed">\u00AB%1$s\u00BB removed from menu</string>
+    <string name="meal_type_breakfast">Breakfast</string>
+    <string name="meal_type_lunch">Lunch</string>
+    <string name="meal_type_dinner">Dinner</string>
+    <string name="meal_type_snack">Snack</string>
 
     <!--Recipe-->
     <string name="all_recipes">All recipes</string>
