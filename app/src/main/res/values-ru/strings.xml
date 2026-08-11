@@ -8,6 +8,11 @@
     <string name="done">Готово</string>
     <string name="ok">Ок</string>
     <string name="error">Ошибка</string>
+    <string name="nav_home">Главная</string>
+    <string name="nav_fridge">Холодильник</string>
+    <string name="nav_recipes">Рецепты</string>
+    <string name="nav_profile">Профиль</string>
+    <string name="please_wait">Подождите</string>
 
     <!-- Профиль-->
     <string name="app_name">Coolinar</string>
@@ -64,9 +69,7 @@
     <string name="backup_restore_title">Восстановление</string>
     <string name="backup_restore_description">Подходит любой файл резервной копии — полный, только рецепты или один рецепт. Продукты объединяются по названию. Рецепты и записи меню всегда добавляются как новые.</string>
     <string name="backup_restore_button">Восстановить из файла</string>
-    <string name="backup_please_wait">Подождите</string>
     <string name="backup_processing">Обработка резервной копии…</string>
-
     <string name="backup_export_summary_full">Сохранено: рецептов — %1$d, продуктов в холодильнике — %2$d, позиций в списке покупок — %3$d, записей в меню — %4$d</string>
     <string name="backup_export_summary_recipes">Сохранено рецептов: %1$d</string>
     <string name="backup_export_summary_single_recipe">Рецепт сохранён</string>
@@ -156,6 +159,7 @@
     <string name="remove_date">Убрать дату</string>
 
     <!--ShoppingListScreen-->
+    <string name="shopping_list_title">Список покупок</string>
     <string name="search_shopping_list">Поиск в списке покупок</string>
     <string name="move_to_fridge">Перенести купленное в холодильник</string>
     <string name="add_product">Добавить продукт</string>
@@ -168,13 +172,15 @@
     <string name="shopping_item_deleted">\u00AB%1$s\u00BB удалён</string>
 
     <!--Sort-->
-    <string name="sort_name_asc">По алфавиту (А-Я)</string>
-    <string name="sort_name_desc">По алфавиту (Я-А)</string>
+    <string name="sort_name_asc">По названию (А-Я)</string>
+    <string name="sort_name_desc">По названию (Я-А)</string>
     <string name="sort_quantity_asc">По количеству (меньше→больше)</string>
     <string name="sort_quantity_desc">По количеству (больше→меньше)</string>
     <string name="sort_expiration_soon">Сначала истекающие</string>
     <string name="sort_expiration_late">Сначала свежие</string>
     <string name="sort_favorites_first">Сначала избранное</string>
+    <string name="sort_most_ingredients">Больше всего ингредиентов</string>
+    <string name="sort_most_steps">Больше всего шагов</string>
 
     <!--CookingScreen-->
     <string name="cooking_title">Готовка</string>
@@ -289,6 +295,35 @@
     <string name="unsaved_changes_message">Несохранённые изменения будут потеряны.</string>
     <string name="exit">Выйти</string>
     <string name="search_method_placeholder">Поиск способа…</string>
+    <string name="add_recipe">Добавить рецепт</string>
+    <string name="can_cook_short">Можно приготовить</string>
+    <string name="no_recipes_placeholder">Рецептов пока нет.\nДобавьте свой первый рецепт.</string>
+    <string name="no_suggested_recipes">Пока нет рецептов, для которых хватает продуктов в холодильнике</string>
+    <string name="recipe_added_to_menu">Рецепт добавлен в меню</string>
+    <string name="cooking_steps_tab">Приготовление</string>
+    <string name="add_to_menu">Добавить в меню</string>
+    <string name="share_recipe">Поделиться рецептом</string>
+    <string name="preparing_recipe_file">Готовим файл рецепта...</string>
+    <string name="done_title">Готово</string>
+    <string name="recipe_shared_message">Рецепт сохранён в файл — можно переслать его другому пользователю приложения.</string>
+    <string name="no_description">Описание не указано</string>
+    <string name="servings_label">Порции</string>
+    <string name="decrease_servings">Уменьшить количество порций</string>
+    <string name="increase_servings">Увеличить количество порций</string>
+    <string name="servings_one">порция</string>
+    <string name="servings_few">порции</string>
+    <string name="servings_many">порций</string>
+    <string name="day_of_week">День недели</string>
+    <string name="meal_type">Приём пищи</string>
+    <string name="day_mon">Пн</string>
+    <string name="day_tue">Вт</string>
+    <string name="day_wed">Ср</string>
+    <string name="day_thu">Чт</string>
+    <string name="day_fri">Пт</string>
+    <string name="day_sat">Сб</string>
+    <string name="day_sun">Вс</string>
+    <string name="save_recipe_error_generic">Не удалось сохранить рецепт</string>
+    <string name="ingredient_quantity_per_serving">Количество (на 1 порцию)</string>
 
     <!-- Категории продуктов -->
     <string name="category_fruits">Фрукты</string>

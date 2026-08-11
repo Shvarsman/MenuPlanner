@@ -2,6 +2,7 @@ package com.shvarsman.coolinar.presentation.screens.recipe.list
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.shvarsman.coolinar.R
 import com.shvarsman.coolinar.domain.model.FridgeItem
 import com.shvarsman.coolinar.domain.model.IngredientAvailability
 import com.shvarsman.coolinar.domain.model.RecipeCategory
@@ -23,11 +24,11 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-enum class RecipeSortOption(val displayName: String) {
-    TITLE_ASC("По названию (А-Я)"),
-    TITLE_DESC("По названию (Я-А)"),
-    MOST_INGREDIENTS("Больше всего ингредиентов"),
-    MOST_STEPS("Больше всего шагов")
+enum class RecipeSortOption(@androidx.annotation.StringRes val displayNameRes: Int) {
+    TITLE_ASC(R.string.sort_name_asc),
+    TITLE_DESC(R.string.sort_name_desc),
+    MOST_INGREDIENTS(R.string.sort_most_ingredients),
+    MOST_STEPS(R.string.sort_most_steps)
 }
 
 @HiltViewModel

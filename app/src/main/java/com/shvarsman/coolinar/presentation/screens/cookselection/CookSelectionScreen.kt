@@ -25,9 +25,9 @@ import androidx.compose.material.icons.filled.Restaurant
 import androidx.compose.material.icons.outlined.RadioButtonUnchecked
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -38,6 +38,7 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -46,6 +47,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -54,6 +58,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import com.shvarsman.coolinar.R
+import com.shvarsman.coolinar.presentation.screens.common.CollapsingLargeTopAppBar
 import com.shvarsman.coolinar.presentation.screens.common.GlassIconButton
 import com.shvarsman.coolinar.presentation.screens.common.rememberSizedImageRequest
 import com.shvarsman.coolinar.presentation.ui.theme.CornerShape
@@ -66,6 +71,9 @@ fun CookSelectionScreen(
     viewModel: CookSelectionViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val topBarScrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(
+        rememberTopAppBarState()
+    )
 
     LaunchedEffect(uiState.navigateToCooking) {
         if (uiState.navigateToCooking) {
@@ -75,9 +83,11 @@ fun CookSelectionScreen(
     }
 
     Scaffold(
+        modifier = Modifier.nestedScroll(topBarScrollBehavior.nestedScrollConnection),
         topBar = {
-            CenterAlignedTopAppBar(
-                title = { Text(stringResource(R.string.cook_selection_title)) },
+            CollapsingLargeTopAppBar(
+                title = stringResource(R.string.cook_selection_title),
+                scrollBehavior = topBarScrollBehavior,
                 navigationIcon = {
                     GlassIconButton(
                         onClick = onBack,
@@ -88,29 +98,40 @@ fun CookSelectionScreen(
                             contentDescription = stringResource(R.string.back)
                         )
                     }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background,
-                    scrolledContainerColor = MaterialTheme.colorScheme.background
-                )
+                }
             )
         },
         bottomBar = {
-            Surface(
-                color = MaterialTheme.colorScheme.background,
-                modifier = Modifier.navigationBarsPadding()
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(
+                        Brush.verticalGradient(
+                            colors = listOf(
+                                Color.Transparent,
+                                MaterialTheme.colorScheme.background.copy(alpha = 0.9f)
+                            )
+                        )
+                    )
             ) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(16.dp),
+                        .padding(16.dp)
+                        .navigationBarsPadding(),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     Button(
                         onClick = { viewModel.onStartCooking() },
                         enabled = uiState.canStartCooking,
-                        modifier = Modifier.weight(1f)
+                        colors = ButtonDefaults.buttonColors(
+                            disabledContainerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
+                            disabledContentColor = MaterialTheme.colorScheme.onSurfaceVariant
+                        ),
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(48.dp)
                     ) {
                         Icon(Icons.Filled.Restaurant, contentDescription = null)
                         Spacer(Modifier.width(8.dp))
@@ -252,17 +273,19 @@ private fun CookSelectionCard(
         ) {
             if (entry.recipePhotoUri != null) {
                 AsyncImage(
-                    model = rememberSizedImageRequest(entry.recipePhotoUri, 56.dp, 56.dp),
+                    model = rememberSizedImageRequest(entry.recipePhotoUri, 96.dp, 72.dp),
                     contentDescription = entry.recipeTitle,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
-                        .size(56.dp)
+                        .width(96.dp)
+                        .height(72.dp)
                         .clip(CornerShape)
                 )
             } else {
                 Box(
                     modifier = Modifier
-                        .size(56.dp)
+                        .width(96.dp)
+                        .height(72.dp)
                         .clip(CornerShape)
                         .background(MaterialTheme.colorScheme.secondaryContainer),
                     contentAlignment = Alignment.Center

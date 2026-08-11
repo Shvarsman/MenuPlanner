@@ -34,6 +34,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -44,6 +45,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.shvarsman.coolinar.R
 import com.shvarsman.coolinar.presentation.screens.backup.BackupScreen
 import com.shvarsman.coolinar.presentation.screens.catalog.ProductCatalogScreen
 import com.shvarsman.coolinar.presentation.screens.cooking.CookingScreen
@@ -67,15 +69,15 @@ import com.shvarsman.coolinar.presentation.ui.theme.gradientStyle
 
 private data class BottomItem(
     val destination: Destination,
-    val label: String,
+    @androidx.annotation.StringRes val labelRes: Int,
     val icon: ImageVector
 )
 
 private val bottomItems = listOf(
-    BottomItem(Destination.Home, "Home", Icons.Filled.RestaurantMenu),
-    BottomItem(Destination.Fridge, "Холодильник", Icons.Filled.Kitchen),
-    BottomItem(Destination.Recipes, "Рецепты", Icons.AutoMirrored.Filled.MenuBook),
-    BottomItem(Destination.Profile, "Профиль", Icons.Filled.AccountCircle)
+    BottomItem(Destination.Home, R.string.nav_home, Icons.Filled.RestaurantMenu),
+    BottomItem(Destination.Fridge, R.string.nav_fridge, Icons.Filled.Kitchen),
+    BottomItem(Destination.Recipes, R.string.nav_recipes, Icons.AutoMirrored.Filled.MenuBook),
+    BottomItem(Destination.Profile, R.string.nav_profile, Icons.Filled.AccountCircle)
 )
 
 @Composable
@@ -319,10 +321,10 @@ private fun MainTabsScreen(rootNavController: NavHostController) {
                                     icon = {
                                         Icon(
                                             imageVector = item.icon,
-                                            contentDescription = item.label
+                                            contentDescription = stringResource(item.labelRes)
                                         )
                                     },
-                                    label = { Text(item.label) },
+                                    label = { Text(stringResource(item.labelRes)) },
                                     colors = NavigationBarItemDefaults.colors(
                                         indicatorColor = Color.Transparent,
                                         selectedIconColor = MaterialTheme.colorScheme.primary,

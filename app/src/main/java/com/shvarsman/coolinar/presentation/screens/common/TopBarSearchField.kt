@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.BasicTextField
@@ -85,6 +86,7 @@ fun TopBarSearchField(
                 contentDescription = stringResource(R.string.clear),
                 tint = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier
+                    .padding(horizontal = 16.dp)
                     .size(20.dp)
                     .clickable(
                         interactionSource = interactionSource,

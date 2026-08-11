@@ -7,6 +7,11 @@
     <string name="done">Done</string>
     <string name="error">Error</string>
     <string name="ok">OK</string>
+    <string name="nav_home">Home</string>
+    <string name="nav_fridge">Fridge</string>
+    <string name="nav_recipes">Recipes</string>
+    <string name="nav_profile">Profile</string>
+    <string name="please_wait">Please wait</string>
 
     <!-- Профиль-->
     <string name="app_name">Coolinar</string>
@@ -63,7 +68,6 @@
     <string name="backup_restore_title">Restore</string>
     <string name="backup_restore_description">Any backup file works — full, recipes only, or a single recipe. Products are merged by name. Recipes and menu entries are always added as new.</string>
     <string name="backup_restore_button">Restore from file</string>
-    <string name="backup_please_wait">Please wait</string>
     <string name="backup_processing">Processing backup…</string>
     <string name="backup_export_summary_full">Saved: recipes — %1$d, fridge items — %2$d, shopping list items — %3$d, menu entries — %4$d</string>
     <string name="backup_export_summary_recipes">Recipes saved: %1$d</string>
@@ -154,6 +158,7 @@
     <string name="remove_date">Remove date</string>
 
     <!--ShoppingListScreen-->
+    <string name="shopping_list_title">Shopping list</string>
     <string name="search_shopping_list">Search shopping list</string>
     <string name="move_to_fridge">Move purchased items to fridge</string>
     <string name="add_product">Add product</string>
@@ -166,13 +171,15 @@
     <string name="shopping_item_deleted">\u00AB%1$s\u00BB deleted</string>
 
     <!--Sort-->
-    <string name="sort_name_asc">Alphabetical (A–Z)</string>
-    <string name="sort_name_desc">Alphabetical (Z–A)</string>
+    <string name="sort_name_asc">By title (A–Z)</string>
+    <string name="sort_name_desc">By title (Z–A)</string>
     <string name="sort_quantity_asc">By quantity (low→high)</string>
     <string name="sort_quantity_desc">By quantity (high→low)</string>
     <string name="sort_expiration_soon">Expiring soon first</string>
     <string name="sort_expiration_late">Freshest first</string>
     <string name="sort_favorites_first">Favorites first</string>
+    <string name="sort_most_ingredients">Most ingredients</string>
+    <string name="sort_most_steps">Most steps</string>
 
     <!--CookingScreen-->
     <string name="cooking_title">Cooking</string>
@@ -287,6 +294,35 @@
     <string name="unsaved_changes_message">Unsaved changes will be lost.</string>
     <string name="exit">Exit</string>
     <string name="search_method_placeholder">Search method…</string>
+    <string name="add_recipe">Add recipe</string>
+    <string name="can_cook_short">Ready to cook</string>
+    <string name="no_recipes_placeholder">No recipes yet.\nAdd your first recipe.</string>
+    <string name="no_suggested_recipes">No recipes yet with enough ingredients in the fridge</string>
+    <string name="recipe_added_to_menu">Recipe added to menu</string>
+    <string name="cooking_steps_tab">Steps</string>
+    <string name="add_to_menu">Add to menu</string>
+    <string name="share_recipe">Share recipe</string>
+    <string name="preparing_recipe_file">Preparing recipe file…</string>
+    <string name="done_title">Done</string>
+    <string name="recipe_shared_message">Recipe saved to a file — you can send it to another app user.</string>
+    <string name="no_description">No description</string>
+    <string name="servings_label">Servings</string>
+    <string name="decrease_servings">Decrease servings</string>
+    <string name="increase_servings">Increase servings</string>
+    <string name="servings_one">serving</string>
+    <string name="servings_few">servings</string>
+    <string name="servings_many">servings</string>
+    <string name="day_of_week">Day of week</string>
+    <string name="meal_type">Meal type</string>
+    <string name="day_mon">Mon</string>
+    <string name="day_tue">Tue</string>
+    <string name="day_wed">Wed</string>
+    <string name="day_thu">Thu</string>
+    <string name="day_fri">Fri</string>
+    <string name="day_sat">Sat</string>
+    <string name="day_sun">Sun</string>
+    <string name="save_recipe_error_generic">Failed to save recipe</string>
+    <string name="ingredient_quantity_per_serving">Quantity (per serving)</string>
 
     <!-- Product categories -->
     <string name="category_fruits">Fruits</string>

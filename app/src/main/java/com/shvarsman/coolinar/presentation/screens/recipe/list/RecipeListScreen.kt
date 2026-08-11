@@ -49,6 +49,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.shvarsman.coolinar.R
 import com.shvarsman.coolinar.domain.model.RecipeCategory
 import com.shvarsman.coolinar.domain.model.RecipeSummary
 import com.shvarsman.coolinar.presentation.screens.common.DropdownFilterChip
@@ -92,11 +93,13 @@ fun RecipeListScreen(
     val listState = rememberLazyListState()
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
 
+    val recipeDeletedTemplate = stringResource(R.string.recipe_deleted)
+
     val snackbarHostState = remember { SnackbarHostState() }
     val requestDelete = rememberOptimisticDelete<RecipeSummary, String>(
         snackbarHostState = snackbarHostState,
         idOf = { it.id },
-        message = { recipe -> "«${recipe.title}» удалён" },
+        message = { recipe -> String.format(recipeDeletedTemplate, recipe.title) },
         onRequestDelete = { id -> viewModel.requestDelete(id) },
         onUndo = { id -> viewModel.undoDelete(id) }
     )
@@ -112,7 +115,7 @@ fun RecipeListScreen(
                         modifier = Modifier.padding(end = 16.dp),
                         query = localSearchQuery,
                         onQueryChange = onLocalSearchQueryChange,
-                        placeholder = "Поиск рецептов"
+                        placeholder = stringResource(R.string.search_recipes)
                     )
                 },
                 actions = {
@@ -141,9 +144,9 @@ fun RecipeListScreen(
                                     Icons.Filled.GridView
                                 },
                                 contentDescription = if (viewMode == RecipeViewMode.PHOTO_CARDS) {
-                                    "Отображать списком"
+                                    stringResource(R.string.show_as_list)
                                 } else {
-                                    "Отображать карточками"
+                                    stringResource(R.string.show_as_cards)
                                 }
                             )
                         }
@@ -160,7 +163,10 @@ fun RecipeListScreen(
                 onClick = onAddRecipe,
                 modifier = Modifier.padding(bottom = FloatingBottomBarClearance)
             ) {
-                Icon(Icons.Filled.Add, contentDescription = "Добавить продукт")
+                Icon(
+                    imageVector = Icons.Filled.Add,
+                    contentDescription = stringResource(R.string.add_recipe)
+                )
             }
         }
     ) { padding ->
@@ -181,18 +187,23 @@ fun RecipeListScreen(
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     DropdownFilterChip(
-                        displayText = selectedCategory?.labelRes?.let { stringResource(it) } ?: "Категория",
+                        displayText = selectedCategory?.labelRes?.let { stringResource(it) }
+                            ?: stringResource(R.string.category_label),
                         isActive = selectedCategory != null
                     ) { close ->
                         DropdownMenuItem(
-                            text = { Text("Все категории") },
+                            text = { Text(stringResource(R.string.all_categories)) },
                             onClick = { viewModel.selectCategory(null); close() }
                         )
                         availableCategories.forEach { (category, count) ->
                             DropdownMenuItem(
                                 text = {
                                     Text(
-                                        "${category.labelRes} ($count)",
+                                        stringResource(
+                                            R.string.category_with_count,
+                                            stringResource(category.labelRes),
+                                            count
+                                        ),
                                         maxLines = 1,
                                         overflow = TextOverflow.Ellipsis
                                     )
@@ -214,12 +225,12 @@ fun RecipeListScreen(
                     }
 
                     DropdownFilterChip(
-                        displayText = sortOption.displayName,
+                        displayText = stringResource(sortOption.displayNameRes),
                         isActive = sortOption != RecipeSortOption.TITLE_ASC
                     ) { close ->
                         RecipeSortOption.entries.forEach { option ->
                             DropdownMenuItem(
-                                text = { Text(option.displayName) },
+                                text = { Text(stringResource(option.displayNameRes)) },
                                 leadingIcon = {
                                     Icon(Icons.AutoMirrored.Filled.Sort, contentDescription = null)
                                 },
@@ -252,7 +263,7 @@ fun RecipeListScreen(
                             )
                             Spacer(Modifier.height(12.dp))
                             Text(
-                                "Ничего не найдено",
+                                text = stringResource(R.string.nothing_found),
                                 textAlign = TextAlign.Center,
                                 color = MaterialTheme.colorScheme.onBackground
                             )
@@ -276,7 +287,7 @@ fun RecipeListScreen(
                 }
                 item(key = "suggested_carousel") {
                     RecipeCarouselSection(
-                        title = "Можно приготовить",
+                        title = stringResource(R.string.can_cook_short),
                         recipes = suggested,
                         onRecipeClick = onViewRecipe,
                         onShowAllClick = onShowAllSuggested
@@ -284,7 +295,7 @@ fun RecipeListScreen(
                 }
                 item(key = "all_recipes_carousel") {
                     RecipeCarouselSection(
-                        title = "Все рецепты",
+                        title = stringResource(R.string.all_recipes),
                         recipes = allRecipes,
                         onRecipeClick = onViewRecipe,
                         onShowAllClick = onShowAllRecipes
@@ -307,7 +318,7 @@ fun RecipeListScreen(
                             )
                             Spacer(Modifier.height(12.dp))
                             Text(
-                                "Рецептов пока нет.\nДобавьте свой первый рецепт.",
+                                text = stringResource(R.string.no_recipes_placeholder),
                                 textAlign = TextAlign.Center,
                                 color = MaterialTheme.colorScheme.onBackground
                             )

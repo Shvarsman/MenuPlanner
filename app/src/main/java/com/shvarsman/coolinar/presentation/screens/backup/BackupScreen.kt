@@ -209,7 +209,7 @@ fun BackupScreen(
             AlertDialog(
                 onDismissRequest = {},
                 confirmButton = {},
-                title = { Text(text = stringResource(R.string.backup_please_wait)) },
+                title = { Text(text = stringResource(R.string.please_wait)) },
                 text = {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         CircularProgressIndicator(modifier = Modifier.size(24.dp))

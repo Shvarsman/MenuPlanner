@@ -1,8 +1,10 @@
 package com.shvarsman.coolinar.presentation.screens.recipe.view
 
+import android.content.Context
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.shvarsman.coolinar.R
 import com.shvarsman.coolinar.domain.model.FridgeItem
 import com.shvarsman.coolinar.domain.model.MealType
 import com.shvarsman.coolinar.domain.model.MeasureUnit
@@ -15,6 +17,7 @@ import com.shvarsman.coolinar.domain.usecase.fridge.GetFridgeItemsUseCase
 import com.shvarsman.coolinar.domain.usecase.menu.AssignRecipeToMenuUseCase
 import com.shvarsman.coolinar.presentation.utils.PendingDeleteManager
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -43,7 +46,8 @@ class RecipeViewViewModel @Inject constructor(
     private val recipeRepository: RecipeRepository,
     private val exportBackup: ExportBackupUseCase,
     private val assignRecipeToMenu: AssignRecipeToMenuUseCase,
-    getFridgeItems: GetFridgeItemsUseCase
+    getFridgeItems: GetFridgeItemsUseCase,
+    @ApplicationContext private val context: Context
 ) : ViewModel() {
 
     private val _rawRecipe = MutableStateFlow<Recipe?>(null)
@@ -88,7 +92,9 @@ class RecipeViewViewModel @Inject constructor(
                 _shareState.value = RecipeShareState.Success
             } catch (e: Exception) {
                 _shareState.value =
-                    RecipeShareState.Error(e.message ?: "Не удалось сохранить рецепт")
+                    RecipeShareState.Error(
+                        e.message ?: context.getString(R.string.save_recipe_error_generic)
+                    )
             }
         }
     }
@@ -114,30 +120,5 @@ class RecipeViewViewModel @Inject constructor(
             _isAddToMenuSheetOpen.value = false
             _menuAddedEvent.value += 1
         }
-    }
-
-    fun updateIngredient(ingredient: RecipeIngredient, unit: MeasureUnit, quantity: Double) {
-        val recipe = _rawRecipe.value ?: return
-        val updated = recipe.copy(
-            ingredients = recipe.ingredients.map {
-                if (it.id == ingredient.id) it.copy(unit = unit, quantity = quantity) else it
-            }
-        )
-        _rawRecipe.value = updated
-        viewModelScope.launch { recipeRepository.updateRecipe(updated) }
-    }
-
-    fun requestDeleteIngredient(ingredientId: String) {
-        pendingDeleteManager.requestDelete(ingredientId) {
-            val recipe = _rawRecipe.value ?: return@requestDelete
-            val updated =
-                recipe.copy(ingredients = recipe.ingredients.filter { it.id != ingredientId })
-            _rawRecipe.value = updated
-            recipeRepository.updateRecipe(updated)
-        }
-    }
-
-    fun undoDeleteIngredient(ingredientId: String) {
-        pendingDeleteManager.undo(ingredientId)
     }
 }

@@ -207,19 +207,37 @@ class RecipeEditorViewModel @Inject constructor(
 
     fun addIngredient(product: Product, unit: MeasureUnit, quantity: Double) {
         updateState { current ->
-            current.copy(
-                ingredients = current.ingredients + RecipeIngredient(
+            val existing = current.ingredients.firstOrNull {
+                it.product.id == product.id && it.unit == unit
+            }
+            val updatedIngredients = if (existing != null) {
+                current.ingredients.map {
+                    if (it.id == existing.id) it.copy(quantity = it.quantity + quantity) else it
+                }
+            } else {
+                current.ingredients + RecipeIngredient(
                     product = product,
                     unit = unit,
                     quantity = quantity
                 )
-            )
+            }
+            current.copy(ingredients = updatedIngredients)
         }
         closeIngredientPicker()
     }
 
     fun removeIngredient(ingredient: RecipeIngredient) {
         updateState { it.copy(ingredients = it.ingredients - ingredient) }
+    }
+
+    fun updateIngredient(ingredient: RecipeIngredient, unit: MeasureUnit, quantity: Double) {
+        updateState { current ->
+            current.copy(
+                ingredients = current.ingredients.map {
+                    if (it.id == ingredient.id) it.copy(unit = unit, quantity = quantity) else it
+                }
+            )
+        }
     }
 
     fun onStepTextChange(index: Int, text: String) {

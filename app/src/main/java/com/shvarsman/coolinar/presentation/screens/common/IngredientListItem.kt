@@ -1,5 +1,6 @@
 package com.shvarsman.coolinar.presentation.screens.common
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -40,11 +41,13 @@ fun IngredientListItem(
     ingredient: RecipeIngredient,
     modifier: Modifier = Modifier,
     availability: IngredientAvailability? = null,
-    onRemove: (() -> Unit)? = null
+    onRemove: (() -> Unit)? = null,
+    onClick: (() -> Unit)? = null
 ) {
     Row(
         modifier = modifier
             .fillMaxWidth()
+            .let { if (onClick != null) it.clickable(onClick = onClick) else it }
             .padding(horizontal = 16.dp, vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -109,7 +112,8 @@ fun IngredientListCard(
     ingredients: List<RecipeIngredient>,
     modifier: Modifier = Modifier,
     availabilityFor: (RecipeIngredient) -> IngredientAvailability? = { null },
-    onRemove: ((RecipeIngredient) -> Unit)? = null
+    onRemove: ((RecipeIngredient) -> Unit)? = null,
+    onIngredientClick: ((RecipeIngredient) -> Unit)? = null
 ) {
     Surface(
         shape = CornerShape,
@@ -121,7 +125,8 @@ fun IngredientListCard(
                 IngredientListItem(
                     ingredient = ingredient,
                     availability = availabilityFor(ingredient),
-                    onRemove = onRemove?.let { remove -> { remove(ingredient) } }
+                    onRemove = onRemove?.let { remove -> { remove(ingredient) } },
+                    onClick = onIngredientClick?.let { click -> { click(ingredient) } }
                 )
                 if (index != ingredients.lastIndex) {
                     HorizontalDivider(

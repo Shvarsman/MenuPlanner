@@ -32,17 +32,12 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Cookie
-import androidx.compose.material.icons.filled.DinnerDining
-import androidx.compose.material.icons.filled.LunchDining
 import androidx.compose.material.icons.filled.Restaurant
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Speed
 import androidx.compose.material.icons.filled.Warning
-import androidx.compose.material.icons.filled.WbSunny
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
-import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -51,6 +46,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonColors
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.SnackbarHost
@@ -58,6 +54,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -69,6 +66,8 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalLocale
 import androidx.compose.ui.res.stringResource
@@ -94,6 +93,7 @@ import com.shvarsman.coolinar.presentation.screens.common.NavRow
 import com.shvarsman.coolinar.presentation.screens.common.localizedName
 import com.shvarsman.coolinar.presentation.screens.common.rememberSizedImageRequest
 import com.shvarsman.coolinar.presentation.ui.theme.CornerShape
+import com.shvarsman.coolinar.presentation.ui.theme.appSegmentedButtonColors
 import com.shvarsman.coolinar.presentation.utils.rememberDebouncedSearch
 import com.shvarsman.coolinar.presentation.utils.rememberOptimisticDelete
 import java.time.DayOfWeek
@@ -106,13 +106,6 @@ private val weekDays = listOf(
     DayOfWeek.FRIDAY, DayOfWeek.SATURDAY, DayOfWeek.SUNDAY
 )
 private val mealTypes = listOf(MealType.BREAKFAST, MealType.LUNCH, MealType.DINNER, MealType.SNACK)
-
-private fun mealIcon(meal: MealType) = when (meal) {
-    MealType.BREAKFAST -> Icons.Filled.WbSunny
-    MealType.LUNCH -> Icons.Filled.LunchDining
-    MealType.DINNER -> Icons.Filled.DinnerDining
-    MealType.SNACK -> Icons.Filled.Cookie
-}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -152,22 +145,35 @@ fun WeekMenuScreen(
         modifier = modifier,
         snackbarHost = { SnackbarHost(snackbarHostState) },
         bottomBar = {
-            Surface(
-                color = MaterialTheme.colorScheme.background,
-                modifier = Modifier.navigationBarsPadding()
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(
+                        Brush.verticalGradient(
+                            colors = listOf(
+                                Color.Transparent,
+                                MaterialTheme.colorScheme.background.copy(alpha = 0.9f)
+                            )
+                        )
+                    )
             ) {
-                NavRow(
-                    icon = Icons.Filled.Restaurant,
-                    text = stringResource(R.string.start_cooking),
-                    modifier = Modifier.padding(16.dp),
-                    onClick = onOpenCookSelection,
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    tint = MaterialTheme.colorScheme.onPrimary
-                )
+                Surface(
+                    color = Color.Transparent,
+                    modifier = Modifier.navigationBarsPadding()
+                ) {
+                    NavRow(
+                        icon = Icons.Filled.Restaurant,
+                        text = stringResource(R.string.start_cooking),
+                        modifier = Modifier.padding(16.dp),
+                        onClick = onOpenCookSelection,
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        tint = MaterialTheme.colorScheme.onPrimary
+                    )
+                }
             }
         },
         topBar = {
-            CenterAlignedTopAppBar(
+            TopAppBar(
                 title = { Text(stringResource(R.string.week_menu_title)) },
                 navigationIcon = {
                     GlassIconButton(
@@ -207,7 +213,7 @@ fun WeekMenuScreen(
                 onDaySelected = { viewModel.selectDay(it) }
             )
 
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(16.dp))
 
             val pagerState = rememberPagerState(
                 initialPage = weekDays.indexOf(selectedDay).coerceAtLeast(0)
@@ -381,6 +387,7 @@ private fun WeekSwitcher(
         SegmentedButton(
             selected = selectedWeekOffset == 0,
             onClick = { onWeekSelected(0) },
+            colors = appSegmentedButtonColors(),
             shape = SegmentedButtonDefaults.itemShape(index = 0, count = 2)
         ) {
             Text(stringResource(R.string.this_week))
@@ -388,6 +395,7 @@ private fun WeekSwitcher(
         SegmentedButton(
             selected = selectedWeekOffset == 1,
             onClick = { onWeekSelected(1) },
+            colors = appSegmentedButtonColors(),
             shape = SegmentedButtonDefaults.itemShape(index = 1, count = 2)
         ) {
             Text(stringResource(R.string.next_week))
@@ -414,26 +422,16 @@ private fun MealSectionCard(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    imageVector = mealIcon(meal),
-                    contentDescription = null,
-                    modifier = Modifier.size(20.dp),
-                    tint = MaterialTheme.colorScheme.primary
-                )
-                Text(
-                    text = stringResource(meal.labelRes),
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-            }
+            Text(
+                text = stringResource(meal.labelRes),
+                modifier = modifier.padding(start = 16.dp, bottom = 4.dp),
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurface
+            )
             if (entries.isNotEmpty()) {
                 IconButton(onClick = onAdd) {
                     Icon(
-                        Icons.Filled.Add,
+                        imageVector = Icons.Filled.Add,
                         contentDescription = stringResource(
                             R.string.add_meal_for,
                             stringResource(meal.labelRes)
@@ -447,13 +445,13 @@ private fun MealSectionCard(
             Surface(
                 onClick = onAdd,
                 shape = CornerShape,
-                color = MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.5f),
+                color = MaterialTheme.colorScheme.surface,
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 20.dp, horizontal = 16.dp),
+                        .padding(16.dp),
                     horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -461,20 +459,20 @@ private fun MealSectionCard(
                         Icons.Filled.Add,
                         contentDescription = null,
                         modifier = Modifier.size(18.dp),
-                        tint = MaterialTheme.colorScheme.primary
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-                    Spacer(Modifier.width(6.dp))
+                    Spacer(Modifier.width(8.dp))
                     Text(
                         text = stringResource(R.string.add_meal_for, stringResource(meal.labelRes)),
                         style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.primary
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
         } else {
             Surface(
                 shape = CornerShape,
-                color = MaterialTheme.colorScheme.surfaceContainerHighest,
+                color = MaterialTheme.colorScheme.background,
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -543,9 +541,9 @@ private fun MenuEntryCard(
                 if (entry.recipePhotoUri != null) {
                     Box(modifier = Modifier
                         .fillMaxHeight()
-                        .aspectRatio(1f)) {
+                        .aspectRatio(4f / 3f)) {
                         AsyncImage(
-                            model = rememberSizedImageRequest(entry.recipePhotoUri, 104.dp, 104.dp),
+                            model = rememberSizedImageRequest(entry.recipePhotoUri, 140.dp, 104.dp),
                             contentDescription = entry.recipeTitle,
                             contentScale = ContentScale.Crop,
                             modifier = Modifier
@@ -561,7 +559,7 @@ private fun MenuEntryCard(
                             Surface(
                                 shape = CircleShape,
                                 color = if (allAvailable) {
-                                    MaterialTheme.colorScheme.primary
+                                    MaterialTheme.colorScheme.secondary
                                 } else {
                                     MaterialTheme.colorScheme.error
                                 },
@@ -570,7 +568,7 @@ private fun MenuEntryCard(
                                     .align(Alignment.TopStart)
                             ) {
                                 Icon(
-                                    if (allAvailable) Icons.Filled.Restaurant else Icons.Filled.Warning,
+                                    imageVector = if (allAvailable) Icons.Filled.Restaurant else Icons.Filled.Warning,
                                     contentDescription = if (allAvailable) {
                                         stringResource(R.string.all_products_available)
                                     } else {
@@ -588,7 +586,7 @@ private fun MenuEntryCard(
                     Box(
                         modifier = Modifier
                             .fillMaxHeight()
-                            .aspectRatio(1f)
+                            .aspectRatio(4f / 3f)
                             .clip(
                                 RoundedCornerShape(
                                     topStart = 28.dp,
@@ -606,7 +604,7 @@ private fun MenuEntryCard(
                                 modifier = Modifier.fillMaxSize()
                             ) {
                                 Icon(
-                                    Icons.Filled.Restaurant,
+                                    imageVector = Icons.Filled.Restaurant,
                                     contentDescription = null,
                                     modifier = Modifier.size(32.dp),
                                     tint = MaterialTheme.colorScheme.onSecondaryContainer.copy(

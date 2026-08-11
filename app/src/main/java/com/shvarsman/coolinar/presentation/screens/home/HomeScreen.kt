@@ -35,6 +35,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.shvarsman.coolinar.R
 import com.shvarsman.coolinar.domain.model.FridgeItem
+import com.shvarsman.coolinar.presentation.screens.common.FieldLabel
 import com.shvarsman.coolinar.presentation.screens.common.NavRow
 import com.shvarsman.coolinar.presentation.screens.recipe.components.RecipeCarouselSection
 import com.shvarsman.coolinar.presentation.ui.theme.FloatingBottomBarClearance
@@ -106,29 +107,37 @@ fun HomeScreen(
             }
 
             item(key = "week_menu_nav") {
-                NavRow(
-                    icon = Icons.Filled.CalendarMonth,
-                    text = stringResource(
-                        R.string.week_menu_summary,
-                        weeklyPlannedCount,
-                        weeklyTotalCount
-                    ),
-                    onClick = onOpenWeekMenu,
-                    modifier = Modifier.padding(horizontal = 16.dp)
-                )
+                Column(modifier = Modifier.padding(horizontal = 16.dp)) {
+                    FieldLabel(
+                        stringResource(
+                            R.string.week_menu_summary,
+                            weeklyPlannedCount,
+                            weeklyTotalCount
+                        )
+                    )
+                    NavRow(
+                        icon = Icons.Filled.CalendarMonth,
+                        text = stringResource(R.string.week_menu_title),
+                        onClick = onOpenWeekMenu
+                    )
+                }
             }
 
             item(key = "shopping_list_quick_nav") {
-                NavRow(
-                    icon = Icons.Filled.ShoppingCart,
-                    text = if (shoppingListCount == 0) {
-                        stringResource(R.string.shopping_list_empty_short)
-                    } else {
-                        stringResource(R.string.shopping_list_count, shoppingListCount)
-                    },
-                    onClick = onOpenShoppingList,
-                    modifier = Modifier.padding(horizontal = 16.dp)
-                )
+                Column(modifier = Modifier.padding(horizontal = 16.dp)) {
+                    FieldLabel(
+                        if (shoppingListCount == 0) {
+                            stringResource(R.string.shopping_list_empty_short)
+                        } else {
+                            stringResource(R.string.shopping_list_count, shoppingListCount)
+                        }
+                    )
+                    NavRow(
+                        icon = Icons.Filled.ShoppingCart,
+                        text = stringResource(R.string.shopping_list_title),
+                        onClick = onOpenShoppingList
+                    )
+                }
             }
 
             if (suggestedRecipes.isNotEmpty()) {

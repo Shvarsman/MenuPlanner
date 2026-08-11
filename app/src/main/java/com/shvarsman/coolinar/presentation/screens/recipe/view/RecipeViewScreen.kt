@@ -3,7 +3,6 @@ package com.shvarsman.coolinar.presentation.screens.recipe.view
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -30,13 +29,11 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.icons.filled.RestaurantMenu
@@ -54,18 +51,13 @@ import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Surface
-import androidx.compose.material3.SwipeToDismissBox
-import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -99,13 +91,11 @@ import com.shvarsman.coolinar.R
 import com.shvarsman.coolinar.domain.model.FridgeItem
 import com.shvarsman.coolinar.domain.model.IngredientAvailability
 import com.shvarsman.coolinar.domain.model.MealType
-import com.shvarsman.coolinar.domain.model.MeasureUnit
 import com.shvarsman.coolinar.domain.model.Recipe
 import com.shvarsman.coolinar.domain.model.RecipeIngredient
 import com.shvarsman.coolinar.domain.model.availability
 import com.shvarsman.coolinar.presentation.screens.common.AppBottomSheet
 import com.shvarsman.coolinar.presentation.screens.common.FieldLabel
-import com.shvarsman.coolinar.presentation.screens.common.QuantityUnitField
 import com.shvarsman.coolinar.presentation.screens.common.ReadOnlyField
 import com.shvarsman.coolinar.presentation.screens.common.localizedName
 import com.shvarsman.coolinar.presentation.screens.common.rememberSizedImageRequest
@@ -141,26 +131,14 @@ fun RecipeViewScreen(
     val menuAddedEvent by viewModel.menuAddedEvent.collectAsStateWithLifecycle()
 
     var servings by remember(recipeId) { mutableIntStateOf(1) }
-    var editingIngredient by remember { mutableStateOf<RecipeIngredient?>(null) }
+    val recipeAddedToMenuMessage = stringResource(R.string.recipe_added_to_menu)
 
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
 
     LaunchedEffect(menuAddedEvent) {
         if (menuAddedEvent > 0) {
-            snackbarHostState.showSnackbar("Рецепт добавлен в меню")
-        }
-    }
-
-    val requestDeleteIngredient: (RecipeIngredient) -> Unit = { ingredient ->
-        viewModel.requestDeleteIngredient(ingredient.id)
-        scope.launch {
-            val result = snackbarHostState.showSnackbar(
-                message = "«${ingredient.product.name}» удалён из рецепта",
-                actionLabel = "Отменить",
-                duration = SnackbarDuration.Short
-            )
-            if (result == SnackbarResult.ActionPerformed) viewModel.undoDeleteIngredient(ingredient.id)
+            snackbarHostState.showSnackbar(recipeAddedToMenuMessage)
         }
     }
 
@@ -185,12 +163,16 @@ fun RecipeViewScreen(
             Box(
                 Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
-            ) { Text("Рецепт не найден") }
+            ) { Text(stringResource(R.string.recipe_not_found)) }
             return@Scaffold
         }
 
         val pagerState = rememberPagerState(pageCount = { 3 })
-        val tabs = listOf("Описание", "Ингредиенты", "Приготовление")
+        val tabs = listOf(
+            stringResource(R.string.description_label),
+            stringResource(R.string.ingredients),
+            stringResource(R.string.cooking_steps_tab)
+        )
         val density = LocalDensity.current
 
 
@@ -311,7 +293,7 @@ fun RecipeViewScreen(
                     ) {
                         Icon(Icons.Filled.RestaurantMenu, contentDescription = null)
                         Spacer(Modifier.width(8.dp))
-                        Text("Добавить в меню")
+                        Text(stringResource(R.string.add_to_menu))
                     }
 
                     Spacer(Modifier.height(12.dp))
@@ -350,8 +332,6 @@ fun RecipeViewScreen(
                                 fridgeItems = fridgeItems,
                                 servings = servings,
                                 onServingsChange = { servings = it },
-                                onIngredientClick = { editingIngredient = it },
-                                onIngredientDelete = requestDeleteIngredient,
                                 bottomPadding = listBottomPadding
                             )
 
@@ -389,7 +369,7 @@ fun RecipeViewScreen(
                 ) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "Назад"
+                        contentDescription = stringResource(R.string.back)
                     )
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -416,7 +396,7 @@ fun RecipeViewScreen(
                     ) {
                         Icon(
                             imageVector = Icons.Filled.Share,
-                            contentDescription = "Поделиться рецептом"
+                            contentDescription = stringResource(R.string.share_recipe)
                         )
                     }
                     IconButton(
@@ -432,23 +412,12 @@ fun RecipeViewScreen(
                     ) {
                         Icon(
                             imageVector = Icons.Filled.Edit,
-                            contentDescription = "Редактировать"
+                            contentDescription = stringResource(R.string.edit_action)
                         )
                     }
                 }
             }
         }
-    }
-
-    editingIngredient?.let { ingredient ->
-        EditIngredientDialog(
-            ingredient = ingredient,
-            onDismiss = { editingIngredient = null },
-            onConfirm = { unit, qty ->
-                viewModel.updateIngredient(ingredient, unit, qty)
-                editingIngredient = null
-            }
-        )
     }
 
     if (isAddToMenuSheetOpen) {
@@ -463,12 +432,12 @@ fun RecipeViewScreen(
             AlertDialog(
                 onDismissRequest = {},
                 confirmButton = {},
-                title = { Text("Подождите") },
+                title = { Text(stringResource(R.string.please_wait)) },
                 text = {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         CircularProgressIndicator(modifier = Modifier.size(24.dp))
                         Spacer(Modifier.width(12.dp))
-                        Text("Готовим файл рецепта...")
+                        Text(stringResource(R.string.preparing_recipe_file))
                     }
                 }
             )
@@ -477,45 +446,30 @@ fun RecipeViewScreen(
         is RecipeShareState.Success -> {
             AlertDialog(
                 onDismissRequest = { viewModel.clearShareState() },
-                confirmButton = { TextButton(onClick = { viewModel.clearShareState() }) { Text("Ок") } },
-                title = { Text("Готово") },
-                text = { Text("Рецепт сохранён в файл — можно переслать его другому пользователю приложения.") }
+                confirmButton = {
+                    TextButton(onClick = { viewModel.clearShareState() }) {
+                        Text(stringResource(R.string.ok))
+                    }
+                },
+                title = { Text(stringResource(R.string.done)) },
+                text = { Text(stringResource(R.string.recipe_shared_message)) }
             )
         }
 
         is RecipeShareState.Error -> {
             AlertDialog(
                 onDismissRequest = { viewModel.clearShareState() },
-                confirmButton = { TextButton(onClick = { viewModel.clearShareState() }) { Text("Ок") } },
-                title = { Text("Ошибка") },
+                confirmButton = {
+                    TextButton(onClick = { viewModel.clearShareState() }) {
+                        Text(stringResource(R.string.ok))
+                    }
+                },
+                title = { Text(stringResource(R.string.error)) },
                 text = { Text(share.message) }
             )
         }
 
         RecipeShareState.Idle -> {}
-    }
-}
-
-@Composable
-private fun FloatingCircleIconButton(
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-    enabled: Boolean = true,
-    content: @Composable () -> Unit
-) {
-    Box(
-        modifier = modifier
-            .size(40.dp)
-            .clip(CircleShape)
-            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.9f))
-            .gradientStyle()
-            .clickable(
-                enabled = enabled,
-                onClick = onClick
-            ),
-        contentAlignment = Alignment.Center
-    ) {
-        content()
     }
 }
 
@@ -538,27 +492,27 @@ private fun DescriptionPage(
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         recipe.cookingMethod?.let { method ->
-            ReadOnlyField(label = "Способ приготовления") {
+            ReadOnlyField(label = stringResource(R.string.cooking_method)) {
                 CookingMethodIcon(method = method, modifier = Modifier.size(24.dp))
                 Spacer(Modifier.width(12.dp))
                 Text(stringResource(method.labelRes))
             }
         }
         recipe.cookingTimeMinutes?.let { minutes ->
-            ReadOnlyField(label = "Время приготовления") {
+            ReadOnlyField(label = stringResource(R.string.duration_picker_title)) {
                 Icon(Icons.Filled.Schedule, contentDescription = null)
                 Spacer(Modifier.width(12.dp))
                 Text(formatCookingTime(minutes))
             }
         }
-        ReadOnlyField(label = "Сложность") {
+        ReadOnlyField(label = stringResource(R.string.difficulty_label)) {
             Icon(Icons.Filled.Speed, contentDescription = null)
             Spacer(Modifier.width(12.dp))
             Text(stringResource(recipe.difficulty.labelRes))
         }
-        ReadOnlyField(label = "Описание") {
+        ReadOnlyField(label = stringResource(R.string.description_label)) {
             Text(
-                text = recipe.description.ifBlank { "Описание не указано" },
+                text = recipe.description.ifBlank { stringResource(R.string.no_description) },
                 color = if (recipe.description.isNotBlank()) {
                     MaterialTheme.colorScheme.onSurface
                 } else {
@@ -575,8 +529,6 @@ private fun IngredientsPage(
     fridgeItems: List<FridgeItem>,
     servings: Int,
     onServingsChange: (Int) -> Unit,
-    onIngredientClick: (RecipeIngredient) -> Unit,
-    onIngredientDelete: (RecipeIngredient) -> Unit,
     bottomPadding: Dp
 ) {
     LazyColumn(
@@ -594,7 +546,10 @@ private fun IngredientsPage(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text("Порции", style = MaterialTheme.typography.titleMedium)
+                Text(
+                    stringResource(R.string.servings_label),
+                    style = MaterialTheme.typography.titleMedium
+                )
                 ServingsStepper(
                     servings = servings,
                     onDecrease = { onServingsChange((servings - 1).coerceAtLeast(1)) },
@@ -606,84 +561,47 @@ private fun IngredientsPage(
             IngredientViewRow(
                 ingredient = ingredient,
                 fridgeItems = fridgeItems,
-                servings = servings,
-                onClick = { if (!ingredient.product.isToTaste) onIngredientClick(ingredient) },
-                onDelete = { onIngredientDelete(ingredient) }
+                servings = servings
             )
         }
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun IngredientViewRow(
     ingredient: RecipeIngredient,
     fridgeItems: List<FridgeItem>,
-    servings: Int,
-    onClick: () -> Unit,
-    onDelete: () -> Unit
+    servings: Int
 ) {
-    val dismissState = rememberSwipeToDismissBoxState(
-        confirmValueChange = { value ->
-            if (value == SwipeToDismissBoxValue.EndToStart) {
-                onDelete(); true
-            } else false
-        }
-    )
-
-    SwipeToDismissBox(
-        state = dismissState,
-        enableDismissFromStartToEnd = false,
-        backgroundContent = {
-            Row(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(MaterialTheme.colorScheme.errorContainer)
-                    .padding(horizontal = 20.dp),
-                horizontalArrangement = Arrangement.End,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    Icons.Filled.Delete,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onErrorContainer
-                )
-            }
-        }
-    ) {
-        val scaledQuantity = ingredient.quantity * servings
-        val status = ingredient.copy(quantity = scaledQuantity).availability(fridgeItems)
-        val color = when (status) {
-            IngredientAvailability.AVAILABLE -> MaterialTheme.colorScheme.primary
-            IngredientAvailability.INSUFFICIENT -> MaterialTheme.colorScheme.error
-        }
-
-        ListItem(
-            modifier = Modifier.clickableIf(!ingredient.product.isToTaste, onClick),
-            leadingContent = {
-                ProductIcon(
-                    product = ingredient.product,
-                    modifier = Modifier.size(40.dp)
-                )
-            },
-            headlineContent = { Text(ingredient.product.localizedName()) },
-            supportingContent = {
-                Text(
-                    if (ingredient.product.isToTaste) stringResource(R.string.to_taste)
-                    else "${formatQty(scaledQuantity)} ${stringResource(ingredient.unit.labelRes)}",
-                    color = if (ingredient.product.isToTaste) MaterialTheme.colorScheme.onSurfaceVariant else color
-                )
-            },
-            colors = ListItemDefaults.colors(
-                containerColor = MaterialTheme.colorScheme.background,
-                headlineColor = MaterialTheme.colorScheme.onBackground
-            )
-        )
+    val scaledQuantity = ingredient.quantity * servings
+    val status = ingredient.copy(quantity = scaledQuantity).availability(fridgeItems)
+    val color = when (status) {
+        IngredientAvailability.AVAILABLE -> MaterialTheme.colorScheme.primary
+        IngredientAvailability.INSUFFICIENT -> MaterialTheme.colorScheme.error
     }
+
+    ListItem(
+        leadingContent = {
+            ProductIcon(
+                product = ingredient.product,
+                modifier = Modifier.size(40.dp)
+            )
+        },
+        headlineContent = { Text(ingredient.product.localizedName()) },
+        supportingContent = {
+            Text(
+                if (ingredient.product.isToTaste) stringResource(R.string.to_taste)
+                else "${formatQty(scaledQuantity)} ${stringResource(ingredient.unit.labelRes)}",
+                color = if (ingredient.product.isToTaste) MaterialTheme.colorScheme.onSurfaceVariant else color
+            )
+        },
+        colors = ListItemDefaults.colors(
+            containerColor = MaterialTheme.colorScheme.background,
+            headlineColor = MaterialTheme.colorScheme.onBackground
+        )
+    )
 }
 
-private fun Modifier.clickableIf(condition: Boolean, onClick: () -> Unit): Modifier =
-    if (condition) this.then(Modifier.clickable(onClick = onClick)) else this
 
 @Composable
 private fun ServingsStepper(servings: Int, onDecrease: () -> Unit, onIncrease: () -> Unit) {
@@ -693,8 +611,8 @@ private fun ServingsStepper(servings: Int, onDecrease: () -> Unit, onIncrease: (
     ) {
         IconButton(onClick = onDecrease, modifier = Modifier.size(32.dp)) {
             Icon(
-                Icons.Filled.Remove,
-                contentDescription = "Уменьшить количество порций",
+                imageVector = Icons.Filled.Remove,
+                contentDescription = stringResource(R.string.decrease_servings),
                 modifier = Modifier.size(18.dp)
             )
         }
@@ -706,55 +624,24 @@ private fun ServingsStepper(servings: Int, onDecrease: () -> Unit, onIncrease: (
         )
         IconButton(onClick = onIncrease, modifier = Modifier.size(32.dp)) {
             Icon(
-                Icons.Filled.Add,
-                contentDescription = "Увеличить количество порций",
+                imageVector = Icons.Filled.Add,
+                contentDescription = stringResource(R.string.increase_servings),
                 modifier = Modifier.size(18.dp)
             )
         }
     }
 }
 
+@Composable
 private fun servingsLabel(servings: Int): String {
     val lastTwoDigits = servings % 100
     val lastDigit = servings % 10
     return when {
-        lastTwoDigits in 11..14 -> "порций"
-        lastDigit == 1 -> "порция"
-        lastDigit in 2..4 -> "порции"
-        else -> "порций"
+        lastTwoDigits in 11..14 -> stringResource(R.string.servings_many)
+        lastDigit == 1 -> stringResource(R.string.servings_one)
+        lastDigit in 2..4 -> stringResource(R.string.servings_few)
+        else -> stringResource(R.string.servings_many)
     }
-}
-
-@Composable
-private fun EditIngredientDialog(
-    ingredient: RecipeIngredient,
-    onDismiss: () -> Unit,
-    onConfirm: (unit: MeasureUnit, quantity: Double) -> Unit
-) {
-    var quantityText by remember { mutableStateOf(formatQty(ingredient.quantity)) }
-    var selectedUnit by remember { mutableStateOf(ingredient.unit) }
-
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text(ingredient.product.name) },
-        text = {
-            Column {
-                FieldLabel("Количество (на 1 порцию)")
-                QuantityUnitField(
-                    quantityText = quantityText,
-                    onQuantityChange = { quantityText = it },
-                    selectedUnit = selectedUnit,
-                    onUnitChange = { selectedUnit = it }
-                )
-            }
-        },
-        confirmButton = {
-            TextButton(onClick = {
-                onConfirm(selectedUnit, quantityText.toDoubleOrNull() ?: ingredient.quantity)
-            }) { Text("Сохранить") }
-        },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("Отмена") } }
-    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -766,8 +653,11 @@ private fun AddToMenuBottomSheet(
     var selectedDay by remember { mutableStateOf(DayOfWeek.MONDAY) }
     var selectedMeal by remember { mutableStateOf(MealType.BREAKFAST) }
 
-    AppBottomSheet(title = "Добавить в меню", onDismissRequest = onDismiss) { onClose ->
-        FieldLabel("День недели")
+    AppBottomSheet(
+        title = stringResource(R.string.add_to_menu),
+        onDismissRequest = onDismiss
+    ) { onClose ->
+        FieldLabel(stringResource(R.string.day_of_week))
         LazyRow(
             modifier = Modifier
                 .fillMaxWidth()
@@ -778,12 +668,12 @@ private fun AddToMenuBottomSheet(
                 FilterChip(
                     selected = day == selectedDay,
                     onClick = { selectedDay = day },
-                    label = { Text(day.displayNameRu()) }
+                    label = { Text(day.displayName()) }
                 )
             }
         }
 
-        FieldLabel("Приём пищи")
+        FieldLabel(stringResource(R.string.meal_type))
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -802,29 +692,36 @@ private fun AddToMenuBottomSheet(
         Button(
             onClick = { onConfirm(selectedDay, selectedMeal) },
             modifier = Modifier.fillMaxWidth()
-        ) { Text("Добавить") }
+        ) { Text(stringResource(R.string.add)) }
     }
 }
 
-private fun DayOfWeek.displayNameRu(): String = when (this) {
-    DayOfWeek.MONDAY -> "Пн"
-    DayOfWeek.TUESDAY -> "Вт"
-    DayOfWeek.WEDNESDAY -> "Ср"
-    DayOfWeek.THURSDAY -> "Чт"
-    DayOfWeek.FRIDAY -> "Пт"
-    DayOfWeek.SATURDAY -> "Сб"
-    DayOfWeek.SUNDAY -> "Вс"
+@Composable
+private fun DayOfWeek.displayName(): String = when (this) {
+    DayOfWeek.MONDAY -> stringResource(R.string.day_mon)
+    DayOfWeek.TUESDAY -> stringResource(R.string.day_tue)
+    DayOfWeek.WEDNESDAY -> stringResource(R.string.day_wed)
+    DayOfWeek.THURSDAY -> stringResource(R.string.day_thu)
+    DayOfWeek.FRIDAY -> stringResource(R.string.day_fri)
+    DayOfWeek.SATURDAY -> stringResource(R.string.day_sat)
+    DayOfWeek.SUNDAY -> stringResource(R.string.day_sun)
 }
 
 private fun formatQty(value: Double): String =
     if (value == value.toLong().toDouble()) value.toLong().toString() else value.toString()
 
+@Composable
 private fun formatCookingTime(totalMinutes: Int): String {
     val hours = totalMinutes / 60
     val minutes = totalMinutes % 60
     return when {
-        hours > 0 && minutes > 0 -> "$hours ч $minutes мин"
-        hours > 0 -> "$hours ч"
-        else -> "$minutes мин"
+        hours > 0 && minutes > 0 -> stringResource(
+            R.string.cooking_time_hours_minutes,
+            hours,
+            minutes
+        )
+
+        hours > 0 -> stringResource(R.string.cooking_time_hours, hours)
+        else -> stringResource(R.string.cooking_time_minutes, minutes)
     }
 }

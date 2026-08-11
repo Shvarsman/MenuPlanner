@@ -73,8 +73,10 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import com.shvarsman.coolinar.R
 import com.shvarsman.coolinar.domain.model.CookingMethod
+import com.shvarsman.coolinar.domain.model.MeasureUnit
 import com.shvarsman.coolinar.domain.model.RecipeCategory
 import com.shvarsman.coolinar.domain.model.RecipeDifficulty
+import com.shvarsman.coolinar.domain.model.RecipeIngredient
 import com.shvarsman.coolinar.domain.model.StepContentItem
 import com.shvarsman.coolinar.domain.model.availability
 import com.shvarsman.coolinar.presentation.screens.common.AppBottomSheet
@@ -85,6 +87,7 @@ import com.shvarsman.coolinar.presentation.screens.common.GlassIconButton
 import com.shvarsman.coolinar.presentation.screens.common.IngredientListCard
 import com.shvarsman.coolinar.presentation.screens.common.LabeledTextField
 import com.shvarsman.coolinar.presentation.screens.common.ProductPickerDialog
+import com.shvarsman.coolinar.presentation.screens.common.QuantityUnitField
 import com.shvarsman.coolinar.presentation.screens.common.SelectionTile
 import com.shvarsman.coolinar.presentation.screens.common.SelectorField
 import com.shvarsman.coolinar.presentation.screens.common.StepContent
@@ -96,6 +99,7 @@ import com.shvarsman.coolinar.presentation.ui.icons.CookingMethodIcon
 import com.shvarsman.coolinar.presentation.ui.icons.RecipeCategoryIcon
 import com.shvarsman.coolinar.presentation.ui.icons.icon
 import com.shvarsman.coolinar.presentation.ui.theme.CornerShape
+import com.shvarsman.coolinar.presentation.ui.theme.appSegmentedButtonColors
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -121,6 +125,7 @@ fun RecipeEditorScreen(
     var showTimerPickerDialog by remember { mutableStateOf(false) }
     var editingTimerIndex by remember { mutableStateOf<Int?>(null) }
     var editingTimerMinutes by remember { mutableStateOf(5) }
+    var editingIngredient by remember { mutableStateOf<RecipeIngredient?>(null) }
 
     val coverPhotoPicker = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
@@ -284,6 +289,7 @@ fun RecipeEditorScreen(
                                 SegmentedButton(
                                     selected = state.difficulty == difficulty,
                                     onClick = { viewModel.onDifficultyChange(difficulty) },
+                                    colors = appSegmentedButtonColors(),
                                     shape = SegmentedButtonDefaults.itemShape(
                                         index = index,
                                         count = RecipeDifficulty.entries.size
@@ -337,6 +343,7 @@ fun RecipeEditorScreen(
                             ingredients = state.ingredients,
                             availabilityFor = { it.availability(fridgeItems) },
                             onRemove = { viewModel.removeIngredient(it) },
+                            onIngredientClick = { editingIngredient = it },
                             modifier = Modifier.padding(horizontal = 16.dp)
                         )
                     }
@@ -376,6 +383,17 @@ fun RecipeEditorScreen(
         )
     }
 
+    editingIngredient?.let { ingredient ->
+        EditIngredientDialog(
+            ingredient = ingredient,
+            onDismiss = { editingIngredient = null },
+            onConfirm = { unit, qty ->
+                viewModel.updateIngredient(ingredient, unit, qty)
+                editingIngredient = null
+            }
+        )
+    }
+
     if (showExitConfirmation) {
         AlertDialog(
             onDismissRequest = { showExitConfirmation = false },
@@ -388,7 +406,9 @@ fun RecipeEditorScreen(
                 }) { Text(stringResource(R.string.exit)) }
             },
             dismissButton = {
-                TextButton(onClick = { showExitConfirmation = false }) { Text(stringResource(R.string.cancel)) }
+                TextButton(onClick = {
+                    showExitConfirmation = false
+                }) { Text(stringResource(R.string.cancel)) }
             }
         )
     }
@@ -647,3 +667,40 @@ private fun CoverPhotoPicker(
         }
     }
 }
+
+@Composable
+private fun EditIngredientDialog(
+    ingredient: RecipeIngredient,
+    onDismiss: () -> Unit,
+    onConfirm: (unit: MeasureUnit, quantity: Double) -> Unit
+) {
+    var quantityText by remember { mutableStateOf(formatQty(ingredient.quantity)) }
+    var selectedUnit by remember { mutableStateOf(ingredient.unit) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(ingredient.product.name) },
+        text = {
+            Column {
+                FieldLabel(stringResource(R.string.ingredient_quantity_per_serving))
+                QuantityUnitField(
+                    quantityText = quantityText,
+                    onQuantityChange = { quantityText = it },
+                    selectedUnit = selectedUnit,
+                    onUnitChange = { selectedUnit = it }
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = {
+                onConfirm(selectedUnit, quantityText.toDoubleOrNull() ?: ingredient.quantity)
+            }) { Text(stringResource(R.string.save)) }
+        },
+        dismissButton = { TextButton(onClick = onDismiss) {
+            Text(stringResource(R.string.cancel)) }
+        }
+    )
+}
+
+private fun formatQty(value: Double): String =
+    if (value == value.toLong().toDouble()) value.toLong().toString() else value.toString()
