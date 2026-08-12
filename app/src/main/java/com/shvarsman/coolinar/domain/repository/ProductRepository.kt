@@ -19,4 +19,5 @@ interface ProductRepository {
         isAlwaysAvailable: Boolean = false
     ): Product
     suspend fun countUsages(productId: String): Int
+    suspend fun restoreProduct(id: String)
 }

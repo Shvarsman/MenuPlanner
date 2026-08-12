@@ -20,6 +20,7 @@ data class RecipeEntity(
     val description: String = "",
     val steps: List<StepContentItem>,
     val stepCount: Int,
+    val isFavorite: Boolean = false,
     override val updatedAt: Long = System.currentTimeMillis(),
     override val isDeleted: Boolean = false
 ) : SyncableEntity

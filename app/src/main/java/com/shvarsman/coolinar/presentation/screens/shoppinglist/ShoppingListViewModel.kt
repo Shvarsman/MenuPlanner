@@ -13,9 +13,9 @@ import com.shvarsman.coolinar.domain.usecase.shoppinglist.AddToShoppingListUseCa
 import com.shvarsman.coolinar.domain.usecase.shoppinglist.GetShoppingListUseCase
 import com.shvarsman.coolinar.domain.usecase.shoppinglist.MoveItemsToFridgeUseCase
 import com.shvarsman.coolinar.domain.usecase.shoppinglist.RemoveShoppingItemUseCase
+import com.shvarsman.coolinar.domain.usecase.shoppinglist.RestoreShoppingItemUseCase
 import com.shvarsman.coolinar.domain.usecase.shoppinglist.ToggleShoppingItemUseCase
 import com.shvarsman.coolinar.domain.usecase.shoppinglist.UpdateShoppingItemUseCase
-import com.shvarsman.coolinar.presentation.utils.PendingDeleteManager
 import com.shvarsman.coolinar.presentation.utils.debounceSearch
 import com.shvarsman.coolinar.presentation.utils.mapOnDefault
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -41,28 +41,21 @@ class ShoppingListViewModel @Inject constructor(
     private val addToShoppingList: AddToShoppingListUseCase,
     private val toggleShoppingItem: ToggleShoppingItemUseCase,
     private val removeShoppingItem: RemoveShoppingItemUseCase,
+    private val restoreShoppingItem: RestoreShoppingItemUseCase,
     private val findOrCreateProduct: FindOrCreateProductUseCase,
     private val moveItemsToFridge: MoveItemsToFridgeUseCase,
     private val updateShoppingItem: UpdateShoppingItemUseCase
 ) : ViewModel() {
 
-    private val pendingDeleteManager = PendingDeleteManager<String>(viewModelScope)
-
-    private val rawItems: StateFlow<List<ShoppingListItem>> = getShoppingList()
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
-
-    val items: StateFlow<List<ShoppingListItem>> = combine(
-        rawItems, pendingDeleteManager.pendingIds
-    ) { list, pendingIds -> list.filter { it.id !in pendingIds } }
-        .mapOnDefault { it }
+    val items: StateFlow<List<ShoppingListItem>> = getShoppingList()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     fun requestDelete(id: String) {
-        pendingDeleteManager.requestDelete(id) { removeShoppingItem(id) }
+        viewModelScope.launch { removeShoppingItem(id) }
     }
 
     fun undoDelete(id: String) {
-        pendingDeleteManager.undo(id)
+        viewModelScope.launch { restoreShoppingItem(id) }
     }
 
     // ── Поиск / фильтр / сортировка ──────────────────────────────────

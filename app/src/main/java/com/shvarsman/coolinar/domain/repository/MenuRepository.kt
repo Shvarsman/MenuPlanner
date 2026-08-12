@@ -9,4 +9,5 @@ interface MenuRepository {
     suspend fun getEntry(id: String): MenuEntry?
     suspend fun addEntry(entry: MenuEntry): String
     suspend fun removeEntry(id: String)
+    suspend fun restoreEntry(id: String)
 }

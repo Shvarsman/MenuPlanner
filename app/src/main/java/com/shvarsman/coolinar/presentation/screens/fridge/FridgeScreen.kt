@@ -25,17 +25,11 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ListAlt
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Kitchen
 import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.filled.SelectAll
 import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.filled.StarBorder
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Checkbox
@@ -75,9 +69,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -145,7 +141,8 @@ fun FridgeScreen(
         snackbarHostState = snackbarHostState,
         idOf = { it.id },
         message = { item -> String.format(itemDeletedTemplate, item.product.name) },
-        onRequestDelete = { id -> viewModel.requestDelete(id) },
+        undoLabel = undoLabel,
+        onDelete = { id -> viewModel.requestDelete(id) },
         onUndo = { id -> viewModel.undoDelete(id) }
     )
 
@@ -157,7 +154,10 @@ fun FridgeScreen(
                 scrollBehavior = scrollBehavior,
                 title = {
                     if (isSelectionMode) {
-                        Text(stringResource(R.string.selected_count, selectedIds.size))
+                        Text(
+                            text = stringResource(R.string.selected_count, selectedIds.size),
+                            modifier = Modifier.padding(start = 8.dp)
+                        )
                     } else {
                         TopBarSearchField(
                             modifier = Modifier.padding(end = 8.dp),
@@ -201,7 +201,8 @@ fun FridgeScreen(
                                 .gradientStyle(shape = CornerShape),
                         ) {
                             Icon(
-                                imageVector = Icons.AutoMirrored.Filled.ListAlt,
+                                imageVector = ImageVector.vectorResource(R.drawable.catalog),
+                                modifier = Modifier.size(20.dp),
                                 contentDescription = stringResource(R.string.all_products)
                             )
                         }
@@ -230,14 +231,19 @@ fun FridgeScreen(
             if (isSelectionMode) {
                 BottomAppBar {
                     TextButton(onClick = { viewModel.selectAll() }) {
-                        Icon(Icons.Filled.SelectAll, contentDescription = null)
+                        Icon(
+                            imageVector = ImageVector.vectorResource(R.drawable.select),
+                            modifier = Modifier.size(20.dp),
+                            contentDescription = null
+                        )
                         Spacer(Modifier.width(4.dp))
                         Text(stringResource(R.string.select_all))
                     }
                     Spacer(Modifier.weight(1f))
                     IconButton(onClick = { viewModel.toggleFavoriteSelected() }) {
                         Icon(
-                            imageVector = Icons.Filled.Star,
+                            imageVector = ImageVector.vectorResource(R.drawable.favorite),
+                            modifier = Modifier.size(20.dp),
                             contentDescription = stringResource(R.string.favorite)
                         )
                     }
@@ -246,6 +252,7 @@ fun FridgeScreen(
                         viewModel.clearSelection()
                         viewModel.requestDeleteBulk(ids)
                         scope.launch {
+                            snackbarHostState.currentSnackbarData?.dismiss()
                             val result = snackbarHostState.showSnackbar(
                                 message = String.format(itemsDeletedCountTemplate, ids.size),
                                 actionLabel = undoLabel,
@@ -257,7 +264,8 @@ fun FridgeScreen(
                         }
                     }) {
                         Icon(
-                            imageVector = Icons.Filled.Delete,
+                            imageVector = ImageVector.vectorResource(R.drawable.delete),
+                            modifier = Modifier.size(20.dp),
                             contentDescription = stringResource(R.string.delete)
                         )
                     }
@@ -310,7 +318,7 @@ fun FridgeScreen(
                                 },
                                 trailingIcon = {
                                     if (category == selectedCategory) Icon(
-                                        Icons.Filled.Check,
+                                        imageVector = Icons.Filled.Check,
                                         contentDescription = null
                                     )
                                 },
@@ -330,7 +338,7 @@ fun FridgeScreen(
                                 text = { Text(stringResource(option.displayNameRes)) },
                                 trailingIcon = {
                                     if (option == sortOption) Icon(
-                                        Icons.Filled.Check,
+                                        imageVector = Icons.Filled.Check,
                                         contentDescription = null
                                     )
                                 },
@@ -516,7 +524,8 @@ private fun FridgeItemRow(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Icon(
-                    Icons.Filled.Delete,
+                    imageVector = ImageVector.vectorResource(R.drawable.delete),
+                    modifier = Modifier.size(20.dp),
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.onError
                 )
@@ -588,7 +597,8 @@ private fun FridgeItemRow(
                                         text = { Text(stringResource(R.string.edit_action)) },
                                         leadingIcon = {
                                             Icon(
-                                                Icons.Filled.Edit,
+                                                imageVector = ImageVector.vectorResource(R.drawable.edit),
+                                                modifier = Modifier.size(20.dp),
                                                 contentDescription = null
                                             )
                                         },
@@ -605,7 +615,8 @@ private fun FridgeItemRow(
                                         },
                                         leadingIcon = {
                                             Icon(
-                                                if (item.isFavorite) Icons.Filled.Star else Icons.Filled.StarBorder,
+                                                imageVector = ImageVector.vectorResource(R.drawable.favorite),
+                                                modifier = Modifier.size(20.dp),
                                                 contentDescription = null
                                             )
                                         },
@@ -616,7 +627,8 @@ private fun FridgeItemRow(
                                         text = { Text(stringResource(R.string.delete)) },
                                         leadingIcon = {
                                             Icon(
-                                                Icons.Filled.Delete,
+                                                imageVector = ImageVector.vectorResource(R.drawable.delete),
+                                                modifier = Modifier.size(20.dp),
                                                 contentDescription = null
                                             )
                                         },
@@ -636,7 +648,8 @@ private fun FridgeItemRow(
                                         text = { Text(stringResource(R.string.select)) },
                                         leadingIcon = {
                                             Icon(
-                                                Icons.Filled.SelectAll,
+                                                imageVector = ImageVector.vectorResource(R.drawable.select),
+                                                modifier = Modifier.size(20.dp),
                                                 contentDescription = null
                                             )
                                         },
@@ -688,7 +701,7 @@ private fun EmptyFridgeState(modifier: Modifier = Modifier) {
         verticalArrangement = Arrangement.Center
     ) {
         Icon(
-            imageVector = Icons.Filled.Kitchen,
+            imageVector = ImageVector.vectorResource(R.drawable.fridge),
             contentDescription = null,
             modifier = Modifier.size(64.dp),
             tint = MaterialTheme.colorScheme.outline

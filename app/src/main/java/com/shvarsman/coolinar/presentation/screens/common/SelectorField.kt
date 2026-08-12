@@ -1,5 +1,6 @@
 package com.shvarsman.coolinar.presentation.screens.common
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -34,7 +35,8 @@ fun SelectorField(
     placeholder: String,
     leadingIcon: ImageVector,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    customLeadingIcon: (@Composable () -> Unit)? = null
 ) {
     Column(modifier = modifier) {
         FieldLabel(label)
@@ -48,12 +50,16 @@ fun SelectorField(
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(
-                    imageVector = leadingIcon,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.size(20.dp)
-                )
+                if (customLeadingIcon != null) {
+                    Box(modifier = Modifier.size(20.dp)) { customLeadingIcon() }
+                } else {
+                    Icon(
+                        imageVector = leadingIcon,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
                 Spacer(Modifier.width(12.dp))
                 Text(
                     text = value.ifEmpty { placeholder },

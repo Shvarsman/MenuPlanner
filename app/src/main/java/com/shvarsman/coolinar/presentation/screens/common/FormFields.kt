@@ -52,6 +52,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -193,7 +194,11 @@ fun ExpirationDatePickerField(
                 ),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(Icons.Filled.Event, contentDescription = null)
+                Icon(
+                    imageVector = ImageVector.vectorResource(R.drawable.expiration_date),
+                    modifier = Modifier.size(20.dp),
+                    contentDescription = null
+                )
                 Spacer(Modifier.width(12.dp))
                 Text(
                     text = value?.format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))
@@ -201,10 +206,8 @@ fun ExpirationDatePickerField(
                     modifier = Modifier.weight(1f)
                 )
                 if (value != null) {
-                    // Без IconButton — его дефолтная зона касания 48dp визуально сдвигала
-                    // крестик правее и делала его крупнее остальных иконок в диалоге
                     Icon(
-                        Icons.Filled.Close,
+                        imageVector = Icons.Filled.Close,
                         contentDescription = stringResource(R.string.remove_date),
                         modifier = Modifier
                             .size(20.dp)
@@ -341,7 +344,11 @@ fun PasswordField(
                 trailingIcon = {
                     IconButton(onClick = { visible = !visible }) {
                         Icon(
-                            if (visible) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
+                            imageVector = if (visible) {
+                                Icons.Filled.VisibilityOff
+                            } else {
+                                Icons.Filled.Visibility
+                            },
                             contentDescription = null
                         )
                     }
@@ -383,11 +390,20 @@ fun NavRow(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(icon, contentDescription = null, tint = tint)
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = tint,
+                    modifier = Modifier.size(20.dp)
+                )
                 Spacer(Modifier.width(12.dp))
                 Text(text, style = MaterialTheme.typography.bodyMedium, color = tint)
             }
-            Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null, tint = tint)
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                contentDescription = null,
+                tint = tint
+            )
         }
     }
 }

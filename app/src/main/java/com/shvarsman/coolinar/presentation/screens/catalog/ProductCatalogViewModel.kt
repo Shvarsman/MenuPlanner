@@ -8,9 +8,9 @@ import com.shvarsman.coolinar.domain.model.Product
 import com.shvarsman.coolinar.domain.usecase.product.DeleteProductUseCase
 import com.shvarsman.coolinar.domain.usecase.product.GetAllProductsUseCase
 import com.shvarsman.coolinar.domain.usecase.product.ProductInUseException
+import com.shvarsman.coolinar.domain.usecase.product.RestoreProductUseCase
 import com.shvarsman.coolinar.domain.usecase.product.UpdateProductUseCase
 import com.shvarsman.coolinar.presentation.utils.GroupedRow
-import com.shvarsman.coolinar.presentation.utils.PendingDeleteManager
 import com.shvarsman.coolinar.presentation.utils.buildGroupedRows
 import com.shvarsman.coolinar.presentation.utils.debounceSearch
 import com.shvarsman.coolinar.presentation.utils.mapOnDefault
@@ -34,16 +34,14 @@ data class CatalogListState(
 class ProductCatalogViewModel @Inject constructor(
     getAllProducts: GetAllProductsUseCase,
     private val deleteProduct: DeleteProductUseCase,
+    private val restoreProduct: RestoreProductUseCase,
     private val updateProduct: UpdateProductUseCase
 ) : ViewModel() {
-
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery
     fun onSearchQueryChange(query: String) {
         _searchQuery.value = query
     }
-
-    private val pendingDeleteManager = PendingDeleteManager<String>(viewModelScope)
 
     private val _showOnlyCustom = MutableStateFlow(true)
     val showOnlyCustom: StateFlow<Boolean> = _showOnlyCustom
@@ -136,21 +134,18 @@ class ProductCatalogViewModel @Inject constructor(
         }
     }
 
-    fun requestDelete(product: Product) {
-        pendingDeleteManager.requestDelete(product.id) {
-            try {
-                deleteProduct(product.id)
-            } catch (e: ProductInUseException) {
-                // Продукт нельзя было удалить сразу — возвращаем его в список
-                // и просим явное подтверждение через отдельный диалог
-                pendingDeleteManager.undo(product.id)
-                _pendingForceDelete.value = product to e.usagesCount
-            }
+    suspend fun requestDelete(product: Product): Boolean {
+        return try {
+            deleteProduct(product.id)
+            true
+        } catch (e: ProductInUseException) {
+            _pendingForceDelete.value = product to e.usagesCount
+            false
         }
     }
 
     fun undoDelete(id: String) {
-        pendingDeleteManager.undo(id)
+        viewModelScope.launch { restoreProduct(id) }
     }
 
     fun confirmForceDelete() {

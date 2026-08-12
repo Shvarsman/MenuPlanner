@@ -51,6 +51,12 @@ class ProductRepositoryImpl @Inject constructor(
         dao.getByIdIncludingDeleted(id)?.let { pushIfSignedIn(it) }
     }
 
+    override suspend fun restoreProduct(id: String) {
+        val now = System.currentTimeMillis()
+        dao.restoreById(id, now)
+        dao.getByIdIncludingDeleted(id)?.let { pushIfSignedIn(it) }
+    }
+
     override suspend fun findOrCreate(
         name: String, category: Category, defaultUnit: MeasureUnit,
         isToTaste: Boolean, isAlwaysAvailable: Boolean

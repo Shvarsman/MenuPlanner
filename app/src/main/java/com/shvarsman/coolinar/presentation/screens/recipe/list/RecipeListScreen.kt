@@ -12,41 +12,49 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.MenuBook
-import androidx.compose.material.icons.automirrored.filled.Sort
-import androidx.compose.material.icons.automirrored.filled.ViewList
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.GridView
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.core.app.ShareCompat
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.shvarsman.coolinar.R
@@ -64,6 +72,7 @@ import com.shvarsman.coolinar.presentation.ui.theme.FloatingBottomBarClearance
 import com.shvarsman.coolinar.presentation.ui.theme.gradientStyle
 import com.shvarsman.coolinar.presentation.utils.rememberDebouncedSearch
 import com.shvarsman.coolinar.presentation.utils.rememberOptimisticDelete
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -83,8 +92,13 @@ fun RecipeListScreen(
     val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
     val selectedCategory by viewModel.selectedCategory.collectAsStateWithLifecycle()
     val availableCategories by viewModel.availableCategories.collectAsStateWithLifecycle()
+    val selectedCookingMethod by viewModel.selectedCookingMethod.collectAsStateWithLifecycle()
+    val availableCookingMethods by viewModel.availableCookingMethods.collectAsStateWithLifecycle()
     val sortOption by viewModel.sortOption.collectAsStateWithLifecycle()
-    val isFiltering = searchQuery.isNotBlank() || selectedCategory != null
+    val groupingOption by viewModel.groupingOption.collectAsStateWithLifecycle()
+    val selectedIds by viewModel.selectedIds.collectAsStateWithLifecycle()
+    val isFiltering = searchQuery.isNotBlank() || selectedCategory != null || selectedCookingMethod != null
+    val isSelectionMode = selectedIds.isNotEmpty()
     val (localSearchQuery, onLocalSearchQueryChange) = rememberDebouncedSearch(searchQuery) {
         viewModel.onSearchQueryChange(it)
     }
@@ -92,17 +106,29 @@ fun RecipeListScreen(
     var viewMode by rememberSaveable { mutableStateOf(RecipeViewMode.PHOTO_CARDS) }
     val listState = rememberLazyListState()
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
 
     val recipeDeletedTemplate = stringResource(R.string.recipe_deleted)
+    val itemsDeletedCountTemplate = stringResource(R.string.items_deleted_count)
+    val undoLabel = stringResource(R.string.undo)
 
     val snackbarHostState = remember { SnackbarHostState() }
     val requestDelete = rememberOptimisticDelete<RecipeSummary, String>(
         snackbarHostState = snackbarHostState,
         idOf = { it.id },
         message = { recipe -> String.format(recipeDeletedTemplate, recipe.title) },
-        onRequestDelete = { id -> viewModel.requestDelete(id) },
+        undoLabel = undoLabel,
+        onDelete = { id -> viewModel.requestDelete(id) },
         onUndo = { id -> viewModel.undoDelete(id) }
     )
+
+    val onShare: (RecipeSummary) -> Unit = { recipe ->
+        ShareCompat.IntentBuilder(context)
+            .setType("text/plain")
+            .setText(recipe.title)
+            .startChooser()
+    }
 
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -111,15 +137,42 @@ fun RecipeListScreen(
             TopAppBar(
                 scrollBehavior = scrollBehavior,
                 title = {
-                    TopBarSearchField(
-                        modifier = Modifier.padding(end = 16.dp),
-                        query = localSearchQuery,
-                        onQueryChange = onLocalSearchQueryChange,
-                        placeholder = stringResource(R.string.search_recipes)
-                    )
+                    if (isSelectionMode) {
+                        Text(
+                            text = stringResource(R.string.selected_count, selectedIds.size),
+                            modifier = Modifier.padding(start = 8.dp)
+                        )
+                    } else {
+                        TopBarSearchField(
+                            modifier = Modifier.padding(end = 16.dp),
+                            query = localSearchQuery,
+                            onQueryChange = onLocalSearchQueryChange,
+                            placeholder = stringResource(R.string.search_recipes)
+                        )
+                    }
+                },
+                navigationIcon = {
+                    if (isSelectionMode) {
+                        IconButton(
+                            onClick = { viewModel.clearSelection() },
+                            modifier = Modifier
+                                .padding(start = 16.dp)
+                                .clip(CornerShape)
+                                .background(
+                                    MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.9f),
+                                    CornerShape
+                                )
+                                .gradientStyle(shape = CornerShape)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.Close,
+                                contentDescription = stringResource(R.string.close_selection)
+                            )
+                        }
+                    }
                 },
                 actions = {
-                    if (isFiltering) {
+                    if (isFiltering && !isSelectionMode) {
                         IconButton(
                             modifier = Modifier
                                 .padding(end = 16.dp)
@@ -139,10 +192,11 @@ fun RecipeListScreen(
                         ) {
                             Icon(
                                 imageVector = if (viewMode == RecipeViewMode.PHOTO_CARDS) {
-                                    Icons.AutoMirrored.Filled.ViewList
+                                    ImageVector.vectorResource(R.drawable.view1)
                                 } else {
-                                    Icons.Filled.GridView
+                                    ImageVector.vectorResource(R.drawable.view2)
                                 },
+                                modifier = Modifier.size(20.dp),
                                 contentDescription = if (viewMode == RecipeViewMode.PHOTO_CARDS) {
                                     stringResource(R.string.show_as_list)
                                 } else {
@@ -159,14 +213,59 @@ fun RecipeListScreen(
             )
         },
         floatingActionButton = {
-            GlassFab(
-                onClick = onAddRecipe,
-                modifier = Modifier.padding(bottom = FloatingBottomBarClearance)
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.Add,
-                    contentDescription = stringResource(R.string.add_recipe)
-                )
+            if (!isSelectionMode) {
+                GlassFab(
+                    onClick = onAddRecipe,
+                    modifier = Modifier.padding(bottom = FloatingBottomBarClearance)
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.Add,
+                        contentDescription = stringResource(R.string.add_recipe)
+                    )
+                }
+            }
+        },
+        bottomBar = {
+            if (isSelectionMode) {
+                BottomAppBar {
+                    TextButton(onClick = { viewModel.selectAll() }) {
+                        Icon(
+                            imageVector = ImageVector.vectorResource(R.drawable.select),
+                            modifier = Modifier.size(20.dp),
+                            contentDescription = null
+                        )
+                        Spacer(Modifier.width(4.dp))
+                        Text(stringResource(R.string.select_all))
+                    }
+                    Spacer(Modifier.weight(1f))
+                    IconButton(onClick = { viewModel.toggleFavoriteSelected() }) {
+                        Icon(
+                            imageVector = ImageVector.vectorResource(R.drawable.favorite),
+                            modifier = Modifier.size(20.dp),
+                            contentDescription = stringResource(R.string.favorite)
+                        )
+                    }
+                    IconButton(onClick = {
+                        val ids = selectedIds.toList()
+                        viewModel.clearSelection()
+                        viewModel.requestDeleteBulk(ids)
+                        scope.launch {
+                            snackbarHostState.currentSnackbarData?.dismiss()
+                            val result = snackbarHostState.showSnackbar(
+                                message = String.format(itemsDeletedCountTemplate, ids.size),
+                                actionLabel = undoLabel,
+                                duration = SnackbarDuration.Short
+                            )
+                            if (result == SnackbarResult.ActionPerformed) viewModel.undoDeleteBulk(ids)
+                        }
+                    }) {
+                        Icon(
+                            imageVector = ImageVector.vectorResource(R.drawable.delete),
+                            modifier = Modifier.size(20.dp),
+                            contentDescription = stringResource(R.string.delete)
+                        )
+                    }
+                }
             }
         }
     ) { padding ->
@@ -225,15 +324,63 @@ fun RecipeListScreen(
                     }
 
                     DropdownFilterChip(
+                        displayText = selectedCookingMethod?.labelRes?.let { stringResource(it) }
+                            ?: stringResource(R.string.cooking_method_label),
+                        isActive = selectedCookingMethod != null
+                    ) { close ->
+                        DropdownMenuItem(
+                            text = { Text(stringResource(R.string.all_cooking_methods)) },
+                            onClick = { viewModel.selectCookingMethod(null); close() }
+                        )
+                        availableCookingMethods.forEach { (method, count) ->
+                            DropdownMenuItem(
+                                text = {
+                                    Text(
+                                        stringResource(
+                                            R.string.category_with_count,
+                                            stringResource(method.labelRes),
+                                            count
+                                        ),
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis
+                                    )
+                                },
+                                trailingIcon = {
+                                    if (method == selectedCookingMethod) {
+                                        Icon(Icons.Filled.Check, contentDescription = null)
+                                    }
+                                },
+                                onClick = { viewModel.selectCookingMethod(method); close() }
+                            )
+                        }
+                    }
+
+                    DropdownFilterChip(
+                        modifier = Modifier.widthIn(max = 230.dp),
+                        displayText = stringResource(groupingOption.labelRes),
+                        isActive = groupingOption != RecipeGroupingOption.CATEGORY
+                    ) { close ->
+                        RecipeGroupingOption.entries.forEach { option ->
+                            DropdownMenuItem(
+                                text = { Text(stringResource(option.labelRes)) },
+                                trailingIcon = {
+                                    if (option == groupingOption) {
+                                        Icon(Icons.Filled.Check, contentDescription = null)
+                                    }
+                                },
+                                onClick = { viewModel.selectGroupingOption(option); close() }
+                            )
+                        }
+                    }
+
+                    DropdownFilterChip(
+                        modifier = Modifier.widthIn(max = 230.dp),
                         displayText = stringResource(sortOption.displayNameRes),
                         isActive = sortOption != RecipeSortOption.TITLE_ASC
                     ) { close ->
                         RecipeSortOption.entries.forEach { option ->
                             DropdownMenuItem(
                                 text = { Text(stringResource(option.displayNameRes)) },
-                                leadingIcon = {
-                                    Icon(Icons.AutoMirrored.Filled.Sort, contentDescription = null)
-                                },
                                 trailingIcon = {
                                     if (option == sortOption) {
                                         Icon(Icons.Filled.Check, contentDescription = null)
@@ -256,7 +403,7 @@ fun RecipeListScreen(
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             Icon(
-                                Icons.AutoMirrored.Filled.MenuBook,
+                                imageVector = ImageVector.vectorResource(R.drawable.recipes),
                                 contentDescription = null,
                                 modifier = Modifier.size(64.dp),
                                 tint = MaterialTheme.colorScheme.outline
@@ -273,9 +420,15 @@ fun RecipeListScreen(
                     recipeGroupedItems(
                         grouped = grouped,
                         viewMode = viewMode,
+                        isSelectionMode = isSelectionMode,
+                        selectedIds = selectedIds,
                         onViewRecipe = onViewRecipe,
                         onEditRecipe = onEditRecipe,
-                        onDelete = { requestDelete(it) }
+                        onDelete = { requestDelete(it) },
+                        onToggleFavorite = { viewModel.onToggleFavorite(it) },
+                        onShare = onShare,
+                        onEnterSelectionMode = { viewModel.enterSelectionMode(it) },
+                        onToggleSelection = { viewModel.toggleSelection(it) }
                     )
                 }
             } else {
@@ -311,7 +464,7 @@ fun RecipeListScreen(
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             Icon(
-                                Icons.AutoMirrored.Filled.MenuBook,
+                                imageVector = ImageVector.vectorResource(R.drawable.recipes),
                                 contentDescription = null,
                                 modifier = Modifier.size(64.dp),
                                 tint = MaterialTheme.colorScheme.outline

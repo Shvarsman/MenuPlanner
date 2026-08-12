@@ -29,13 +29,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Restaurant
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Speed
-import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -46,7 +42,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SegmentedButton
-import androidx.compose.material3.SegmentedButtonColors
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.SnackbarHost
@@ -68,9 +63,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalLocale
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -131,14 +128,15 @@ fun WeekMenuScreen(
     val entryRemovedTemplate = stringResource(R.string.menu_entry_removed)
 
     val snackbarHostState = remember { SnackbarHostState() }
+    val undoLabel = stringResource(R.string.undo)
     val requestDelete = rememberOptimisticDelete<MenuEntry, String>(
         snackbarHostState = snackbarHostState,
         idOf = { it.id },
         message = { entry -> String.format(entryRemovedTemplate, entry.recipeTitle) },
-        onRequestDelete = { id -> viewModel.requestDeleteEntry(id) },
+        undoLabel = undoLabel,
+        onDelete = { id -> viewModel.requestDeleteEntry(id) },
         onUndo = { id -> viewModel.undoDeleteEntry(id) }
     )
-
     val entriesByKey = remember(weekMenu) { weekMenu.groupBy { it.dayOfWeek to it.mealType } }
 
     Scaffold(
@@ -162,7 +160,7 @@ fun WeekMenuScreen(
                     modifier = Modifier.navigationBarsPadding()
                 ) {
                     NavRow(
-                        icon = Icons.Filled.Restaurant,
+                        icon = ImageVector.vectorResource(R.drawable.cook),
                         text = stringResource(R.string.start_cooking),
                         modifier = Modifier.padding(16.dp),
                         onClick = onOpenCookSelection,
@@ -539,9 +537,11 @@ private fun MenuEntryCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 if (entry.recipePhotoUri != null) {
-                    Box(modifier = Modifier
-                        .fillMaxHeight()
-                        .aspectRatio(4f / 3f)) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxHeight()
+                            .aspectRatio(4f / 3f)
+                    ) {
                         AsyncImage(
                             model = rememberSizedImageRequest(entry.recipePhotoUri, 140.dp, 104.dp),
                             contentDescription = entry.recipeTitle,
@@ -568,7 +568,11 @@ private fun MenuEntryCard(
                                     .align(Alignment.TopStart)
                             ) {
                                 Icon(
-                                    imageVector = if (allAvailable) Icons.Filled.Restaurant else Icons.Filled.Warning,
+                                    imageVector = if (allAvailable) {
+                                        ImageVector.vectorResource(R.drawable.available)
+                                    } else {
+                                        ImageVector.vectorResource(R.drawable.unavailable)
+                                    },
                                     contentDescription = if (allAvailable) {
                                         stringResource(R.string.all_products_available)
                                     } else {
@@ -604,7 +608,7 @@ private fun MenuEntryCard(
                                 modifier = Modifier.fillMaxSize()
                             ) {
                                 Icon(
-                                    imageVector = Icons.Filled.Restaurant,
+                                    imageVector = ImageVector.vectorResource(R.drawable.recipes),
                                     contentDescription = null,
                                     modifier = Modifier.size(32.dp),
                                     tint = MaterialTheme.colorScheme.onSecondaryContainer.copy(
@@ -634,7 +638,7 @@ private fun MenuEntryCard(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Icon(
-                                Icons.Filled.Speed,
+                                imageVector = ImageVector.vectorResource(R.drawable.difficulty),
                                 contentDescription = null,
                                 modifier = Modifier.size(14.dp),
                                 tint = MaterialTheme.colorScheme.onSurfaceVariant
@@ -828,7 +832,7 @@ private fun RecipePickerCard(
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(
-                                    imageVector = Icons.AutoMirrored.Filled.MenuBook,
+                                    imageVector = ImageVector.vectorResource(R.drawable.recipes),
                                     contentDescription = null,
                                     modifier = Modifier.size(32.dp),
                                     tint = MaterialTheme.colorScheme.onSecondaryContainer.copy(

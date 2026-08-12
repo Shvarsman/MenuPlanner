@@ -6,6 +6,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import com.shvarsman.coolinar.presentation.ui.theme.CornerShape
 import com.shvarsman.coolinar.presentation.ui.theme.gradientStyle
 
@@ -19,6 +20,7 @@ import com.shvarsman.coolinar.presentation.ui.theme.gradientStyle
 fun GlassIconButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    color: Color = MaterialTheme.colorScheme.surfaceVariant,
     content: @Composable () -> Unit
 ) {
     IconButton(
@@ -26,7 +28,7 @@ fun GlassIconButton(
         modifier = modifier
             .clip(CornerShape)
             .background(
-                MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.9f),
+                color.copy(alpha = 0.9f),
                 CornerShape
             )
             .gradientStyle(shape = CornerShape)

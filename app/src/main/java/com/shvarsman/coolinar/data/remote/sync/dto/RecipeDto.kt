@@ -17,6 +17,7 @@ data class RecipeDto(
     val description: String = "",
     val stepsSerialized: String = "",
     val stepCount: Int = 0,
+    val favorite: Boolean = false,
     val ingredients: List<RecipeIngredientDto> = emptyList(),
     val updatedAt: Long = 0,
     val deleted: Boolean = false

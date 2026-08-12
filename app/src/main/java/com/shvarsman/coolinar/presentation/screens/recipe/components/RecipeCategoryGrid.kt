@@ -1,5 +1,6 @@
 package com.shvarsman.coolinar.presentation.screens.recipe.components
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -23,6 +24,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -30,6 +33,7 @@ import androidx.compose.ui.unit.dp
 import com.shvarsman.coolinar.R
 import com.shvarsman.coolinar.domain.model.RecipeCategory
 import com.shvarsman.coolinar.presentation.ui.icons.RecipeCategoryIcon
+import com.shvarsman.coolinar.presentation.ui.icons.imageRes
 
 /**
  * Карусель категорий рецептов (M3 HorizontalMultiBrowseCarousel) + кнопка
@@ -93,19 +97,12 @@ internal fun CategoryTile(
     onClick: () -> Unit
 ) {
     Box(modifier = modifier.clickable(onClick = onClick)) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(MaterialTheme.colorScheme.secondaryContainer),
-            contentAlignment = Alignment.Center
-        ) {
-            RecipeCategoryIcon(
-                modifier = Modifier
-                    .padding(32.dp)
-                    .size(56.dp),
-                category = category
-            )
-        }
+        Image(
+            painter = painterResource(category.imageRes),
+            contentDescription = null,
+            contentScale = ContentScale.Crop,
+            modifier = Modifier.fillMaxSize()
+        )
 
         Box(
             modifier = Modifier

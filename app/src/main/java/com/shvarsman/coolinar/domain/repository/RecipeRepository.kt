@@ -11,4 +11,6 @@ interface RecipeRepository {
     suspend fun addRecipe(recipe: Recipe): String
     suspend fun updateRecipe(recipe: Recipe)
     suspend fun deleteRecipe(id: String)
+    suspend fun restoreRecipe(id: String)
+    suspend fun setFavorite(id: String, isFavorite: Boolean)
 }

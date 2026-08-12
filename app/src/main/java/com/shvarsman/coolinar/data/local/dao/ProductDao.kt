@@ -27,7 +27,9 @@ interface ProductDao {
     @Query("UPDATE products SET isDeleted = 1, updatedAt = :updatedAt WHERE id = :id")
     suspend fun softDeleteById(id: String, updatedAt: Long)
 
-    /** Для FirestoreSyncEngine.reconcile() — включая уже удалённые (надгробия). */
+    @Query("UPDATE products SET isDeleted = 0, updatedAt = :updatedAt WHERE id = :id")
+    suspend fun restoreById(id: String, updatedAt: Long)
+
     @Query("SELECT * FROM products")
     suspend fun getAllIncludingDeleted(): List<ProductEntity>
 

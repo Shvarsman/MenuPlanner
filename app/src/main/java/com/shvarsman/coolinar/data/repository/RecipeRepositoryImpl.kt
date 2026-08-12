@@ -74,6 +74,18 @@ class RecipeRepositoryImpl @Inject constructor(
         dao.getByIdWithIngredientsIncludingDeleted(id)?.recipe?.let { pushIfSignedIn(it) }
     }
 
+    override suspend fun restoreRecipe(id: String) {
+        val now = System.currentTimeMillis()
+        dao.restoreRecipe(id, now)
+        dao.getByIdWithIngredientsIncludingDeleted(id)?.recipe?.let { pushIfSignedIn(it) }
+    }
+
+    override suspend fun setFavorite(id: String, isFavorite: Boolean) {
+        val now = System.currentTimeMillis()
+        dao.setFavorite(id, isFavorite, now)
+        dao.getByIdWithIngredientsIncludingDeleted(id)?.recipe?.let { pushIfSignedIn(it) }
+    }
+
     private fun pushIfSignedIn(entity: RecipeEntity) {
         val uid = authRepository.currentUserId ?: return
         syncScope.scope.launch {
@@ -139,11 +151,13 @@ private fun RecipeSummaryRow.toSummary() = RecipeSummary(
     title = title,
     category = category,
     photoUri = photoUri,
+    cookingMethod = cookingMethod,
+    cookingTimeMinutes = cookingTimeMinutes,
     difficulty = difficulty,
+    isFavorite = isFavorite,
     ingredientCount = ingredientCount,
     stepCount = stepCount
 )
-
 private fun RecipeWithIngredients.toDomain() = Recipe(
     id = recipe.id,
     title = recipe.title,
@@ -153,6 +167,7 @@ private fun RecipeWithIngredients.toDomain() = Recipe(
     cookingTimeMinutes = recipe.cookingTimeMinutes,
     difficulty = recipe.difficulty,
     description = recipe.description,
+    isFavorite = recipe.isFavorite,
     steps = recipe.steps,
     ingredients = ingredients.map { it.toDomain() }
 )
@@ -183,6 +198,7 @@ private fun Recipe.toEntity() = RecipeEntity(
     cookingTimeMinutes = cookingTimeMinutes,
     difficulty = difficulty,
     description = description,
+    isFavorite = isFavorite,
     steps = steps,
     stepCount = steps.count { it is StepContentItem.Text && it.content.isNotBlank() }
 )

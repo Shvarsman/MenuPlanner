@@ -265,7 +265,7 @@ private fun AuthStepPage(
                     modifier = Modifier.align(Alignment.Start)
                 ) {
                     Icon(
-                        Icons.AutoMirrored.Filled.ArrowBack,
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = null,
                         modifier = Modifier.size(16.dp)
                     )

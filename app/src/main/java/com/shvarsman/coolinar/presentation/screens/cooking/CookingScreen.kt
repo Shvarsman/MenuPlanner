@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
@@ -144,6 +145,7 @@ fun CookingScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(16.dp)
+                        .navigationBarsPadding()
                 ) {
                     Icon(Icons.Filled.Check, contentDescription = null)
                     Spacer(Modifier.width(8.dp))
@@ -224,7 +226,7 @@ fun CookingScreen(
                                         Row(verticalAlignment = Alignment.CenterVertically) {
                                             if (dish.isDone) {
                                                 Icon(
-                                                    Icons.Filled.Check,
+                                                    imageVector = Icons.Filled.Check,
                                                     contentDescription = null,
                                                     tint = MaterialTheme.colorScheme.primary,
                                                     modifier = Modifier.padding(end = 4.dp)
@@ -256,7 +258,10 @@ fun CookingScreen(
                     .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.9f), CornerShape),
                 onClick = onBack
             ) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = stringResource(R.string.back)
+                )
             }
         }
     }

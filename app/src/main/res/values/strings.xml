@@ -35,6 +35,9 @@
     <string name="profile_sign_out_confirm_title">Sign out?</string>
     <string name="profile_sign_out_confirm_text">You can sign back in anytime with the same account.</string>
     <string name="profile_display_name">Name</string>
+    <string name="profile_display_name_guest">Guest</string>
+    <string name="profile_avatar_change">Edit photo</string>
+    <string name="profile_avatar_remove">Delete photo</string>
 
     <!-- Онбординг-->
     <string name="onboarding_page1_title">Hi! I\'m Iradiy</string>
@@ -180,6 +183,23 @@
     <string name="sort_favorites_first">Favorites first</string>
     <string name="sort_most_ingredients">Most ingredients</string>
     <string name="sort_most_steps">Most steps</string>
+    <string name="sort_time_asc">Time: shortest first</string>
+    <string name="sort_time_desc">Time: longest first</string>
+    <string name="sort_difficulty_asc">Difficulty: easy first</string>
+    <string name="sort_difficulty_desc">Difficulty: hard first</string>
+    <string name="group_by_category">By category</string>
+    <string name="group_by_time">By time</string>
+    <string name="group_by_difficulty">By difficulty</string>
+    <string name="group_by_cooking_method">By cooking method</string>
+    <string name="time_bucket_under_15">Under 15 min</string>
+    <string name="time_bucket_15_30">15–30 min</string>
+    <string name="time_bucket_30_60">30–60 min</string>
+    <string name="time_bucket_over_60">Over 1 hour</string>
+    <string name="time_bucket_unknown">Time not set</string>
+    <string name="cooking_method_none">No method specified</string>
+    <string name="cooking_method_label">Method</string>
+    <string name="all_cooking_methods">All methods</string>
+    <string name="grouping_label">Grouping</string>
 
     <!--CookingScreen-->
     <string name="cooking_title">Cooking</string>
@@ -323,6 +343,14 @@
     <string name="day_sun">Sun</string>
     <string name="save_recipe_error_generic">Failed to save recipe</string>
     <string name="ingredient_quantity_per_serving">Quantity (per serving)</string>
+    <string name="switch_to_text_input">Switch to text input</string>
+    <string name="switch_to_dial_input">Switch to dial input</string>
+    <string name="empty_product_name_error">Enter the product name</string>
+    <string name="duration_hours_minutes">%1$dh %2$dm</string>
+    <string name="duration_minutes">%1$dm</string>
+    <string name="duration_unknown">Time not set</string>
+    <string name="recipe_time_difficulty">%1$s • %2$s</string>
+    <string name="share">Share</string>
 
     <!-- Product categories -->
     <string name="category_fruits">Fruits</string>

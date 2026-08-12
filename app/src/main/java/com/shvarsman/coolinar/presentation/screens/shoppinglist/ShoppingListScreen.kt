@@ -48,7 +48,9 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
@@ -100,6 +102,7 @@ fun ShoppingListScreen(
     fun requestDelete(item: ShoppingListItem) {
         viewModel.requestDelete(item.id)
         scope.launch {
+            snackbarHostState.currentSnackbarData?.dismiss()
             val result = snackbarHostState.showSnackbar(
                 message = String.format(deletedItemTemplate, item.product.name),
                 actionLabel = undoLabel,
@@ -136,13 +139,16 @@ fun ShoppingListScreen(
                 actions = {
                     GlassIconButton(
                         onClick = { viewModel.requestMoveCheckedToFridge() },
+                        color = if (hasCheckedItems) MaterialTheme.colorScheme.primary
+                        else MaterialTheme.colorScheme.surfaceVariant,
                         modifier = Modifier.padding(end = 16.dp)
                     ) {
                         Icon(
-                            imageVector = Icons.Filled.Kitchen,
+                            imageVector = ImageVector.vectorResource(R.drawable.fridge),
+                            modifier = Modifier.size(20.dp),
                             contentDescription = stringResource(R.string.move_to_fridge),
                             tint = if (hasCheckedItems) {
-                                MaterialTheme.colorScheme.onSurfaceVariant
+                                MaterialTheme.colorScheme.onPrimary
                             } else {
                                 MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.38f)
                             }
@@ -244,7 +250,7 @@ fun ShoppingListScreen(
                     verticalArrangement = Arrangement.Center
                 ) {
                     Icon(
-                        Icons.Filled.ShoppingCart,
+                        imageVector = ImageVector.vectorResource(R.drawable.shopping_list),
                         contentDescription = null,
                         modifier = Modifier.size(64.dp),
                         tint = MaterialTheme.colorScheme.outline

@@ -12,11 +12,11 @@ import com.shvarsman.coolinar.domain.model.UnitConversion
 import com.shvarsman.coolinar.domain.usecase.fridge.AddFridgeItemUseCase
 import com.shvarsman.coolinar.domain.usecase.fridge.DeleteFridgeItemUseCase
 import com.shvarsman.coolinar.domain.usecase.fridge.GetFridgeItemsUseCase
+import com.shvarsman.coolinar.domain.usecase.fridge.RestoreFridgeItemUseCase
 import com.shvarsman.coolinar.domain.usecase.fridge.UpdateFridgeItemUseCase
 import com.shvarsman.coolinar.domain.usecase.product.FindOrCreateProductUseCase
 import com.shvarsman.coolinar.domain.usecase.product.GetAllProductsUseCase
 import com.shvarsman.coolinar.presentation.utils.GroupedRow
-import com.shvarsman.coolinar.presentation.utils.PendingDeleteManager
 import com.shvarsman.coolinar.presentation.utils.buildGroupedRows
 import com.shvarsman.coolinar.presentation.utils.debounceSearch
 import com.shvarsman.coolinar.presentation.utils.mapOnDefault
@@ -25,6 +25,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -56,6 +57,7 @@ class FridgeViewModel @Inject constructor(
     private val addFridgeItem: AddFridgeItemUseCase,
     private val updateFridgeItem: UpdateFridgeItemUseCase,
     private val deleteFridgeItem: DeleteFridgeItemUseCase,
+    private val restoreFridgeItem: RestoreFridgeItemUseCase,
     private val findOrCreateProduct: FindOrCreateProductUseCase
 ) : ViewModel() {
 
@@ -105,22 +107,20 @@ class FridgeViewModel @Inject constructor(
         }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    private val pendingDeleteManager = PendingDeleteManager<String>(viewModelScope)
-
     fun requestDelete(id: String) {
-        pendingDeleteManager.requestDelete(id) { deleteFridgeItem(id) }
+        viewModelScope.launch { deleteFridgeItem(id) }
     }
 
     fun undoDelete(id: String) {
-        pendingDeleteManager.undo(id)
+        viewModelScope.launch { restoreFridgeItem(id) }
     }
 
     fun requestDeleteBulk(ids: List<String>) {
-        ids.forEach { id -> pendingDeleteManager.requestDelete(id) { deleteFridgeItem(id) } }
+        viewModelScope.launch { ids.forEach { deleteFridgeItem(it) } }
     }
 
     fun undoDeleteBulk(ids: List<String>) {
-        ids.forEach { pendingDeleteManager.undo(it) }
+        viewModelScope.launch { ids.forEach { restoreFridgeItem(it) } }
     }
 
     private data class FridgeFilterState(
@@ -137,11 +137,8 @@ class FridgeViewModel @Inject constructor(
         FridgeFilterState(list, query, category, sort, groupByCategory)
     }
 
-    val listState: StateFlow<FridgeListState> = combine(
-        filterState, pendingDeleteManager.pendingIds
-    ) { state, pendingIds ->
+    val listState: StateFlow<FridgeListState> = filterState.map { state ->
         val filtered = state.list
-            .filter { it.id !in pendingIds }   // мгновенно скрываем "удаляемые" элементы
             .let { if (state.category != null) it.filter { i -> i.product.category == state.category } else it }
             .let {
                 if (state.query.isBlank()) it else it.filter { i ->

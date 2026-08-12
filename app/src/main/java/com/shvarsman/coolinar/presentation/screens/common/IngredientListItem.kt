@@ -21,7 +21,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.shvarsman.coolinar.R
@@ -76,14 +78,14 @@ fun IngredientListItem(
             Spacer(Modifier.width(8.dp))
             when (availability) {
                 IngredientAvailability.AVAILABLE -> Icon(
-                    imageVector = Icons.Filled.CheckCircle,
+                    imageVector = ImageVector.vectorResource(R.drawable.available),
                     contentDescription = stringResource(R.string.ingredient_available),
-                    tint = MaterialTheme.colorScheme.primary,
+                    tint = MaterialTheme.colorScheme.secondary,
                     modifier = Modifier.size(20.dp)
                 )
 
                 IngredientAvailability.INSUFFICIENT -> Icon(
-                    imageVector = Icons.Filled.Warning,
+                    imageVector = ImageVector.vectorResource(R.drawable.unavailable),
                     contentDescription = stringResource(R.string.ingredient_available),
                     tint = MaterialTheme.colorScheme.error,
                     modifier = Modifier.size(20.dp)

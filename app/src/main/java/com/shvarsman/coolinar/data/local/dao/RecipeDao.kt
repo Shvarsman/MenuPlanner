@@ -11,6 +11,7 @@ import androidx.room.Update
 import com.shvarsman.coolinar.data.local.entity.ProductEntity
 import com.shvarsman.coolinar.data.local.entity.RecipeEntity
 import com.shvarsman.coolinar.data.local.entity.RecipeIngredientEntity
+import com.shvarsman.coolinar.domain.model.CookingMethod
 import com.shvarsman.coolinar.domain.model.RecipeCategory
 import com.shvarsman.coolinar.domain.model.RecipeDifficulty
 import kotlinx.coroutines.flow.Flow
@@ -36,7 +37,10 @@ data class RecipeSummaryRow(
     val title: String,
     val category: RecipeCategory,
     val photoUri: String?,
+    val cookingMethod: CookingMethod?,
+    val cookingTimeMinutes: Int?,
     val difficulty: RecipeDifficulty,
+    val isFavorite: Boolean,
     val ingredientCount: Int,
     val stepCount: Int
 )
@@ -50,7 +54,10 @@ interface RecipeDao {
         recipes.title,
         recipes.category,
         recipes.photoUri,
+        recipes.cookingMethod,
+        recipes.cookingTimeMinutes,
         recipes.difficulty,
+        recipes.isFavorite,
         recipes.stepCount,
         (SELECT COUNT(*) FROM recipe_ingredients WHERE recipeId = recipes.id) AS ingredientCount
     FROM recipes
@@ -84,6 +91,12 @@ interface RecipeDao {
 
     @Query("UPDATE recipes SET isDeleted = 1, updatedAt = :updatedAt WHERE id = :id")
     suspend fun softDeleteRecipe(id: String, updatedAt: Long)
+
+    @Query("UPDATE recipes SET isDeleted = 0, updatedAt = :updatedAt WHERE id = :id")
+    suspend fun restoreRecipe(id: String, updatedAt: Long)
+
+    @Query("UPDATE recipes SET isFavorite = :isFavorite, updatedAt = :updatedAt WHERE id = :id")
+    suspend fun setFavorite(id: String, isFavorite: Boolean, updatedAt: Long)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertIngredients(ingredients: List<RecipeIngredientEntity>)

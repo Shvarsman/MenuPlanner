@@ -49,6 +49,12 @@ class MenuRepositoryImpl @Inject constructor(
         dao.getByIdIncludingDeleted(id)?.let { pushIfSignedIn(it) }
     }
 
+    override suspend fun restoreEntry(id: String) {
+        val now = System.currentTimeMillis()
+        dao.restoreById(id, now)
+        dao.getByIdIncludingDeleted(id)?.let { pushIfSignedIn(it) }
+    }
+
     private fun pushIfSignedIn(entity: MenuEntryEntity) {
         val uid = authRepository.currentUserId ?: return
         syncScope.scope.launch {

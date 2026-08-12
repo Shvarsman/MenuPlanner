@@ -54,8 +54,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -105,8 +107,10 @@ fun ProductCatalogScreen(
     val undoLabel = stringResource(R.string.undo)
 
     fun requestDelete(product: Product) {
-        viewModel.requestDelete(product)
         scope.launch {
+            val deleted = viewModel.requestDelete(product)
+            if (!deleted) return@launch
+            snackbarHostState.currentSnackbarData?.dismiss()
             val result = snackbarHostState.showSnackbar(
                 message = String.format(deletedFromCatalogTemplate, product.name),
                 actionLabel = undoLabel,
@@ -390,14 +394,16 @@ private fun CatalogProductRow(product: Product, onEdit: () -> Unit, onDelete: ()
             Row {
                 IconButton(onClick = onEdit) {
                     Icon(
-                        imageVector = Icons.Filled.Edit,
+                        imageVector = ImageVector.vectorResource(R.drawable.edit),
+                        modifier = Modifier.size(20.dp),
                         contentDescription = stringResource(R.string.edit)
                     )
                 }
                 if (!product.isDefault) {
                     IconButton(onClick = onDelete) {
                         Icon(
-                            imageVector = Icons.Filled.Delete,
+                            imageVector = ImageVector.vectorResource(R.drawable.delete),
+                            modifier = Modifier.size(20.dp),
                             contentDescription = stringResource(R.string.delete_from_catalog)
                         )
                     }

@@ -35,6 +35,9 @@
     <string name="profile_display_name_fallback">Гость</string>
     <string name="profile_sign_out_confirm_title">Выйти из аккаунта?</string>
     <string name="profile_sign_out_confirm_text">Вы всегда сможете войти обратно с тем же аккаунтом.</string>
+    <string name="profile_display_name_guest">Гость</string>
+    <string name="profile_avatar_change">Изменить фото</string>
+    <string name="profile_avatar_remove">Удалить фото</string>
 
     <!-- Онбординг-->
     <string name="profile_display_name">Имя</string>
@@ -181,6 +184,23 @@
     <string name="sort_favorites_first">Сначала избранное</string>
     <string name="sort_most_ingredients">Больше всего ингредиентов</string>
     <string name="sort_most_steps">Больше всего шагов</string>
+    <string name="sort_time_asc">Время: сначала быстрые</string>
+    <string name="sort_time_desc">Время: сначала долгие</string>
+    <string name="sort_difficulty_asc">Сложность: сначала лёгкие</string>
+    <string name="sort_difficulty_desc">Сложность: сначала сложные</string>
+    <string name="group_by_category">По категории</string>
+    <string name="group_by_time">По времени</string>
+    <string name="group_by_difficulty">По сложности</string>
+    <string name="group_by_cooking_method">По способу приготовления</string>
+    <string name="time_bucket_under_15">Меньше 15 мин</string>
+    <string name="time_bucket_15_30">15–30 мин</string>
+    <string name="time_bucket_30_60">30–60 мин</string>
+    <string name="time_bucket_over_60">Больше часа</string>
+    <string name="time_bucket_unknown">Время не указано</string>
+    <string name="cooking_method_none">Способ не указан</string>
+    <string name="cooking_method_label">Способ</string>
+    <string name="all_cooking_methods">Все способы</string>
+    <string name="grouping_label">Группировка</string>
 
     <!--CookingScreen-->
     <string name="cooking_title">Готовка</string>
@@ -303,7 +323,7 @@
     <string name="cooking_steps_tab">Приготовление</string>
     <string name="add_to_menu">Добавить в меню</string>
     <string name="share_recipe">Поделиться рецептом</string>
-    <string name="preparing_recipe_file">Готовим файл рецепта...</string>
+    <string name="preparing_recipe_file">Готовим файл рецепта…</string>
     <string name="done_title">Готово</string>
     <string name="recipe_shared_message">Рецепт сохранён в файл — можно переслать его другому пользователю приложения.</string>
     <string name="no_description">Описание не указано</string>
@@ -324,6 +344,14 @@
     <string name="day_sun">Вс</string>
     <string name="save_recipe_error_generic">Не удалось сохранить рецепт</string>
     <string name="ingredient_quantity_per_serving">Количество (на 1 порцию)</string>
+    <string name="switch_to_text_input">Переключиться на текстовый ввод</string>
+    <string name="switch_to_dial_input">Переключиться на циферблат</string>
+    <string name="empty_product_name_error">Введите название товара</string>
+    <string name="duration_hours_minutes">%1$d ч %2$d мин</string>
+    <string name="duration_minutes">%1$d мин</string>
+    <string name="duration_unknown">Время не указано</string>
+    <string name="recipe_time_difficulty">%1$s • %2$s</string>
+    <string name="share">Поделиться</string>
 
     <!-- Категории продуктов -->
     <string name="category_fruits">Фрукты</string>

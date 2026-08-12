@@ -9,5 +9,6 @@ interface FridgeRepository {
     suspend fun addItem(item: FridgeItem): String
     suspend fun updateItem(item: FridgeItem)
     suspend fun deleteItem(id: String)
+    suspend fun restoreItem(id: String)
     suspend fun decreaseQuantity(id: String, amount: Double)
 }

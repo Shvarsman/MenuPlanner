@@ -7,15 +7,12 @@ import androidx.lifecycle.viewModelScope
 import com.shvarsman.coolinar.R
 import com.shvarsman.coolinar.domain.model.FridgeItem
 import com.shvarsman.coolinar.domain.model.MealType
-import com.shvarsman.coolinar.domain.model.MeasureUnit
 import com.shvarsman.coolinar.domain.model.Recipe
-import com.shvarsman.coolinar.domain.model.RecipeIngredient
 import com.shvarsman.coolinar.domain.repository.BackupType
 import com.shvarsman.coolinar.domain.repository.RecipeRepository
 import com.shvarsman.coolinar.domain.usecase.backup.ExportBackupUseCase
 import com.shvarsman.coolinar.domain.usecase.fridge.GetFridgeItemsUseCase
 import com.shvarsman.coolinar.domain.usecase.menu.AssignRecipeToMenuUseCase
-import com.shvarsman.coolinar.presentation.utils.PendingDeleteManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -52,15 +49,11 @@ class RecipeViewViewModel @Inject constructor(
 
     private val _rawRecipe = MutableStateFlow<Recipe?>(null)
     private val _isLoading = MutableStateFlow(true)
-    private val pendingDeleteManager = PendingDeleteManager<String>(viewModelScope)
 
     val state: StateFlow<RecipeViewState> = combine(
-        _rawRecipe, _isLoading, pendingDeleteManager.pendingIds
-    ) { recipe, isLoading, pendingIds ->
-        RecipeViewState(
-            recipe = recipe?.copy(ingredients = recipe.ingredients.filter { it.id !in pendingIds }),
-            isLoading = isLoading
-        )
+        _rawRecipe, _isLoading
+    ) { recipe, isLoading ->
+        RecipeViewState(recipe = recipe, isLoading = isLoading)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), RecipeViewState())
 
     private val _shareState = MutableStateFlow<RecipeShareState>(RecipeShareState.Idle)

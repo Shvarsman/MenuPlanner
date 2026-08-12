@@ -122,7 +122,7 @@ fun MeasureUnitField(
                 ) {
                     Text(stringResource(selectedUnit.labelRes), modifier = Modifier.weight(1f))
                     Icon(
-                        Icons.Filled.ArrowDropDown,
+                        imageVector = Icons.Filled.ArrowDropDown,
                         contentDescription = null,
                         modifier = Modifier.size(20.dp)
                     )

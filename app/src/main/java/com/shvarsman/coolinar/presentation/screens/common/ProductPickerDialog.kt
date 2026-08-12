@@ -67,7 +67,7 @@ fun ProductPickerDialog(
     var step by remember { mutableStateOf(PickerStep.SELECT) }
     var query by remember { mutableStateOf("") }
     var selectedProduct by remember { mutableStateOf<Product?>(null) }
-    var quantityText by remember { mutableStateOf("1") }
+    var quantityText by remember { mutableStateOf("") }
     var selectedUnit by remember { mutableStateOf(MeasureUnit.PIECE) }
     var expirationDate by remember { mutableStateOf<LocalDate?>(null) }
 
@@ -80,6 +80,7 @@ fun ProductPickerDialog(
 
     val coroutineScope = rememberCoroutineScope()
     val createProductErrorTemplate = stringResource(R.string.create_product_error)
+    val emptyProductNameError = stringResource(R.string.empty_product_name_error)
 
     val filtered = remember(query, catalog) {
         val bySearch = if (query.isBlank()) catalog else catalog.filter {
@@ -170,7 +171,7 @@ fun ProductPickerDialog(
                                         } else {
                                             selectedProduct = product
                                             selectedUnit = product.defaultUnit
-                                            quantityText = "1"
+                                            quantityText = ""
                                             step = PickerStep.QUANTITY
                                         }
                                     }
@@ -271,7 +272,7 @@ fun ProductPickerDialog(
                 else -> {
                     TextButton(onClick = { step = PickerStep.SELECT }) {
                         Icon(
-                            Icons.AutoMirrored.Filled.ArrowBack,
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = null,
                             modifier = Modifier.size(16.dp)
                         )
@@ -287,6 +288,10 @@ fun ProductPickerDialog(
                 PickerStep.CREATE -> Button(
                     enabled = newName.isNotBlank() && !isCreating,
                     onClick = {
+                        if (newName.isBlank()) {
+                            createError = emptyProductNameError
+                            return@Button
+                        }
                         isCreating = true
                         coroutineScope.launch {
                             try {
@@ -298,7 +303,7 @@ fun ProductPickerDialog(
                                     newIsAlwaysAvailable
                                 )
                                 selectedProduct = created
-                                quantityText = "1"
+                                quantityText = ""
                                 expirationDate = null
                                 createError = null
                                 step = PickerStep.QUANTITY

@@ -50,6 +50,12 @@ class ShoppingListRepositoryImpl @Inject constructor(
         dao.getByIdIncludingDeleted(id)?.let { pushIfSignedIn(it) }
     }
 
+    override suspend fun restoreItem(id: String) {
+        val now = System.currentTimeMillis()
+        dao.restoreById(id, now)
+        dao.getByIdIncludingDeleted(id)?.let { pushIfSignedIn(it) }
+    }
+
     override suspend fun setChecked(id: String, checked: Boolean) {
         val now = System.currentTimeMillis()
         dao.setChecked(id, checked, now)

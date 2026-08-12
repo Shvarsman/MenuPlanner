@@ -10,9 +10,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.ViewList
-import androidx.compose.material.icons.filled.GridView
-import androidx.compose.material.icons.filled.RestaurantMenu
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -31,18 +28,22 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.core.app.ShareCompat
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.shvarsman.coolinar.R
 import com.shvarsman.coolinar.domain.model.RecipeSummary
 import com.shvarsman.coolinar.presentation.screens.common.CollapsingLargeTopAppBar
+import com.shvarsman.coolinar.presentation.screens.recipe.components.recipeGroupedItems
 import com.shvarsman.coolinar.presentation.screens.recipe.list.RecipeListViewModel
 import com.shvarsman.coolinar.presentation.screens.recipe.list.RecipeViewMode
-import com.shvarsman.coolinar.presentation.screens.recipe.components.recipeGroupedItems
 import com.shvarsman.coolinar.presentation.ui.theme.CornerShape
 import com.shvarsman.coolinar.presentation.ui.theme.gradientStyle
 import com.shvarsman.coolinar.presentation.utils.rememberOptimisticDelete
@@ -58,15 +59,18 @@ fun SuggestedRecipesScreen(
     val grouped by viewModel.suggestedRecipesGrouped.collectAsStateWithLifecycle()
     var viewMode by rememberSaveable { mutableStateOf(RecipeViewMode.PHOTO_CARDS) }
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
+    val context = LocalContext.current
 
     val recipeDeletedTemplate = stringResource(R.string.recipe_deleted)
+    val undoLabel = stringResource(R.string.undo)
 
     val snackbarHostState = remember { SnackbarHostState() }
     val requestDelete = rememberOptimisticDelete<RecipeSummary, String>(
         snackbarHostState = snackbarHostState,
         idOf = { it.id },
         message = { recipe -> String.format(recipeDeletedTemplate, recipe.title) },
-        onRequestDelete = { id -> viewModel.requestDelete(id) },
+        undoLabel = undoLabel,
+        onDelete = { id -> viewModel.requestDelete(id) },
         onUndo = { id -> viewModel.undoDelete(id) }
     )
 
@@ -115,10 +119,11 @@ fun SuggestedRecipesScreen(
                     ) {
                         Icon(
                             imageVector = if (viewMode == RecipeViewMode.PHOTO_CARDS) {
-                                Icons.AutoMirrored.Filled.ViewList
+                                ImageVector.vectorResource(R.drawable.view1)
                             } else {
-                                Icons.Filled.GridView
+                                ImageVector.vectorResource(R.drawable.view2)
                             },
+                            modifier = Modifier.size(20.dp),
                             contentDescription = null
                         )
                     }
@@ -135,7 +140,7 @@ fun SuggestedRecipesScreen(
                 verticalArrangement = Arrangement.Center
             ) {
                 Icon(
-                    Icons.Filled.RestaurantMenu,
+                    imageVector = ImageVector.vectorResource(R.drawable.cook),
                     contentDescription = null,
                     modifier = Modifier.size(64.dp),
                     tint = MaterialTheme.colorScheme.outline
@@ -160,7 +165,14 @@ fun SuggestedRecipesScreen(
                     viewMode = viewMode,
                     onViewRecipe = onViewRecipe,
                     onEditRecipe = onEditRecipe,
-                    onDelete = { requestDelete(it) }
+                    onDelete = { requestDelete(it) },
+                    onToggleFavorite = { viewModel.onToggleFavorite(it) },
+                    onShare = { recipe ->
+                        ShareCompat.IntentBuilder(context)
+                            .setType("text/plain")
+                            .setText(recipe.title)
+                            .startChooser()
+                    }
                 )
             }
         }

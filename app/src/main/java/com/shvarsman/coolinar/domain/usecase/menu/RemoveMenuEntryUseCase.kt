@@ -1,5 +1,8 @@
 package com.shvarsman.coolinar.domain.usecase.menu
 
+import com.shvarsman.coolinar.domain.model.MeasureUnit
+import com.shvarsman.coolinar.domain.model.ReservedKey
+import com.shvarsman.coolinar.domain.model.ShoppingListItem
 import com.shvarsman.coolinar.domain.model.UnitConversion
 import com.shvarsman.coolinar.domain.model.computeReservedAmounts
 import com.shvarsman.coolinar.domain.repository.FridgeRepository
@@ -11,6 +14,20 @@ import kotlinx.coroutines.flow.first
 import javax.inject.Inject
 
 /**
+ * Снимок побочных изменений списка покупок, сделанных при удалении записи
+ * меню — нужен, чтобы RestoreMenuEntryUseCase мог откатить их ТОЧНО, а не
+ * приблизительно: какие позиции были удалены целиком (undo -> restoreItem),
+ * и у каких только уменьшено количество (undo -> updateItem с prevQuantity).
+ */
+data class MenuEntryRemovalResult(
+    val entryId: String,
+    val removedShoppingItemIds: List<String> = emptyList(),
+    val quantityAdjustedItems: List<QuantityAdjustment> = emptyList()
+) {
+    data class QuantityAdjustment(val itemId: String, val previousQuantity: Double)
+}
+
+/**
  * Удаляет запись меню и одновременно уменьшает список покупок ровно на ту часть
  * ингредиентов, что нужна была ТОЛЬКО из-за этой записи (маргинальная нехватка):
  * shortageWith - shortageWithout, где shortageWith/Without — нехватка продукта
@@ -19,6 +36,9 @@ import javax.inject.Inject
  * Продукты "по вкусу" (isToTaste) и "всегда доступные" (isAlwaysAvailable)
  * не трогаем — для них нет количественного учёта нехватки, поэтому нет
  * надёжного способа определить, что убрать из списка покупок.
+ *
+ * Возвращает MenuEntryRemovalResult — по нему RestoreMenuEntryUseCase может
+ * полностью отменить операцию, включая изменения списка покупок.
  */
 class RemoveMenuEntryUseCase @Inject constructor(
     private val menuRepository: MenuRepository,
@@ -27,13 +47,16 @@ class RemoveMenuEntryUseCase @Inject constructor(
     private val shoppingListRepository: ShoppingListRepository,
     private val transactionRunner: TransactionRunner
 ) {
-    suspend operator fun invoke(entryId: String) {
-        transactionRunner.runInTransaction {
+    suspend operator fun invoke(entryId: String): MenuEntryRemovalResult {
+        return transactionRunner.runInTransaction {
             val entry = menuRepository.getEntry(entryId) ?: run {
                 menuRepository.removeEntry(entryId)
-                return@runInTransaction
+                return@runInTransaction MenuEntryRemovalResult(entryId)
             }
             val recipe = recipeRepository.getRecipe(entry.recipeId)
+
+            val removedIds = mutableListOf<String>()
+            val adjustedItems = mutableListOf<MenuEntryRemovalResult.QuantityAdjustment>()
 
             if (recipe != null && recipe.ingredients.isNotEmpty()) {
                 val weekEntries = menuRepository.observeWeekMenu(entry.weekStartDate).first()
@@ -52,7 +75,7 @@ class RemoveMenuEntryUseCase @Inject constructor(
                         .sumOf { UnitConversion.convert(it.quantity, it.unit, ingredient.unit) ?: 0.0 }
 
                     val canonical = UnitConversion.canonicalUnit(ingredient.unit)
-                    val demandOthersQty = demandFromOthers[com.shvarsman.coolinar.domain.model.ReservedKey(ingredient.product.id, canonical)]
+                    val demandOthersQty = demandFromOthers[ReservedKey(ingredient.product.id, canonical)]
                         ?.let { UnitConversion.convert(it.amount, it.unit, ingredient.unit) } ?: 0.0
 
                     val shortageWithout = (demandOthersQty - fridgeQty).coerceAtLeast(0.0)
@@ -60,20 +83,26 @@ class RemoveMenuEntryUseCase @Inject constructor(
                     val toRemove = shortageWith - shortageWithout
 
                     if (toRemove > 0.0) {
-                        removeFromShoppingList(shoppingItems, ingredient.product.id, ingredient.unit, toRemove)
+                        removeFromShoppingList(
+                            shoppingItems, ingredient.product.id, ingredient.unit, toRemove,
+                            removedIds, adjustedItems
+                        )
                     }
                 }
             }
 
             menuRepository.removeEntry(entryId)
+            MenuEntryRemovalResult(entryId, removedIds, adjustedItems)
         }
     }
 
     private suspend fun removeFromShoppingList(
-        currentItems: List<com.shvarsman.coolinar.domain.model.ShoppingListItem>,
+        currentItems: List<ShoppingListItem>,
         productId: String,
-        unit: com.shvarsman.coolinar.domain.model.MeasureUnit,
-        amount: Double
+        unit: MeasureUnit,
+        amount: Double,
+        removedIds: MutableList<String>,
+        adjustedItems: MutableList<MenuEntryRemovalResult.QuantityAdjustment>
     ) {
         var remaining = amount
         currentItems
@@ -83,8 +112,10 @@ class RemoveMenuEntryUseCase @Inject constructor(
                 val convertedRemaining = UnitConversion.convert(remaining, unit, item.unit) ?: return@forEach
                 if (item.quantity <= convertedRemaining) {
                     shoppingListRepository.removeItem(item.id)
+                    removedIds.add(item.id)
                     remaining -= UnitConversion.convert(item.quantity, item.unit, unit) ?: item.quantity
                 } else {
+                    adjustedItems.add(MenuEntryRemovalResult.QuantityAdjustment(item.id, item.quantity))
                     shoppingListRepository.updateItem(item.copy(quantity = item.quantity - convertedRemaining))
                     remaining = 0.0
                 }

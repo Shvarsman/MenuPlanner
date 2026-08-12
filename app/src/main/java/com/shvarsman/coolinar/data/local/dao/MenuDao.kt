@@ -31,6 +31,8 @@ interface MenuDao {
     @Query("UPDATE menu_entries SET isDeleted = 1, updatedAt = :updatedAt WHERE id = :id")
     suspend fun softDeleteById(id: String, updatedAt: Long)
 
+    @Query("UPDATE menu_entries SET isDeleted = 0, updatedAt = :updatedAt WHERE id = :id")
+    suspend fun restoreById(id: String, updatedAt: Long)
     @Query("SELECT * FROM menu_entries")
     suspend fun getAllIncludingDeleted(): List<MenuEntryEntity>
 }

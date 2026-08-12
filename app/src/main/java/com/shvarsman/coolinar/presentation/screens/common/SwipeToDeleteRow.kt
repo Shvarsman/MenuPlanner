@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -17,8 +18,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
+import com.shvarsman.coolinar.R
 
 /**
  * Обёртка "смахнуть для удаления" — общий паттерн для строк списков
@@ -66,7 +70,8 @@ fun SwipeToDeleteRow(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Icon(
-                    Icons.Filled.Delete,
+                    imageVector = ImageVector.vectorResource(R.drawable.delete),
+                    modifier = Modifier.size(20.dp),
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.onError
                 )

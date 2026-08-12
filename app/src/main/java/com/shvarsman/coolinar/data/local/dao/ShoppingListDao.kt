@@ -29,6 +29,9 @@ interface ShoppingListDao {
     @Query("UPDATE shopping_list_items SET isDeleted = 1, updatedAt = :updatedAt WHERE id = :id")
     suspend fun softDeleteById(id: String, updatedAt: Long)
 
+    @Query("UPDATE shopping_list_items SET isDeleted = 0, updatedAt = :updatedAt WHERE id = :id")
+    suspend fun restoreById(id: String, updatedAt: Long)
+
     @Query("UPDATE shopping_list_items SET isChecked = :checked, updatedAt = :updatedAt WHERE id = :id")
     suspend fun setChecked(id: String, checked: Boolean, updatedAt: Long)
 

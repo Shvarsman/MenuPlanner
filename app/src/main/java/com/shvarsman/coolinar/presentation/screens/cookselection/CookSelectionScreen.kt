@@ -49,9 +49,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -133,7 +135,11 @@ fun CookSelectionScreen(
                             .weight(1f)
                             .height(48.dp)
                     ) {
-                        Icon(Icons.Filled.Restaurant, contentDescription = null)
+                        Icon(
+                            imageVector = ImageVector.vectorResource(R.drawable.cook),
+                            modifier = Modifier.size(20.dp),
+                            contentDescription = null
+                        )
                         Spacer(Modifier.width(8.dp))
                         Text(stringResource(R.string.start_cooking))
                     }
@@ -291,7 +297,8 @@ private fun CookSelectionCard(
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        Icons.Filled.Restaurant,
+                        imageVector = ImageVector.vectorResource(R.drawable.cook),
+                        modifier = Modifier.size(20.dp),
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.6f)
                     )

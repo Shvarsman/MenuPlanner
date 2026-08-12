@@ -5,60 +5,39 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import kotlin.time.Duration.Companion.milliseconds
-
-private const val UNDO_WINDOW_MS = 4000L
 
 /**
- * Мгновенно помечает элемент как "удаляемый" (id попадает в pendingIds — список
- * должен отфильтровать такие id сразу), а реальное удаление откладывает на
- * UNDO_WINDOW_MS. Если за это время вызвать undo(id) — элемент возвращается,
- * реальное удаление из БД не происходит.
+ * Удаление вызывается СРАЗУ и по-настоящему (onDelete), а не откладывается
+ * по таймеру — благодаря этому оно не "отменяется само" из-за обрыва
+ * корутины при уходе с экрана / уничтожении ViewModel. Кнопка "Отменить"
+ * не блокирует удаление, а восстанавливает уже удалённый элемент (onUndo) —
+ * это естественно ложится на существующий soft-delete (isDeleted/updatedAt).
+ *
+ * Снекбары не встают в очередь: перед показом нового текущий снекбар
+ * принудительно скрывается (currentSnackbarData?.dismiss()), поэтому при
+ * последовательном удалении нескольких элементов подряд пользователь видит
+ * только последний снекбар с таймером, который каждый раз стартует заново,
+ * а не накопленную очередь на много секунд/минут.
  */
-class PendingDeleteManager<Id>(private val scope: CoroutineScope) {
-    private val _pendingIds = MutableStateFlow<Set<Id>>(emptySet())
-    val pendingIds: StateFlow<Set<Id>> = _pendingIds
-
-    private val jobs = mutableMapOf<Id, Job>()
-
-    fun requestDelete(id: Id, onConfirmedDelete: suspend () -> Unit) {
-        _pendingIds.value += id
-        jobs[id] = scope.launch {
-            delay(UNDO_WINDOW_MS.milliseconds)
-            _pendingIds.value -= id
-            jobs.remove(id)
-            onConfirmedDelete()
-        }
-    }
-
-    fun undo(id: Id) {
-        jobs.remove(id)?.cancel()
-        _pendingIds.value -= id
-    }
-}
-
 @Composable
 fun <T, Id> rememberOptimisticDelete(
     snackbarHostState: SnackbarHostState,
     idOf: (T) -> Id,
     message: (T) -> String,
-    onRequestDelete: (Id) -> Unit,
+    undoLabel: String,
+    onDelete: (Id) -> Unit,
     onUndo: (Id) -> Unit
 ): (T) -> Unit {
     val scope = rememberCoroutineScope()
     return { item ->
         val id = idOf(item)
-        onRequestDelete(id)
+        onDelete(id)
         scope.launch {
+            snackbarHostState.currentSnackbarData?.dismiss()
             val result = snackbarHostState.showSnackbar(
                 message = message(item),
-                actionLabel = "Отменить",
+                actionLabel = undoLabel,
                 duration = SnackbarDuration.Short
             )
             if (result == SnackbarResult.ActionPerformed) onUndo(id)

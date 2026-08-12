@@ -51,6 +51,12 @@ class FridgeRepositoryImpl @Inject constructor(
         dao.getByIdIncludingDeleted(id)?.let { pushIfSignedIn(it) }
     }
 
+    override suspend fun restoreItem(id: String) {
+        val now = System.currentTimeMillis()
+        dao.restoreById(id, now)
+        dao.getByIdIncludingDeleted(id)?.let { pushIfSignedIn(it) }
+    }
+
     override suspend fun decreaseQuantity(id: String, amount: Double) {
         val now = System.currentTimeMillis()
         dao.decreaseQuantity(id, amount, now)

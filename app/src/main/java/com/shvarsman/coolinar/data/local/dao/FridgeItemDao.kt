@@ -33,6 +33,9 @@ interface FridgeItemDao {
     @Query("UPDATE fridge_items SET isDeleted = 1, updatedAt = :updatedAt WHERE id = :id")
     suspend fun softDeleteById(id: String, updatedAt: Long)
 
+    @Query("UPDATE fridge_items SET isDeleted = 0, updatedAt = :updatedAt WHERE id = :id")
+    suspend fun restoreById(id: String, updatedAt: Long)
+
     @Query("UPDATE fridge_items SET quantity = MAX(0, quantity - :amount), updatedAt = :updatedAt WHERE id = :id")
     suspend fun decreaseQuantity(id: String, amount: Double, updatedAt: Long)
 

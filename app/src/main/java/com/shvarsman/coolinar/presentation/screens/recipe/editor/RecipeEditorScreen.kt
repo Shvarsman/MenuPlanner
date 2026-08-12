@@ -65,6 +65,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -255,17 +256,22 @@ fun RecipeEditorScreen(
                         value = stringResource(state.category.labelRes),
                         placeholder = stringResource(R.string.select_category_placeholder),
                         leadingIcon = state.category.icon,
+                        customLeadingIcon = { RecipeCategoryIcon(category = state.category, modifier = Modifier.size(20.dp)) },
                         onClick = { showCategoryBottomSheet = true },
                     )
                 }
 
                 item {
+                    val currentMethod = state.cookingMethod
                     SelectorField(
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
                         label = stringResource(R.string.cooking_method),
-                        value = state.cookingMethod?.labelRes?.let { stringResource(it) } ?: "",
+                        value = currentMethod?.labelRes?.let { stringResource(it) } ?: "",
                         placeholder = stringResource(R.string.select_method_placeholder),
                         leadingIcon = Icons.Filled.Kitchen,
+                        customLeadingIcon = if (currentMethod != null) {
+                            { CookingMethodIcon(method = currentMethod, modifier = Modifier.size(20.dp)) }
+                        } else null,
                         onClick = { showCookingMethodBottomSheet = true }
                     )
                 }
@@ -276,7 +282,7 @@ fun RecipeEditorScreen(
                         label = stringResource(R.string.duration_picker_title),
                         hours = state.cookingHours,
                         minutes = state.cookingMinutes,
-                        leadingIcon = Icons.Outlined.Schedule,
+                        leadingIcon = ImageVector.vectorResource(R.drawable.time),
                         onClick = { showDurationPickerDialog = true },
                     )
                 }
@@ -328,7 +334,7 @@ fun RecipeEditorScreen(
                         )
                         TextButton(onClick = { viewModel.openIngredientPicker() }) {
                             Icon(
-                                Icons.Filled.Add,
+                                imageVector = Icons.Filled.Add,
                                 contentDescription = null,
                                 modifier = Modifier.size(18.dp)
                             )
@@ -578,12 +584,12 @@ private fun StepsBottomAppBar(
     BottomAppBar(
         actions = {
             ToolbarTooltipIconButton(
-                icon = Icons.Filled.AddAPhoto,
+                icon = ImageVector.vectorResource(R.drawable.add_photo),
                 label = stringResource(R.string.add_step_photo),
                 onClick = onAddPhoto
             )
             ToolbarTooltipIconButton(
-                icon = Icons.Filled.Timer,
+                icon = ImageVector.vectorResource(R.drawable.timer),
                 label = stringResource(R.string.add_step_timer),
                 onClick = onAddTimer
             )
@@ -629,6 +635,7 @@ private fun ToolbarTooltipIconButton(
         IconButton(onClick = onClick) {
             Icon(
                 imageVector = icon,
+                modifier = Modifier.size(24.dp),
                 contentDescription = label
             )
         }
@@ -659,7 +666,11 @@ private fun CoverPhotoPicker(
                 )
             } else {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Icon(Icons.Filled.AddAPhoto, contentDescription = null)
+                    Icon(
+                        imageVector = ImageVector.vectorResource(R.drawable.add_photo),
+                        modifier = Modifier.size(20.dp),
+                        contentDescription = null
+                    )
                     Spacer(Modifier.height(4.dp))
                     Text(stringResource(R.string.add_cover_photo))
                 }

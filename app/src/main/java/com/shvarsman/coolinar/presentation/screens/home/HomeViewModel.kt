@@ -17,12 +17,13 @@ import com.shvarsman.coolinar.domain.model.computeReservedAmounts
 import com.shvarsman.coolinar.domain.usecase.fridge.GetFridgeItemsUseCase
 import com.shvarsman.coolinar.domain.usecase.menu.AssignRecipeToMenuUseCase
 import com.shvarsman.coolinar.domain.usecase.menu.GetWeekMenuUseCase
+import com.shvarsman.coolinar.domain.usecase.menu.MenuEntryRemovalResult
 import com.shvarsman.coolinar.domain.usecase.menu.RemoveMenuEntryUseCase
+import com.shvarsman.coolinar.domain.usecase.menu.RestoreMenuEntryUseCase
 import com.shvarsman.coolinar.domain.usecase.preferences.GetDisplayNameUseCase
 import com.shvarsman.coolinar.domain.usecase.recipe.GetRecipeSummariesUseCase
 import com.shvarsman.coolinar.domain.usecase.recipe.GetRecipesUseCase
 import com.shvarsman.coolinar.domain.usecase.shoppinglist.GetShoppingListUseCase
-import com.shvarsman.coolinar.presentation.utils.PendingDeleteManager
 import com.shvarsman.coolinar.presentation.utils.debounceSearch
 import com.shvarsman.coolinar.presentation.utils.mapOnDefault
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -69,7 +70,8 @@ class MenuViewModel @Inject constructor(
     getShoppingList: GetShoppingListUseCase,
     getDisplayName: GetDisplayNameUseCase,
     private val assignRecipeToMenu: AssignRecipeToMenuUseCase,
-    private val removeMenuEntry: RemoveMenuEntryUseCase
+    private val removeMenuEntry: RemoveMenuEntryUseCase,
+    private val restoreMenuEntry: RestoreMenuEntryUseCase
 ) : ViewModel() {
 
     private val recipesFlow = getRecipes()
@@ -94,15 +96,12 @@ class MenuViewModel @Inject constructor(
     // Всегда следующая неделя — по ней считается прогресс на главном экране
     private val nextWeekMenuFlow: Flow<List<MenuEntry>> = getWeekMenu(weekStartFor(1))
 
-    private val pendingDeleteManager = PendingDeleteManager<String>(viewModelScope)
+    private val pendingRemovals = mutableMapOf<String, MenuEntryRemovalResult>()
 
     private val visibleMenusFlow = combine(
         selectedWeekMenuFlow,
-        nextWeekMenuFlow,
-        pendingDeleteManager.pendingIds
-    ) { selected, next, pendingIds ->
-        selected.filter { it.id !in pendingIds } to next.filter { it.id !in pendingIds }
-    }
+        nextWeekMenuFlow
+    ) { selected, next -> selected to next }
 
     private val coreMenuData = combine(
         visibleMenusFlow, recipesFlow, fridgeItemsFlow, extrasFlow
@@ -193,11 +192,16 @@ class MenuViewModel @Inject constructor(
     }
 
     fun requestDeleteEntry(id: String) {
-        pendingDeleteManager.requestDelete(id) { removeMenuEntry(id) }
+        viewModelScope.launch {
+            pendingRemovals[id] = removeMenuEntry(id)
+        }
     }
 
     fun undoDeleteEntry(id: String) {
-        pendingDeleteManager.undo(id)
+        viewModelScope.launch {
+            val result = pendingRemovals.remove(id) ?: return@launch
+            restoreMenuEntry(result)
+        }
     }
 
     fun onRecipeSearchQueryChange(query: String) {

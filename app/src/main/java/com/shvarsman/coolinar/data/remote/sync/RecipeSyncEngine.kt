@@ -49,6 +49,7 @@ class RecipeSyncEngine @Inject constructor(
             description = description,
             stepsSerialized = converters.fromStepContentList(steps),
             stepCount = stepCount,
+            favorite = isFavorite,
             ingredients = ingredientDtos,
             updatedAt = updatedAt,
             deleted = isDeleted
@@ -69,6 +70,7 @@ class RecipeSyncEngine @Inject constructor(
         description = description,
         steps = converters.toStepContentList(stepsSerialized),
         stepCount = stepCount,
+        isFavorite = favorite,
         updatedAt = updatedAt,
         isDeleted = deleted
     )
