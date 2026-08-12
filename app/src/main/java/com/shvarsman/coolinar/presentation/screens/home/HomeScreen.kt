@@ -91,7 +91,7 @@ fun HomeScreen(
                     text = greetingText(userName),
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Medium,
-                    modifier = Modifier.padding(horizontal = 16.dp)
+                    modifier = Modifier.padding(horizontal = 32.dp)
                 )
             }
 

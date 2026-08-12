@@ -6,7 +6,6 @@ import com.shvarsman.coolinar.R
 import com.shvarsman.coolinar.domain.model.AuthException
 import com.shvarsman.coolinar.domain.model.AuthState
 import com.shvarsman.coolinar.domain.repository.AuthRepository
-import com.shvarsman.coolinar.domain.repository.UserPreferencesRepository
 import com.shvarsman.coolinar.domain.usecase.auth.SignUpWithEmailUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -21,15 +20,11 @@ enum class AuthFormMode { SIGN_IN, SIGN_UP }
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
     private val authRepository: AuthRepository,
-    private val signUpWithEmail: SignUpWithEmailUseCase,
-    userPreferencesRepository: UserPreferencesRepository
+    private val signUpWithEmail: SignUpWithEmailUseCase
 ) : ViewModel() {
 
     val authState: StateFlow<AuthState> = authRepository.authState
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), AuthState.Loading)
-
-    val displayName: StateFlow<String?> = userPreferencesRepository.displayName
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
     private val _formMode = MutableStateFlow(AuthFormMode.SIGN_IN)
     val formMode: StateFlow<AuthFormMode> = _formMode

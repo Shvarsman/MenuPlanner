@@ -16,5 +16,9 @@ interface AuthRepository {
 
     suspend fun changePassword(currentPassword: String, newPassword: String): Result<Unit>
 
+    suspend fun updateDisplayName(displayName: String): Result<Unit>
+
+    suspend fun updatePhotoUrl(photoUrl: String?): Result<Unit>
+
     suspend fun signOut()
 }

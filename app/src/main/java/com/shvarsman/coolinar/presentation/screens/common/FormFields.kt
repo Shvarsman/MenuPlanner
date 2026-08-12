@@ -394,7 +394,7 @@ fun NavRow(
                     imageVector = icon,
                     contentDescription = null,
                     tint = tint,
-                    modifier = Modifier.size(20.dp)
+                    modifier = Modifier.size(24.dp)
                 )
                 Spacer(Modifier.width(12.dp))
                 Text(text, style = MaterialTheme.typography.bodyMedium, color = tint)

@@ -1,5 +1,6 @@
 package com.shvarsman.coolinar.presentation.navigation
 
+import androidx.annotation.DrawableRes
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
@@ -11,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material.icons.filled.AccountCircle
@@ -35,6 +37,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -54,6 +57,7 @@ import com.shvarsman.coolinar.presentation.screens.fridge.FridgeScreen
 import com.shvarsman.coolinar.presentation.screens.home.HomeScreen
 import com.shvarsman.coolinar.presentation.screens.home.WeekMenuScreen
 import com.shvarsman.coolinar.presentation.screens.onboarding.OnboardingScreen
+import com.shvarsman.coolinar.presentation.screens.profile.AuthScreen
 import com.shvarsman.coolinar.presentation.screens.profile.ProfileScreen
 import com.shvarsman.coolinar.presentation.screens.profile.ProfileSettingsScreen
 import com.shvarsman.coolinar.presentation.screens.recipe.all.AllRecipesListScreen
@@ -70,14 +74,14 @@ import com.shvarsman.coolinar.presentation.ui.theme.gradientStyle
 private data class BottomItem(
     val destination: Destination,
     @androidx.annotation.StringRes val labelRes: Int,
-    val icon: ImageVector
+    @DrawableRes val iconRes: Int
 )
 
 private val bottomItems = listOf(
-    BottomItem(Destination.Home, R.string.nav_home, Icons.Filled.RestaurantMenu),
-    BottomItem(Destination.Fridge, R.string.nav_fridge, Icons.Filled.Kitchen),
-    BottomItem(Destination.Recipes, R.string.nav_recipes, Icons.AutoMirrored.Filled.MenuBook),
-    BottomItem(Destination.Profile, R.string.nav_profile, Icons.Filled.AccountCircle)
+    BottomItem(Destination.Home, R.string.nav_home, R.drawable.home),
+    BottomItem(Destination.Fridge, R.string.nav_fridge, R.drawable.fridge),
+    BottomItem(Destination.Recipes, R.string.nav_recipes, R.drawable.recipes),
+    BottomItem(Destination.Profile, R.string.nav_profile, R.drawable.profile)
 )
 
 @Composable
@@ -258,6 +262,12 @@ fun AppNavGraph(showOnboarding: Boolean = false) {
             composable(Destination.ShoppingList.route) {
                 ShoppingListScreen(onBack = { rootNavController.popBackStack() })
             }
+
+            composable(Destination.ProfileAuth.route) {
+                AuthScreen(
+                    onBack = { rootNavController.popBackStack() },
+                    onAuthSuccess = { rootNavController.popBackStack() })
+            }
         }
     }
 }
@@ -320,8 +330,9 @@ private fun MainTabsScreen(rootNavController: NavHostController) {
                                     },
                                     icon = {
                                         Icon(
-                                            imageVector = item.icon,
-                                            contentDescription = stringResource(item.labelRes)
+                                            imageVector = ImageVector.vectorResource(item.iconRes),
+                                            contentDescription = stringResource(item.labelRes),
+                                            modifier = Modifier.size(24.dp)
                                         )
                                     },
                                     label = { Text(stringResource(item.labelRes)) },
@@ -411,7 +422,8 @@ private fun MainTabsScreen(rootNavController: NavHostController) {
             composable(Destination.Profile.route) {
                 ProfileScreen(
                     onOpenBackup = { rootNavController.navigate(Destination.Backup.route) },
-                    onOpenProfileSettings = { rootNavController.navigate(Destination.ProfileSettings.route) }
+                    onOpenProfileSettings = { rootNavController.navigate(Destination.ProfileSettings.route) },
+                    onOpenAuth = { rootNavController.navigate(Destination.ProfileAuth.route) }
                 )
             }
         }

@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.AccountCircle
@@ -26,6 +27,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -34,13 +36,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import coil3.compose.AsyncImage
 import com.shvarsman.coolinar.R
 import com.shvarsman.coolinar.domain.model.AuthState
 import com.shvarsman.coolinar.presentation.screens.common.LabeledTextField
@@ -54,25 +59,52 @@ fun ProfileScreen(
     modifier: Modifier = Modifier,
     onOpenBackup: () -> Unit,
     onOpenProfileSettings: () -> Unit,
+    onOpenAuth: () -> Unit,
     viewModel: ProfileViewModel = hiltViewModel()
 ) {
     val authState by viewModel.authState.collectAsStateWithLifecycle()
-    val displayName by viewModel.displayName.collectAsStateWithLifecycle()
-    val formMode by viewModel.formMode.collectAsStateWithLifecycle()
-    val isSubmitting by viewModel.isSubmitting.collectAsStateWithLifecycle()
-    val errorRes by viewModel.errorRes.collectAsStateWithLifecycle()
 
     Scaffold(
         modifier = modifier,
-        topBar = {
-            CenterAlignedTopAppBar(
-                title = { Text(stringResource(R.string.profile_title)) },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background,
-                    scrolledContainerColor = MaterialTheme.colorScheme.background
-                )
-            )
-        }
+//        topBar = {
+//            TopAppBar(
+//                title = {
+//                    val signedInUser = (authState as? AuthState.SignedIn)?.user
+//                    Row(verticalAlignment = Alignment.CenterVertically) {
+//                        Box(
+//                            modifier = Modifier
+//                                .size(28.dp)
+//                                .clip(CircleShape)
+//                        ) {
+//                            if (signedInUser?.photoUrl != null) {
+//                                AsyncImage(
+//                                    model = signedInUser.photoUrl,
+//                                    contentDescription = null,
+//                                    modifier = Modifier.fillMaxWidth(),
+//                                    contentScale = ContentScale.Crop
+//                                )
+//                            } else {
+//                                Icon(
+//                                    imageVector = Icons.Filled.AccountCircle,
+//                                    contentDescription = null,
+//                                    modifier = Modifier.fillMaxWidth()
+//                                )
+//                            }
+//                        }
+//                        Spacer(Modifier.width(8.dp))
+//                        Text(
+//                            signedInUser?.displayName?.takeIf { it.isNotBlank() }
+//                                ?: signedInUser?.email
+//                                ?: stringResource(R.string.profile_display_name_guest)
+//                        )
+//                    }
+//                },
+//                colors = TopAppBarDefaults.topAppBarColors(
+//                    containerColor = MaterialTheme.colorScheme.background,
+//                    scrolledContainerColor = MaterialTheme.colorScheme.background
+//                )
+//            )
+//        }
     ) { padding ->
         Box(
             modifier = Modifier
@@ -90,20 +122,21 @@ fun ProfileScreen(
                 }
 
                 is AuthState.SignedOut -> {
-                    AuthForm(
-                        formMode = formMode,
-                        isSubmitting = isSubmitting,
-                        errorRes = errorRes,
-                        onSubmit = { email, password -> viewModel.submit(email, password) },
-                        onToggleMode = { viewModel.toggleFormMode() },
-                        onClearError = { viewModel.clearError() }
+                    SignedInContent(
+                        displayName = stringResource(R.string.profile_display_name_guest),
+                        email = null,
+                        photoUrl = null,
+                        onOpenProfileSettings = onOpenAuth,
+                        onOpenBackup = onOpenBackup,
+                        onSignOut = null
                     )
                 }
 
                 is AuthState.SignedIn -> {
                     SignedInContent(
-                        displayName = displayName,
+                        displayName = state.user.displayName?.takeIf { it.isNotBlank() },
                         email = state.user.email,
+                        photoUrl = state.user.photoUrl,
                         onOpenProfileSettings = onOpenProfileSettings,
                         onOpenBackup = onOpenBackup,
                         onSignOut = { viewModel.signOut() }
@@ -206,9 +239,10 @@ private fun AuthForm(
 private fun SignedInContent(
     displayName: String?,
     email: String?,
+    photoUrl: String?,
     onOpenProfileSettings: () -> Unit,
     onOpenBackup: () -> Unit,
-    onSignOut: () -> Unit
+    onSignOut: (() -> Unit)?
 ) {
     var showSignOutConfirm by remember { mutableStateOf(false) }
 
@@ -221,12 +255,23 @@ private fun SignedInContent(
         Spacer(Modifier.height(8.dp))
 
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Icon(
-                imageVector = ImageVector.vectorResource(R.drawable.profile),
-                contentDescription = null,
-                modifier = Modifier.size(56.dp),
-                tint = MaterialTheme.colorScheme.primary
-            )
+            if (photoUrl != null) {
+                AsyncImage(
+                    model = photoUrl,
+                    contentDescription = null,
+                    modifier = Modifier
+                        .size(80.dp)
+                        .clip(CircleShape),
+                    contentScale = ContentScale.Crop
+                )
+            } else {
+                Icon(
+                    imageVector = ImageVector.vectorResource(R.drawable.profile_guest),
+                    contentDescription = null,
+                    modifier = Modifier.size(80.dp),
+                    tint = MaterialTheme.colorScheme.onSurface
+                )
+            }
             Spacer(Modifier.width(16.dp))
             Column {
                 Text(
@@ -247,26 +292,28 @@ private fun SignedInContent(
         }
 
         NavRow(
-            icon = Icons.Filled.ManageAccounts,
+            icon = ImageVector.vectorResource(R.drawable.profile_settings),
             text = stringResource(R.string.profile_setup_button),
             onClick = onOpenProfileSettings
         )
 
         NavRow(
-            icon = Icons.Filled.SettingsBackupRestore,
+            icon = ImageVector.vectorResource(R.drawable.backup_settings),
             text = stringResource(R.string.profile_backup_restore),
             onClick = onOpenBackup
         )
 
-        NavRow(
-            icon = Icons.AutoMirrored.Filled.Logout,
-            text = stringResource(R.string.profile_sign_out),
-            tint = MaterialTheme.colorScheme.error,
-            onClick = { showSignOutConfirm = true }
-        )
+        if (onSignOut != null) {
+            NavRow(
+                icon = Icons.AutoMirrored.Filled.Logout,
+                text = stringResource(R.string.profile_sign_out),
+                tint = MaterialTheme.colorScheme.error,
+                onClick = { showSignOutConfirm = true }
+            )
+        }
     }
 
-    if (showSignOutConfirm) {
+    if (showSignOutConfirm && onSignOut != null) {
         AlertDialog(
             onDismissRequest = { showSignOutConfirm = false },
             title = { Text(stringResource(R.string.profile_sign_out_confirm_title)) },

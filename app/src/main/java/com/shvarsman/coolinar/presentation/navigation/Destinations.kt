@@ -43,5 +43,7 @@ sealed class Destination(val route: String) {
 
     object Profile : Destination("profile")
 
+    object ProfileAuth : Destination("profile_auth")
+
     object ProfileSettings : Destination("profile_settings")
 }

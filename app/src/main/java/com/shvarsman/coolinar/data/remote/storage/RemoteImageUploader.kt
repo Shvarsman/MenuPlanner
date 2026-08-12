@@ -23,6 +23,13 @@ class RemoteImageUploader @Inject constructor(
         return ref.downloadUrl.await().toString()
     }
 
+    suspend fun uploadAvatar(uid: String, localFileUri: String): String {
+        val ref = storage.reference.child("users/$uid/avatar/avatar.jpg")
+        ref.putFile(localFileUri.toUri()).await()
+        return ref.downloadUrl.await().toString()
+    }
+
+
     suspend fun delete(remoteUrl: String) {
         runCatching { storage.getReferenceFromUrl(remoteUrl).delete().await() }
     }
