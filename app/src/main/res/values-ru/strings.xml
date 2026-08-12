@@ -276,6 +276,18 @@
     <string name="meal_type_lunch">Обед</string>
     <string name="meal_type_dinner">Ужин</string>
     <string name="meal_type_snack">Перекус</string>
+    <string name="status_menu_incomplete">Меню на неделю ещё не заполнено</string>
+    <string name="status_all_good">Хорошего дня!</string>
+    <string name="week_menu_progress">%1$d/%2$d</string>
+    <string name="fridge_all_fresh">В холодильнике всё свежее</string>
+    <string name="suggested_empty_cta">Заполните холодильник, чтобы увидеть рецепты</string>
+    <plurals name="status_expiring_soon">
+        <item quantity="one">%1$d продукт скоро испортится</item>
+        <item quantity="few">%1$d продукта скоро испортятся</item>
+        <item quantity="many">%1$d продуктов скоро испортятся</item>
+        <item quantity="other">%1$d продукта скоро испортятся</item>
+    </plurals>
+    <string name="total_recipes_title">Всего рецептов</string>
 
     <!--Recipe-->
     <string name="all_recipes">Все рецепты</string>

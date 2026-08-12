@@ -12,4 +12,5 @@ val Context.appPreferencesDataStore: DataStore<Preferences> by preferencesDataSt
 object AppPreferencesKeys {
     val DISPLAY_NAME = stringPreferencesKey("display_name")
     val ONBOARDING_COMPLETED = booleanPreferencesKey("onboarding_completed")
+    val RECIPE_VIEW_MODE = stringPreferencesKey("recipe_view_mode")
 }

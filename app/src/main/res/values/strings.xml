@@ -275,6 +275,16 @@
     <string name="meal_type_lunch">Lunch</string>
     <string name="meal_type_dinner">Dinner</string>
     <string name="meal_type_snack">Snack</string>
+    <string name="status_menu_incomplete">This week\'s menu isn\'t complete yet</string>
+    <string name="status_all_good">Have a great day!</string>
+    <string name="week_menu_progress">%1$d/%2$d</string>
+    <string name="fridge_all_fresh">Everything in the fridge is fresh</string>
+    <string name="suggested_empty_cta">Add items to your fridge to see recipes</string>
+    <plurals name="status_expiring_soon">
+        <item quantity="one">%1$d item is expiring soon</item>
+        <item quantity="other">%1$d items are expiring soon</item>
+    </plurals>
+    <string name="total_recipes_title">Total recipes</string>
 
     <!--Recipe-->
     <string name="all_recipes">All recipes</string>

@@ -19,4 +19,11 @@ class UserPreferencesRepositoryImpl @Inject constructor(
     override suspend fun setDisplayName(name: String) {
         dataStore.edit { it[AppPreferencesKeys.DISPLAY_NAME] = name }
     }
+
+    override val recipeViewMode: Flow<String?> =
+        dataStore.data.map { it[AppPreferencesKeys.RECIPE_VIEW_MODE] }
+
+    override suspend fun setRecipeViewMode(mode: String) {
+        dataStore.edit { it[AppPreferencesKeys.RECIPE_VIEW_MODE] = mode }
+    }
 }

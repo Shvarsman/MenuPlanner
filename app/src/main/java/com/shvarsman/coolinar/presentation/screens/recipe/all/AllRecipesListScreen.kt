@@ -66,7 +66,7 @@ fun AllRecipesListScreen(
     val grouped by viewModel.allRecipesGrouped.collectAsStateWithLifecycle()
     val selectedIds by viewModel.selectedIds.collectAsStateWithLifecycle()
     val isSelectionMode = selectedIds.isNotEmpty()
-    var viewMode by rememberSaveable { mutableStateOf(RecipeViewMode.PHOTO_CARDS) }
+    val viewMode by viewModel.viewMode.collectAsStateWithLifecycle()
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -134,11 +134,10 @@ fun AllRecipesListScreen(
                                 )
                                 .gradientStyle(shape = CornerShape),
                             onClick = {
-                                viewMode = if (viewMode == RecipeViewMode.PHOTO_CARDS) {
-                                    RecipeViewMode.LIST
-                                } else {
-                                    RecipeViewMode.PHOTO_CARDS
-                                }
+                                viewModel.setViewMode(
+                                    if (viewMode == RecipeViewMode.PHOTO_CARDS) RecipeViewMode.LIST
+                                    else RecipeViewMode.PHOTO_CARDS
+                                )
                             }
                         ) {
                             Icon(
@@ -158,7 +157,9 @@ fun AllRecipesListScreen(
         bottomBar = {
             if (isSelectionMode) {
                 BottomAppBar {
-                    TextButton(onClick = { viewModel.selectAll() }) {
+                    TextButton(onClick = {
+                        viewModel.selectAllVisible(grouped.flatMap { it.second }.map { it.id })
+                    }) {
                         Icon(
                             imageVector = ImageVector.vectorResource(R.drawable.select),
                             modifier = Modifier.size(20.dp),

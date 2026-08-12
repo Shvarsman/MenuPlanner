@@ -103,7 +103,7 @@ fun RecipeListScreen(
         viewModel.onSearchQueryChange(it)
     }
 
-    var viewMode by rememberSaveable { mutableStateOf(RecipeViewMode.PHOTO_CARDS) }
+    val viewMode by viewModel.viewMode.collectAsStateWithLifecycle()
     val listState = rememberLazyListState()
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val context = LocalContext.current
@@ -183,11 +183,10 @@ fun RecipeListScreen(
                                 )
                                 .gradientStyle(shape = CornerShape),
                             onClick = {
-                                viewMode = if (viewMode == RecipeViewMode.PHOTO_CARDS) {
-                                    RecipeViewMode.LIST
-                                } else {
-                                    RecipeViewMode.PHOTO_CARDS
-                                }
+                                viewModel.setViewMode(
+                                    if (viewMode == RecipeViewMode.PHOTO_CARDS) RecipeViewMode.LIST
+                                    else RecipeViewMode.PHOTO_CARDS
+                                )
                             }
                         ) {
                             Icon(

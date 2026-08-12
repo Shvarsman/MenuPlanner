@@ -31,11 +31,8 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -71,7 +68,7 @@ fun RecipeCategoryScreen(
     val recipes by viewModel.recipes.collectAsStateWithLifecycle()
     val selectedIds by viewModel.selectedIds.collectAsStateWithLifecycle()
     val isSelectionMode = selectedIds.isNotEmpty()
-    var viewMode by rememberSaveable { mutableStateOf(RecipeViewMode.PHOTO_CARDS) }
+    val viewMode by viewModel.viewMode.collectAsStateWithLifecycle()
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -135,11 +132,10 @@ fun RecipeCategoryScreen(
                                 )
                                 .gradientStyle(shape = CornerShape),
                             onClick = {
-                                viewMode = if (viewMode == RecipeViewMode.PHOTO_CARDS) {
-                                    RecipeViewMode.LIST
-                                } else {
-                                    RecipeViewMode.PHOTO_CARDS
-                                }
+                                viewModel.setViewMode(
+                                    if (viewMode == RecipeViewMode.PHOTO_CARDS) RecipeViewMode.LIST
+                                    else RecipeViewMode.PHOTO_CARDS
+                                )
                             }
                         ) {
                             Icon(

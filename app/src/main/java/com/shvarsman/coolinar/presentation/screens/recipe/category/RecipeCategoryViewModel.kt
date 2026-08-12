@@ -5,15 +5,19 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.shvarsman.coolinar.domain.model.RecipeCategory
 import com.shvarsman.coolinar.domain.model.RecipeSummary
+import com.shvarsman.coolinar.domain.usecase.preferences.GetRecipeViewModeUseCase
+import com.shvarsman.coolinar.domain.usecase.preferences.SetRecipeViewModeUseCase
 import com.shvarsman.coolinar.domain.usecase.recipe.DeleteRecipeUseCase
 import com.shvarsman.coolinar.domain.usecase.recipe.GetRecipeSummariesUseCase
 import com.shvarsman.coolinar.domain.usecase.recipe.RestoreRecipeUseCase
 import com.shvarsman.coolinar.domain.usecase.recipe.ToggleRecipeFavoriteUseCase
+import com.shvarsman.coolinar.presentation.screens.recipe.list.RecipeViewMode
 import com.shvarsman.coolinar.presentation.utils.mapOnDefault
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -24,7 +28,9 @@ class RecipeCategoryViewModel @Inject constructor(
     getRecipeSummaries: GetRecipeSummariesUseCase,
     private val deleteRecipe: DeleteRecipeUseCase,
     private val restoreRecipe: RestoreRecipeUseCase,
-    private val toggleFavorite: ToggleRecipeFavoriteUseCase
+    private val toggleFavorite: ToggleRecipeFavoriteUseCase,
+    getRecipeViewMode: GetRecipeViewModeUseCase,
+    private val setRecipeViewMode: SetRecipeViewModeUseCase
 ) : ViewModel() {
 
     val category: RecipeCategory = RecipeCategory.valueOf(
@@ -53,6 +59,17 @@ class RecipeCategoryViewModel @Inject constructor(
 
     fun onToggleFavorite(recipe: RecipeSummary) {
         viewModelScope.launch { toggleFavorite(recipe.id, !recipe.isFavorite) }
+    }
+
+    val viewMode: StateFlow<RecipeViewMode> = getRecipeViewMode()
+        .map { stored ->
+            stored?.let { runCatching { RecipeViewMode.valueOf(it) }.getOrNull() }
+                ?: RecipeViewMode.PHOTO_CARDS
+        }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), RecipeViewMode.PHOTO_CARDS)
+
+    fun setViewMode(mode: RecipeViewMode) {
+        viewModelScope.launch { setRecipeViewMode(mode.name) }
     }
 
     // ── Множественный выбор ──────────────────────────────────────────

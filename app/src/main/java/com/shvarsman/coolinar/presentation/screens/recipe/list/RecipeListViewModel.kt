@@ -11,6 +11,8 @@ import com.shvarsman.coolinar.domain.model.RecipeCategory
 import com.shvarsman.coolinar.domain.model.RecipeSummary
 import com.shvarsman.coolinar.domain.model.availability
 import com.shvarsman.coolinar.domain.usecase.fridge.GetFridgeItemsUseCase
+import com.shvarsman.coolinar.domain.usecase.preferences.GetRecipeViewModeUseCase
+import com.shvarsman.coolinar.domain.usecase.preferences.SetRecipeViewModeUseCase
 import com.shvarsman.coolinar.domain.usecase.recipe.DeleteRecipeUseCase
 import com.shvarsman.coolinar.domain.usecase.recipe.GetRecipeSummariesUseCase
 import com.shvarsman.coolinar.domain.usecase.recipe.GetRecipesUseCase
@@ -23,6 +25,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -83,7 +86,9 @@ class RecipeListViewModel @Inject constructor(
     getFridgeItems: GetFridgeItemsUseCase,
     private val deleteRecipe: DeleteRecipeUseCase,
     private val restoreRecipe: RestoreRecipeUseCase,
-    private val toggleFavorite: ToggleRecipeFavoriteUseCase
+    private val toggleFavorite: ToggleRecipeFavoriteUseCase,
+    getRecipeViewMode: GetRecipeViewModeUseCase,
+    private val setRecipeViewMode: SetRecipeViewModeUseCase
 ) : ViewModel() {
 
     private val _searchQuery = MutableStateFlow("")
@@ -114,6 +119,22 @@ class RecipeListViewModel @Inject constructor(
     val groupingOption: StateFlow<RecipeGroupingOption> = _groupingOption
     fun selectGroupingOption(option: RecipeGroupingOption) {
         _groupingOption.value = option
+    }
+
+    /** Persisted через DataStore (не rememberSaveable) — переживает не только
+     * поворот экрана, но и навигацию между экранами, и полное закрытие
+     * приложения. Общая настройка для всех экранов со списком рецептов
+     * (RecipeListScreen/AllRecipesListScreen/SuggestedRecipesScreen здесь,
+     * RecipeCategoryScreen — через свою RecipeCategoryViewModel). */
+    val viewMode: StateFlow<RecipeViewMode> = getRecipeViewMode()
+        .map { stored ->
+            stored?.let { runCatching { RecipeViewMode.valueOf(it) }.getOrNull() }
+                ?: RecipeViewMode.PHOTO_CARDS
+        }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), RecipeViewMode.PHOTO_CARDS)
+
+    fun setViewMode(mode: RecipeViewMode) {
+        viewModelScope.launch { setRecipeViewMode(mode.name) }
     }
 
     val allRecipes: StateFlow<List<RecipeSummary>> = getRecipeSummaries()
@@ -299,6 +320,14 @@ class RecipeListViewModel @Inject constructor(
      * что не видно на экране, что выглядело бы как баг. */
     fun selectAll() {
         _selectedIds.value = filteredRecipes.value.map { it.id }.toSet()
+    }
+
+    /** Для экранов, где видимый набор рецептов — не filteredRecipes этой же
+     * ViewModel (SuggestedRecipesScreen показывает suggestedRecipes,
+     * AllRecipesListScreen — allRecipes) — id видимых элементов передаёт сам
+     * экран, чтобы "выбрать все" не захватывало то, что реально не отображено. */
+    fun selectAllVisible(ids: List<String>) {
+        _selectedIds.value = ids.toSet()
     }
 
     fun clearSelection() {

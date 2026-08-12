@@ -2,11 +2,14 @@ package com.shvarsman.coolinar.presentation.screens.home
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -25,6 +28,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
@@ -34,9 +38,10 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.shvarsman.coolinar.R
 import com.shvarsman.coolinar.domain.model.FridgeItem
-import com.shvarsman.coolinar.presentation.screens.common.FieldLabel
 import com.shvarsman.coolinar.presentation.screens.common.NavRow
+import com.shvarsman.coolinar.presentation.screens.common.StatCard
 import com.shvarsman.coolinar.presentation.screens.recipe.components.RecipeCarouselSection
+import com.shvarsman.coolinar.presentation.ui.theme.CornerShape
 import com.shvarsman.coolinar.presentation.ui.theme.FloatingBottomBarClearance
 import com.shvarsman.coolinar.presentation.ui.theme.molleFont
 
@@ -48,6 +53,7 @@ fun HomeScreen(
     onOpenShoppingList: () -> Unit,
     onOpenWeekMenu: () -> Unit,
     onShowAllSuggested: () -> Unit,
+    onShowAllRecipes: () -> Unit,
     onViewRecipe: (recipeId: String) -> Unit,
     viewModel: MenuViewModel = hiltViewModel()
 ) {
@@ -57,6 +63,7 @@ fun HomeScreen(
     val weeklyPlannedCount = uiState.weeklyPlannedCount
     val weeklyTotalCount = uiState.weeklyTotalCount
     val shoppingListCount = uiState.shoppingListCount
+    val totalRecipesCount = uiState.recipes.size
     val userName = uiState.userName
 
     Scaffold(
@@ -87,66 +94,116 @@ fun HomeScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             item(key = "greeting") {
-                Text(
-                    text = greetingText(userName),
-                    style = MaterialTheme.typography.headlineSmall,
-                    fontWeight = FontWeight.Medium,
-                    modifier = Modifier.padding(horizontal = 32.dp)
-                )
+                Column(modifier = Modifier.padding(horizontal = 32.dp)) {
+                    Text(
+                        text = greetingText(userName),
+                        style = MaterialTheme.typography.headlineSmall,
+                        fontWeight = FontWeight.Medium
+                    )
+                    Spacer(Modifier.height(4.dp))
+                    Text(
+                        text = homeStatusSubtitle(
+                            expiringCount = expiringFridgeItems.size,
+                            weeklyPlannedCount = weeklyPlannedCount,
+                            weeklyTotalCount = weeklyTotalCount
+                        ),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
             }
 
-            if (expiringFridgeItems.isNotEmpty()) {
-                item(key = "expiring_banner") {
+            item(key = "expiring_banner") {
+                if (expiringFridgeItems.isNotEmpty()) {
                     ExpiringItemsBanner(
                         items = expiringFridgeItems,
+                        onClick = onOpenFridge,
+                        modifier = Modifier.padding(horizontal = 16.dp)
+                    )
+                } else {
+                    FreshFridgeBanner(
                         onClick = onOpenFridge,
                         modifier = Modifier.padding(horizontal = 16.dp)
                     )
                 }
             }
 
-            item(key = "week_menu_nav") {
-                Column(modifier = Modifier.padding(horizontal = 16.dp)) {
-                    FieldLabel(
-                        stringResource(
+            item(key = "stat_cards") {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(IntrinsicSize.Min)
+                        .padding(horizontal = 16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    StatCard(
+                        icon = ImageVector.vectorResource(R.drawable.menu),
+                        value = stringResource(
                             R.string.week_menu_summary,
                             weeklyPlannedCount,
                             weeklyTotalCount
+                        ),
+                        label = stringResource(R.string.week_menu_title),
+                        progress = if (weeklyTotalCount > 0) {
+                            weeklyPlannedCount / weeklyTotalCount.toFloat()
+                        } else null,
+                        onClick = onOpenWeekMenu,
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxHeight()
+                    )
+                    Column(
+                        modifier = Modifier.weight(1f),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        StatCard(
+                            icon = ImageVector.vectorResource(R.drawable.shopping_list),
+                            value = if (shoppingListCount == 0) {
+                                "—"
+                            } else {
+                                shoppingListCount.toString()
+                            },
+                            label = stringResource(R.string.shopping_list_title),
+                            onClick = onOpenShoppingList,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .weight(1f)
                         )
-                    )
-                    NavRow(
-                        icon = ImageVector.vectorResource(R.drawable.menu),
-                        text = stringResource(R.string.week_menu_title),
-                        onClick = onOpenWeekMenu
-                    )
+                        StatCard(
+                            icon = ImageVector.vectorResource(R.drawable.recipes),
+                            value = totalRecipesCount.toString(),
+                            label = stringResource(R.string.total_recipes_title),
+                            onClick = onShowAllRecipes,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .weight(1f)
+                        )
+                    }
                 }
             }
 
-            item(key = "shopping_list_quick_nav") {
-                Column(modifier = Modifier.padding(horizontal = 16.dp)) {
-                    FieldLabel(
-                        if (shoppingListCount == 0) {
-                            stringResource(R.string.shopping_list_empty_short)
-                        } else {
-                            stringResource(R.string.shopping_list_count, shoppingListCount)
-                        }
-                    )
-                    NavRow(
-                        icon = ImageVector.vectorResource(R.drawable.shopping_list),
-                        text = stringResource(R.string.shopping_list_title),
-                        onClick = onOpenShoppingList
-                    )
-                }
-            }
-
-            if (suggestedRecipes.isNotEmpty()) {
-                item(key = "suggested_carousel") {
+            item(key = "suggested_carousel") {
+                if (suggestedRecipes.isNotEmpty()) {
                     RecipeCarouselSection(
                         title = stringResource(R.string.can_cook_now),
                         recipes = suggestedRecipes,
                         onRecipeClick = onViewRecipe,
                         onShowAllClick = onShowAllSuggested
                     )
+                } else {
+                    Column(modifier = Modifier.padding(horizontal = 16.dp)) {
+                        Text(
+                            text = stringResource(R.string.can_cook_now),
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Medium
+                        )
+                        Spacer(Modifier.height(8.dp))
+                        NavRow(
+                            icon = ImageVector.vectorResource(R.drawable.fridge),
+                            text = stringResource(R.string.suggested_empty_cta),
+                            onClick = onOpenFridge
+                        )
+                    }
                 }
             }
         }
@@ -167,6 +224,22 @@ private fun greetingText(userName: String?): String {
 }
 
 @Composable
+private fun homeStatusSubtitle(
+    expiringCount: Int,
+    weeklyPlannedCount: Int,
+    weeklyTotalCount: Int
+): String = when {
+    expiringCount > 0 -> pluralStringResource(
+        R.plurals.status_expiring_soon,
+        expiringCount,
+        expiringCount
+    )
+
+    weeklyPlannedCount < weeklyTotalCount -> stringResource(R.string.status_menu_incomplete)
+    else -> stringResource(R.string.status_all_good)
+}
+
+@Composable
 private fun ExpiringItemsBanner(
     items: List<FridgeItem>,
     onClick: () -> Unit,
@@ -175,7 +248,8 @@ private fun ExpiringItemsBanner(
     Card(
         onClick = onClick,
         modifier = modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer)
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.error),
+        shape = CornerShape
     ) {
         Row(
             modifier = Modifier.padding(16.dp),
@@ -185,14 +259,14 @@ private fun ExpiringItemsBanner(
                 imageVector = ImageVector.vectorResource(R.drawable.unavailable),
                 modifier = Modifier.size(20.dp),
                 contentDescription = null,
-                tint = MaterialTheme.colorScheme.onErrorContainer
+                tint = MaterialTheme.colorScheme.onError
             )
             Spacer(Modifier.width(12.dp))
             Column {
                 Text(
                     text = stringResource(R.string.expiring_soon_title),
                     style = MaterialTheme.typography.titleSmall,
-                    color = MaterialTheme.colorScheme.onErrorContainer
+                    color = MaterialTheme.colorScheme.onError
                 )
                 Text(
                     items.joinToString(
@@ -200,10 +274,41 @@ private fun ExpiringItemsBanner(
                         truncated = stringResource(R.string.and_more, items.size - 3)
                     ) { it.product.name },
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onErrorContainer,
+                    color = MaterialTheme.colorScheme.onError,
                     maxLines = 2
                 )
             }
+        }
+    }
+}
+
+@Composable
+private fun FreshFridgeBanner(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        onClick = onClick,
+        modifier = modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHighest),
+        shape = CornerShape
+    ) {
+        Row(
+            modifier = Modifier.padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = ImageVector.vectorResource(R.drawable.fridge),
+                modifier = Modifier.size(20.dp),
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.secondary
+            )
+            Spacer(Modifier.width(12.dp))
+            Text(
+                text = stringResource(R.string.fridge_all_fresh),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.secondary
+            )
         }
     }
 }

@@ -372,7 +372,8 @@ private fun MainTabsScreen(rootNavController: NavHostController) {
                         }
                     },
                     onOpenShoppingList = { rootNavController.navigate(Destination.ShoppingList.route) },
-                    onShowAllSuggested = { rootNavController.navigate(Destination.SuggestedRecipes.route) }
+                    onShowAllSuggested = { rootNavController.navigate(Destination.SuggestedRecipes.route) },
+                    onShowAllRecipes = { rootNavController.navigate(Destination.AllRecipesList.route) }
                 )
             }
 
