@@ -18,9 +18,8 @@ interface ProductDao {
     @Query("SELECT * FROM products WHERE LOWER(name) = LOWER(:name) AND isDeleted = 0 LIMIT 1")
     suspend fun findByName(name: String): ProductEntity?
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Upsert
     suspend fun insert(product: ProductEntity)
-
     @Update
     suspend fun update(product: ProductEntity)
 

@@ -22,8 +22,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenuItem
@@ -38,7 +36,6 @@ import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
-import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
@@ -68,6 +65,7 @@ import com.shvarsman.coolinar.domain.model.Category
 import com.shvarsman.coolinar.domain.model.MeasureUnit
 import com.shvarsman.coolinar.domain.model.Product
 import com.shvarsman.coolinar.presentation.screens.common.AppBottomSheet
+import com.shvarsman.coolinar.presentation.screens.common.AppSnackbarHost
 import com.shvarsman.coolinar.presentation.screens.common.DropdownFilterChip
 import com.shvarsman.coolinar.presentation.screens.common.ProductFormFields
 import com.shvarsman.coolinar.presentation.screens.common.TopBarSearchField
@@ -122,7 +120,7 @@ fun ProductCatalogScreen(
 
     Scaffold(
         modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
-        snackbarHost = { SnackbarHost(snackbarHostState) },
+        snackbarHost = { AppSnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
                 scrollBehavior = scrollBehavior,

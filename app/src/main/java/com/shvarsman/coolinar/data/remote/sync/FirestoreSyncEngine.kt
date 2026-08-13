@@ -78,7 +78,7 @@ abstract class FirestoreSyncEngine<Local : SyncableEntity, Dto : Any>(
                     // https://-URI из более позднего push.
                     val toApply = items.filter { (incoming, _) ->
                         val existing = getLocalById(incoming.id)
-                        existing == null || incoming.updatedAt >= existing.updatedAt
+                        existing == null || incoming.updatedAt > existing.updatedAt
                     }
                     if (toApply.isNotEmpty()) upsertLocal(toApply)
                 }

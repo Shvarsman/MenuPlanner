@@ -2,21 +2,33 @@ package com.shvarsman.coolinar.data.backup
 
 import kotlinx.serialization.Serializable
 
+/** Общее описание продукта внутри бэкапа. Раньше productName/category/unit
+ * дублировались отдельно в каждом из трёх DTO (холодильник, список покупок,
+ * ингредиенты) — из-за чего в одном месте забыли перенести nameEn/iconKey/
+ * isToTaste/isAlwaysAvailable. Теперь один источник для всех трёх мест. */
 @Serializable
-data class BackupFridgeItemDto(
-    val productName: String,
+data class BackupProductRefDto(
+    val name: String,
     val category: String,
     val unit: String,
-    val quantity: Double
+    val isToTaste: Boolean = false,
+    val isAlwaysAvailable: Boolean = false
+)
+
+@Serializable
+data class BackupFridgeItemDto(
+    val product: BackupProductRefDto,
+    val quantity: Double,
+    val expirationDate: String? = null, // LocalDate.toString() — ISO-8601
+    val isFavorite: Boolean = false
 )
 
 @Serializable
 data class BackupShoppingItemDto(
-    val productName: String,
-    val category: String,
-    val unit: String,
+    val product: BackupProductRefDto,
     val quantity: Double,
-    val isChecked: Boolean
+    val isChecked: Boolean,
+    val expirationDate: String? = null
 )
 
 @Serializable
@@ -24,14 +36,13 @@ data class BackupMenuEntryDto(
     val weekOffset: Int = 0,
     val dayOfWeek: String,
     val mealType: String,
-    val recipeTitle: String // связываем с рецептом по названию, т.к. id рецептов не переносятся между установками
+    val recipeTitle: String, // связываем с рецептом по названию, т.к. id рецептов не переносятся между установками
+    val createdAt: Long = 0L
 )
 
 @Serializable
 data class BackupIngredientDto(
-    val productName: String,
-    val category: String,
-    val unit: String,
+    val product: BackupProductRefDto,
     val quantity: Double
 )
 
@@ -52,14 +63,16 @@ data class BackupRecipeDto(
     val cookingTimeMinutes: Int? = null,
     val ingredients: List<BackupIngredientDto>,
     val steps: List<BackupStepDto>,
-    val difficulty: String = "EASY"
+    val difficulty: String = "EASY",
+    val description: String = "",
+    val isFavorite: Boolean = false
 )
 
 enum class BackupScope { FULL, RECIPES_ONLY, SINGLE_RECIPE }
 
 @Serializable
 data class BackupPayload(
-    val version: Int = 3,
+    val version: Int = 4,
     val scope: String,
     val exportedAt: Long,
     val fridgeItems: List<BackupFridgeItemDto> = emptyList(),

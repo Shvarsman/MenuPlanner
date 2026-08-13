@@ -19,7 +19,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
-import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
@@ -27,11 +26,8 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -46,7 +42,10 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.shvarsman.coolinar.R
 import com.shvarsman.coolinar.domain.model.RecipeSummary
+import com.shvarsman.coolinar.presentation.screens.common.AppSnackbarHost
 import com.shvarsman.coolinar.presentation.screens.common.CollapsingLargeTopAppBar
+import com.shvarsman.coolinar.presentation.screens.common.MascotEmptyState
+import com.shvarsman.coolinar.presentation.screens.common.MascotPose
 import com.shvarsman.coolinar.presentation.screens.recipe.components.recipeGroupedItems
 import com.shvarsman.coolinar.presentation.screens.recipe.list.RecipeListViewModel
 import com.shvarsman.coolinar.presentation.screens.recipe.list.RecipeViewMode
@@ -87,7 +86,7 @@ fun AllRecipesListScreen(
 
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
-        snackbarHost = { SnackbarHost(snackbarHostState) },
+        snackbarHost = { AppSnackbarHost(snackbarHostState) },
         topBar = {
             CollapsingLargeTopAppBar(
                 title = if (isSelectionMode) {
@@ -209,7 +208,10 @@ fun AllRecipesListScreen(
                     .padding(padding),
                 contentAlignment = Alignment.Center
             ) {
-                Text(stringResource(R.string.no_recipes_at_all))
+                MascotEmptyState(
+                    pose = MascotPose.SAD,
+                    title = stringResource(R.string.no_recipes_at_all)
+                )
             }
         } else {
             LazyColumn(

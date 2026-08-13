@@ -20,7 +20,7 @@ interface ShoppingListDao {
     @Query("SELECT * FROM shopping_list_items WHERE id = :id")
     suspend fun getByIdIncludingDeleted(id: String): ShoppingListItemEntity?
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Upsert
     suspend fun insert(item: ShoppingListItemEntity)
 
     @Update

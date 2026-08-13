@@ -185,6 +185,12 @@ class ShoppingListViewModel @Inject constructor(
     private val _showMoveConfirmation = MutableStateFlow(false)
     val showMoveConfirmation: StateFlow<Boolean> = _showMoveConfirmation
 
+    // Одноразовый сигнал "перенос завершён" — экран показывает маскота-праздник
+    // и сам сбрасывает флаг через dismissMoveCompleted(), это не постоянное
+    // состояние экрана, а разовое уведомление об успехе действия.
+    private val _moveCompleted = MutableStateFlow(false)
+    val moveCompleted: StateFlow<Boolean> = _moveCompleted
+
     fun requestMoveCheckedToFridge() {
         if (items.value.any { it.isChecked }) _showMoveConfirmation.value = true
     }
@@ -196,6 +202,13 @@ class ShoppingListViewModel @Inject constructor(
     fun confirmMoveCheckedToFridge() {
         val ids = items.value.filter { it.isChecked }.map { it.id }.toSet()
         _showMoveConfirmation.value = false
-        viewModelScope.launch { moveItemsToFridge(ids) } // без expirationDates — все null, дата задаётся позже в холодильнике
+        viewModelScope.launch {
+            moveItemsToFridge(ids) // без expirationDates — все null, дата задаётся позже в холодильнике
+            _moveCompleted.value = true
+        }
+    }
+
+    fun dismissMoveCompleted() {
+        _moveCompleted.value = false
     }
 }

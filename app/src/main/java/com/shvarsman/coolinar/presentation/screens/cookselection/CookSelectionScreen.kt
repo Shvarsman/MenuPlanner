@@ -60,8 +60,10 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import com.shvarsman.coolinar.R
+import com.shvarsman.coolinar.domain.model.RecipeIngredient
 import com.shvarsman.coolinar.presentation.screens.common.CollapsingLargeTopAppBar
 import com.shvarsman.coolinar.presentation.screens.common.GlassIconButton
+import com.shvarsman.coolinar.presentation.screens.common.localizedName
 import com.shvarsman.coolinar.presentation.screens.common.rememberSizedImageRequest
 import com.shvarsman.coolinar.presentation.ui.theme.CornerShape
 
@@ -70,6 +72,7 @@ import com.shvarsman.coolinar.presentation.ui.theme.CornerShape
 fun CookSelectionScreen(
     onBack: () -> Unit,
     onNavigateToCooking: () -> Unit,
+    onNavigateToShoppingList: () -> Unit,
     viewModel: CookSelectionViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -81,6 +84,13 @@ fun CookSelectionScreen(
         if (uiState.navigateToCooking) {
             onNavigateToCooking()
             viewModel.onNavigateToCookingConsumed()
+        }
+    }
+
+    LaunchedEffect(uiState.navigateToShoppingList) {
+        if (uiState.navigateToShoppingList) {
+            onNavigateToShoppingList()
+            viewModel.onNavigateToShoppingListConsumed()
         }
     }
 
@@ -247,6 +257,14 @@ fun CookSelectionScreen(
             onDismiss = { viewModel.dismissDuplicateDialog() }
         )
     }
+
+    if (uiState.showMissingIngredientsDialog) {
+        MissingIngredientsDialog(
+            missingIngredients = uiState.missingIngredients,
+            onGoToShoppingList = { viewModel.onGoToShoppingList() },
+            onContinue = { viewModel.onContinueToCookingDespiteMissing() }
+        )
+    }
 }
 
 @Composable
@@ -408,6 +426,48 @@ private fun DuplicateRecipeDialog(
         dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) } }
     )
 }
+
+@Composable
+private fun MissingIngredientsDialog(
+    missingIngredients: List<RecipeIngredient>,
+    onGoToShoppingList: () -> Unit,
+    onContinue: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onContinue,
+        title = { Text(stringResource(R.string.missing_ingredients_title)) },
+        text = {
+            Column {
+                Text(
+                    text = stringResource(R.string.missing_ingredients_message),
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+                missingIngredients.forEach { ingredient ->
+                    Text(
+                        text = "• ${ingredient.product.localizedName()} — " +
+                                "${formatQty(ingredient.quantity)} ${stringResource(ingredient.unit.labelRes)}",
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.padding(vertical = 2.dp)
+                    )
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onGoToShoppingList) {
+                Text(stringResource(R.string.go_to_shopping_list))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onContinue) {
+                Text(stringResource(R.string.continue_cooking))
+            }
+        }
+    )
+}
+
+private fun formatQty(value: Double): String =
+    if (value == value.toLong().toDouble()) value.toLong().toString() else value.toString()
 
 private fun dateAndMealLabel(cookable: CookableEntry, mealLabel: String): String {
     val date = cookable.date

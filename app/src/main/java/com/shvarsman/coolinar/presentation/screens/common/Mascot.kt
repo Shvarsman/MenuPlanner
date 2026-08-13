@@ -35,9 +35,15 @@ import com.shvarsman.coolinar.R
 enum class MascotPose(@DrawableRes val drawableRes: Int) {
     NEUTRAL(R.drawable.mascot_neutral),
     SEARCHING(R.drawable.mascot_searching),
-//    EMPTY_BOX(R.drawable.mascot_empty_box),
-//    CELEBRATING(R.drawable.mascot_celebrating),
-//    CONFUSED(R.drawable.mascot_confused)
+    HAPPY(R.drawable.mascot_happy),
+    EXCITED(R.drawable.mascot_excited),
+    THINKING(R.drawable.mascot_thinking),
+    WORRIED(R.drawable.mascot_worried),
+    SAD(R.drawable.mascot_sad),
+    WAVING(R.drawable.mascot_waving),
+    CONFUSED(R.drawable.mascot_confused),
+    SLEEPY(R.drawable.mascot_sleepy),
+    HELP(R.drawable.mascot_help)
 }
 
 /** Имя маскота — используется как contentDescription для доступности. */
@@ -175,7 +181,7 @@ fun MascotSpeechBubble(
     val shape = rememberSpeechBubbleShape(tailHeight = tailHeight)
     Surface(
         shape = shape,
-        color = MaterialTheme.colorScheme.surface,
+        color = MaterialTheme.colorScheme.surfaceContainerHigh,
         modifier = modifier
     ) {
         Column(

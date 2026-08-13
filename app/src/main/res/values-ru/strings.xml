@@ -60,6 +60,13 @@
     <string name="profile_confirm_new_password">Подтвердите новый пароль</string>
     <string name="profile_password_changed">Пароль изменён</string>
     <string name="profile_error_passwords_dont_match">Пароли не совпадают</string>
+    <string name="mascot_tip_home">Я слежу за твоим холодильником и подскажу, что приготовить</string>
+    <string name="mascot_tip_fridge">Здесь я показываю все твои продукты. Смахни влево, чтобы удалить, или зажми — выбрать сразу несколько. Ещё есть кнопка вверху — показывает все продукты в приложении</string>
+    <string name="mascot_tip_shoppinglist">Отмечай купленное — а я сама перенесу всё в холодильник одной кнопкой</string>
+    <string name="mascot_tip_recipes">Тут все твои рецепты. Я подскажу, что можно приготовить прямо сейчас из того, что есть дома</string>
+    <string name="mascot_tip_weekmenu">Помогу распланировать неделю — расставь рецепты по дням, и я соберу список покупок</string>
+    <string name="mascot_tip_profile">Здесь твои настройки. Если что — я всегда рядом</string>
+    <string name="mascot_tip_got_it">Понятно</string>
 
     <!-- Бэкап-->
     <string name="backup_title">Резервное копирование</string>
@@ -173,6 +180,7 @@
     <string name="purchased">Куплено</string>
     <string name="qty_with_unit">%1$s %2$s</string>
     <string name="shopping_item_deleted">\u00AB%1$s\u00BB удалён</string>
+    <string name="moved_to_fridge_success">Разложила всё по местам!</string>
 
     <!--Sort-->
     <string name="sort_name_asc">По названию (А-Я)</string>
@@ -223,6 +231,11 @@
     <string name="cooking_dishes_count">Готовим %1$d блюд</string>
     <string name="cooking_portions_count">×%1$d порции по рецепту</string>
     <string name="mark_dish_done">Отметить готовым</string>
+    <string name="cooking_all_dishes_done">Все блюда готовы! Приятного аппетита</string>
+    <string name="missing_ingredients_title">Не хватает продуктов</string>
+    <string name="missing_ingredients_message">Для этого рецепта не хватает некоторых продуктов в холодильнике. Они уже добавлены в список покупок.</string>
+    <string name="go_to_shopping_list">В магазин</string>
+    <string name="continue_cooking">Продолжить</string>
 
     <!--FridgeScreen-->
     <string name="selected_count">Выбрано: %1$d</string>

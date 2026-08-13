@@ -82,8 +82,12 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.shvarsman.coolinar.R
 import com.shvarsman.coolinar.domain.model.Category
 import com.shvarsman.coolinar.domain.model.FridgeItem
+import com.shvarsman.coolinar.presentation.screens.common.AppSnackbarHost
 import com.shvarsman.coolinar.presentation.screens.common.DropdownFilterChip
 import com.shvarsman.coolinar.presentation.screens.common.GlassFab
+import com.shvarsman.coolinar.presentation.screens.common.MascotEmptyState
+import com.shvarsman.coolinar.presentation.screens.common.MascotPose
+import com.shvarsman.coolinar.presentation.screens.common.MascotWelcomeTip
 import com.shvarsman.coolinar.presentation.screens.common.ProductPickerDialog
 import com.shvarsman.coolinar.presentation.screens.common.TopBarSearchField
 import com.shvarsman.coolinar.presentation.screens.common.localizedName
@@ -125,6 +129,12 @@ fun FridgeScreen(
         onSelectionModeChange(isSelectionMode)
     }
 
+    MascotWelcomeTip(
+        tipId = "fridge_intro",
+        message = stringResource(R.string.mascot_tip_fridge),
+        enabled = !isLoading && !listState.isEmpty
+    )
+
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
     val itemDeletedTemplate = stringResource(R.string.item_deleted)
@@ -148,7 +158,7 @@ fun FridgeScreen(
 
     Scaffold(
         modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
-        snackbarHost = { SnackbarHost(snackbarHostState) },
+        snackbarHost = { AppSnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
                 scrollBehavior = scrollBehavior,
@@ -695,22 +705,10 @@ private fun ExpirationBadge(date: LocalDate) {
 
 @Composable
 private fun EmptyFridgeState(modifier: Modifier = Modifier) {
-    Column(
-        modifier = modifier,
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Icon(
-            imageVector = ImageVector.vectorResource(R.drawable.fridge),
-            contentDescription = null,
-            modifier = Modifier.size(64.dp),
-            tint = MaterialTheme.colorScheme.outline
-        )
-        Spacer(Modifier.height(12.dp))
-        Text(
-            text = stringResource(R.string.fridge_empty),
-            textAlign = TextAlign.Center,
-            color = MaterialTheme.colorScheme.onBackground
+    Box(modifier = modifier, contentAlignment = Alignment.Center) {
+        MascotEmptyState(
+            pose = MascotPose.SAD,
+            title = stringResource(R.string.fridge_empty)
         )
     }
 }

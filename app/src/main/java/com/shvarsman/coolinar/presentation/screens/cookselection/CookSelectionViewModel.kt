@@ -2,7 +2,12 @@ package com.shvarsman.coolinar.presentation.screens.cookselection
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.shvarsman.coolinar.domain.model.IngredientAvailability
 import com.shvarsman.coolinar.domain.model.MenuEntry
+import com.shvarsman.coolinar.domain.model.RecipeIngredient
+import com.shvarsman.coolinar.domain.model.availability
+import com.shvarsman.coolinar.domain.repository.RecipeRepository
+import com.shvarsman.coolinar.domain.usecase.fridge.GetFridgeItemsUseCase
 import com.shvarsman.coolinar.domain.usecase.menu.GetWeekMenuUseCase
 import com.shvarsman.coolinar.presentation.screens.cooking.CookingDish
 import com.shvarsman.coolinar.presentation.screens.cooking.CookingSessionHolder
@@ -11,7 +16,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.format.TextStyle
@@ -44,16 +51,20 @@ data class CookSelectionUiState(
     val dayGroups: List<DayGroup> = emptyList(),
     val selectedByRecipeId: Map<String, SelectedItem> = emptyMap(),
     val duplicateDialogEntries: List<CookableEntry>? = null,
-    val navigateToCooking: Boolean = false
+    val navigateToCooking: Boolean = false,
+    val missingIngredients: List<RecipeIngredient> = emptyList(),
+    val showMissingIngredientsDialog: Boolean = false,
+    val navigateToShoppingList: Boolean = false
 ) {
     val selectedCount: Int get() = selectedByRecipeId.values.sumOf { it.menuEntryIds.size }
     val canStartCooking: Boolean get() = selectedByRecipeId.isNotEmpty()
 }
-
 @HiltViewModel
 class CookSelectionViewModel @Inject constructor(
     getWeekMenu: GetWeekMenuUseCase,
-    private val sessionHolder: CookingSessionHolder
+    private val sessionHolder: CookingSessionHolder,
+    private val recipeRepository: RecipeRepository,
+    private val getFridgeItems: GetFridgeItemsUseCase
 ) : ViewModel() {
 
     private val currentWeekStart =
@@ -67,14 +78,24 @@ class CookSelectionViewModel @Inject constructor(
     private val _selectedByRecipeId = MutableStateFlow<Map<String, SelectedItem>>(emptyMap())
     private val _duplicateDialogEntries = MutableStateFlow<List<CookableEntry>?>(null)
     private val _navigateToCooking = MutableStateFlow(false)
+    private val _missingIngredients = MutableStateFlow<List<RecipeIngredient>>(emptyList())
+    private val _showMissingIngredientsDialog = MutableStateFlow(false)
+    private val _navigateToShoppingList = MutableStateFlow(false)
+
+    private val missingIngredientsFlow = combine(
+        _missingIngredients,
+        _showMissingIngredientsDialog,
+        _navigateToShoppingList
+    ) { missing, showDialog, navigateShopping -> Triple(missing, showDialog, navigateShopping) }
 
     private val menuFlow = combine(
         currentWeekFlow, nextWeekFlow, _includeNextWeek
     ) { current, next, include -> Triple(current, next, include) }
 
     val uiState: StateFlow<CookSelectionUiState> = combine(
-        menuFlow, _selectedByRecipeId, _duplicateDialogEntries, _navigateToCooking
-    ) { (currentWeek, nextWeek, includeNext), selected, dialogEntries, navigate ->
+        menuFlow, _selectedByRecipeId, _duplicateDialogEntries, _navigateToCooking, missingIngredientsFlow
+    ) { (currentWeek, nextWeek, includeNext), selected, dialogEntries, navigate,
+        (missingIngredients, showMissingDialog, navigateShopping) ->
         val today = LocalDate.now()
         val visible = buildList {
             addAll(currentWeek.map { CookableEntry(it, dateOf(it, currentWeekStart)) })
@@ -97,7 +118,10 @@ class CookSelectionViewModel @Inject constructor(
             dayGroups = grouped,
             selectedByRecipeId = selected,
             duplicateDialogEntries = dialogEntries,
-            navigateToCooking = navigate
+            navigateToCooking = navigate,
+            missingIngredients = missingIngredients,
+            showMissingIngredientsDialog = showMissingDialog,
+            navigateToShoppingList = navigateShopping
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), CookSelectionUiState())
 
@@ -139,16 +163,65 @@ class CookSelectionViewModel @Inject constructor(
     }
 
     fun onStartCooking() {
-        val dishes = uiState.value.selectedByRecipeId.values.map {
-            CookingDish(recipeId = it.recipeId, menuEntryIds = it.menuEntryIds)
-        }
+        val dishes = selectedDishes()
         if (dishes.isEmpty()) return
-        sessionHolder.set(dishes)
-        _navigateToCooking.value = true
+        viewModelScope.launch {
+            val missing = findMissingIngredients(dishes)
+            if (missing.isEmpty()) {
+                proceedToCooking(dishes)
+            } else {
+                _missingIngredients.value = missing
+                _showMissingIngredientsDialog.value = true
+            }
+        }
+    }
+
+    /** Пользователь выбрал "Продолжить" в диалоге нехватки — переходим на готовку, несмотря на нехватку. */
+    fun onContinueToCookingDespiteMissing() {
+        _showMissingIngredientsDialog.value = false
+        proceedToCooking(selectedDishes())
+    }
+
+    /** Пользователь выбрал "В магазин" — недостающие продукты уже добавлены в список покупок
+     * при формировании меню, здесь только переход, без повторного добавления. */
+    fun onGoToShoppingList() {
+        _showMissingIngredientsDialog.value = false
+        _navigateToShoppingList.value = true
+    }
+
+    fun onNavigateToShoppingListConsumed() {
+        _navigateToShoppingList.value = false
     }
 
     fun onNavigateToCookingConsumed() {
         _navigateToCooking.value = false
+    }
+
+    private fun selectedDishes(): List<CookingDish> =
+        uiState.value.selectedByRecipeId.values.map {
+            CookingDish(recipeId = it.recipeId, menuEntryIds = it.menuEntryIds)
+        }
+
+    private fun proceedToCooking(dishes: List<CookingDish>) {
+        sessionHolder.set(dishes)
+        _navigateToCooking.value = true
+    }
+
+    /** Считает нехватающие ингредиенты по всем выбранным блюдам сразу, с учётом
+     * масштабирования количества под число порций (menuEntryIds.size), и объединяет
+     * одинаковые продукты (по product.id + unit) в одну строку с суммарным количеством. */
+    private suspend fun findMissingIngredients(dishes: List<CookingDish>): List<RecipeIngredient> {
+        val fridgeItems = getFridgeItems().first()
+        val scaledInsufficient = dishes.flatMap { dish ->
+            val recipe = recipeRepository.getRecipe(dish.recipeId) ?: return@flatMap emptyList()
+            recipe.ingredients
+                .filterNot { it.product.isToTaste }
+                .map { it.copy(quantity = it.quantity * dish.menuEntryIds.size) }
+                .filter { it.availability(fridgeItems) == IngredientAvailability.INSUFFICIENT }
+        }
+        return scaledInsufficient
+            .groupBy { it.product.id to it.unit }
+            .map { (_, group) -> group.first().copy(quantity = group.sumOf { it.quantity }) }
     }
 
     private fun dateOf(entry: MenuEntry, weekStart: LocalDate): LocalDate =

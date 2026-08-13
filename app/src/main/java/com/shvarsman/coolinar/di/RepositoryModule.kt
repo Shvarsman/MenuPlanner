@@ -9,6 +9,7 @@ import com.shvarsman.coolinar.data.repository.ProductRepositoryImpl
 import com.shvarsman.coolinar.data.repository.RecipeRepositoryImpl
 import com.shvarsman.coolinar.data.repository.RoomTransactionRunner
 import com.shvarsman.coolinar.data.repository.ShoppingListRepositoryImpl
+import com.shvarsman.coolinar.data.repository.TipsRepositoryImpl
 import com.shvarsman.coolinar.data.repository.UserPreferencesRepositoryImpl
 import com.shvarsman.coolinar.domain.repository.AuthRepository
 import com.shvarsman.coolinar.domain.repository.BackupRepository
@@ -18,6 +19,7 @@ import com.shvarsman.coolinar.domain.repository.OnboardingRepository
 import com.shvarsman.coolinar.domain.repository.ProductRepository
 import com.shvarsman.coolinar.domain.repository.RecipeRepository
 import com.shvarsman.coolinar.domain.repository.ShoppingListRepository
+import com.shvarsman.coolinar.domain.repository.TipsRepository
 import com.shvarsman.coolinar.domain.repository.TransactionRunner
 import com.shvarsman.coolinar.domain.repository.UserPreferencesRepository
 import dagger.Binds
@@ -69,4 +71,8 @@ abstract class RepositoryModule {
     @Binds
     @Singleton
     abstract fun bindOnboardingRepository(impl: OnboardingRepositoryImpl): OnboardingRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindTipsRepository(impl: TipsRepositoryImpl): TipsRepository
 }

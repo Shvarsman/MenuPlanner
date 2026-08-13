@@ -24,7 +24,7 @@ interface FridgeItemDao {
     @Query("SELECT * FROM fridge_items WHERE id = :id")
     suspend fun getByIdIncludingDeleted(id: String): FridgeItemEntity?
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Upsert
     suspend fun insert(item: FridgeItemEntity)
 
     @Update

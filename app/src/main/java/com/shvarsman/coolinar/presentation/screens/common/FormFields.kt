@@ -445,17 +445,21 @@ fun StatCard(
             Spacer(Modifier.height(12.dp))
             Text(
                 text = value,
-                style = MaterialTheme.typography.headlineSmall,
+                style = if (progress != null) {
+                    MaterialTheme.typography.bodyLarge
+                } else {
+                    MaterialTheme.typography.headlineSmall
+                },
                 color = MaterialTheme.colorScheme.onSurface
             )
-            Spacer(Modifier.height(2.dp))
+            Spacer(Modifier.weight(1f))
             Text(
                 text = label,
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
             if (progress != null) {
-                Spacer(Modifier.weight(1f))
+                Spacer(Modifier.height(8.dp))
                 LinearProgressIndicator(
                     progress = { progress },
                     modifier = Modifier

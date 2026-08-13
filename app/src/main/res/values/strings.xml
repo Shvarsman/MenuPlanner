@@ -59,6 +59,13 @@
     <string name="profile_confirm_new_password">Confirm new password</string>
     <string name="profile_password_changed">Password changed</string>
     <string name="profile_error_passwords_dont_match">Passwords don\'t match</string>
+    <string name="mascot_tip_home">I\'ll keep an eye on your fridge and tell you what to cook</string>
+    <string name="mascot_tip_fridge">Here I show all your products. Swipe left to delete, or tap and hold to select multiple products. There\'s also a button at the top that shows all products in the app</string>
+    <string name="mascot_tip_shoppinglist">Mark your purchases, and I\'ll transfer everything to the refrigerator with just one button</string>
+    <string name="mascot_tip_recipes">Here are all your recipes. I\'ll tell you what you can make right now with what you have at home</string>
+    <string name="mascot_tip_weekmenu">I\'ll help you plan your week - organize your recipes by day, and I\'ll put together a shopping list</string>
+    <string name="mascot_tip_profile">Here are your settings. If anything happens, I\'m always here.</string>
+    <string name="mascot_tip_got_it">It\'s clear</string>
 
     <!-- Бэкап-->
     <string name="backup_title">Backup</string>
@@ -172,6 +179,7 @@
     <string name="purchased">Purchased</string>
     <string name="qty_with_unit">%1$s %2$s</string>
     <string name="shopping_item_deleted">\u00AB%1$s\u00BB deleted</string>
+    <string name="moved_to_fridge_success">Put everything in its place!</string>
 
     <!--Sort-->
     <string name="sort_name_asc">By title (A–Z)</string>
@@ -222,6 +230,11 @@
     <string name="cooking_dishes_count">Cooking %1$d dishes</string>
     <string name="cooking_portions_count">×%1$d servings of this recipe</string>
     <string name="mark_dish_done">Mark as done</string>
+    <string name="cooking_all_dishes_done">All dishes are ready! Bon appétit!</string>
+    <string name="missing_ingredients_title">Missing ingredients</string>
+    <string name="missing_ingredients_message">Some ingredients for this recipe aren\'t in your fridge. They\'ve already been added to your shopping list.</string>
+    <string name="go_to_shopping_list">Go to shopping list</string>
+    <string name="continue_cooking">Continue</string>
 
     <!--FridgeScreen-->
     <string name="selected_count">Selected: %1$d</string>

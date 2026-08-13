@@ -43,6 +43,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
@@ -52,6 +53,7 @@ import com.shvarsman.coolinar.presentation.screens.common.LabeledTextField
 import com.shvarsman.coolinar.presentation.screens.common.NavRow
 import com.shvarsman.coolinar.presentation.screens.common.PasswordField
 import com.shvarsman.coolinar.presentation.ui.theme.FloatingBottomBarClearance
+import com.shvarsman.coolinar.presentation.ui.theme.molleFont
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -66,45 +68,22 @@ fun ProfileScreen(
 
     Scaffold(
         modifier = modifier,
-//        topBar = {
-//            TopAppBar(
-//                title = {
-//                    val signedInUser = (authState as? AuthState.SignedIn)?.user
-//                    Row(verticalAlignment = Alignment.CenterVertically) {
-//                        Box(
-//                            modifier = Modifier
-//                                .size(28.dp)
-//                                .clip(CircleShape)
-//                        ) {
-//                            if (signedInUser?.photoUrl != null) {
-//                                AsyncImage(
-//                                    model = signedInUser.photoUrl,
-//                                    contentDescription = null,
-//                                    modifier = Modifier.fillMaxWidth(),
-//                                    contentScale = ContentScale.Crop
-//                                )
-//                            } else {
-//                                Icon(
-//                                    imageVector = Icons.Filled.AccountCircle,
-//                                    contentDescription = null,
-//                                    modifier = Modifier.fillMaxWidth()
-//                                )
-//                            }
-//                        }
-//                        Spacer(Modifier.width(8.dp))
-//                        Text(
-//                            signedInUser?.displayName?.takeIf { it.isNotBlank() }
-//                                ?: signedInUser?.email
-//                                ?: stringResource(R.string.profile_display_name_guest)
-//                        )
-//                    }
-//                },
-//                colors = TopAppBarDefaults.topAppBarColors(
-//                    containerColor = MaterialTheme.colorScheme.background,
-//                    scrolledContainerColor = MaterialTheme.colorScheme.background
-//                )
-//            )
-//        }
+        topBar = {
+            CenterAlignedTopAppBar(
+                title = {
+                    Text(
+                        text = stringResource(R.string.app_name),
+                        fontSize = 24.sp,
+                        fontFamily = molleFont
+                    )
+                },
+                expandedHeight = TopAppBarDefaults.TopAppBarExpandedHeight,
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.background,
+                    scrolledContainerColor = MaterialTheme.colorScheme.background
+                )
+            )
+        }
     ) { padding ->
         Box(
             modifier = Modifier
@@ -143,94 +122,6 @@ fun ProfileScreen(
                     )
                 }
             }
-        }
-    }
-}
-
-@Composable
-private fun AuthForm(
-    formMode: AuthFormMode,
-    isSubmitting: Boolean,
-    errorRes: Int?,
-    onSubmit: (email: String, password: String) -> Unit,
-    onToggleMode: () -> Unit,
-    onClearError: () -> Unit
-) {
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(horizontal = 24.dp),
-        verticalArrangement = Arrangement.Center
-    ) {
-        Icon(
-            Icons.Filled.AccountCircle,
-            contentDescription = null,
-            modifier = Modifier
-                .size(72.dp)
-                .align(Alignment.CenterHorizontally),
-            tint = MaterialTheme.colorScheme.primary
-        )
-        Spacer(Modifier.height(24.dp))
-
-        Text(
-            text = stringResource(
-                if (formMode == AuthFormMode.SIGN_IN) R.string.profile_sign_in else R.string.profile_sign_up
-            ),
-            style = MaterialTheme.typography.headlineSmall,
-            fontWeight = FontWeight.Medium,
-            modifier = Modifier.align(Alignment.CenterHorizontally)
-        )
-        Spacer(Modifier.height(24.dp))
-
-        LabeledTextField(
-            label = stringResource(R.string.profile_email),
-            value = email,
-            onValueChange = { email = it; onClearError() }
-        )
-        Spacer(Modifier.height(12.dp))
-
-        PasswordField(
-            label = stringResource(R.string.profile_password),
-            value = password,
-            onValueChange = { password = it; onClearError() }
-        )
-
-        if (errorRes != null) {
-            Spacer(Modifier.height(8.dp))
-            Text(
-                text = stringResource(errorRes),
-                color = MaterialTheme.colorScheme.error,
-                style = MaterialTheme.typography.bodySmall
-            )
-        }
-
-        Spacer(Modifier.height(20.dp))
-        Button(
-            onClick = { onSubmit(email.trim(), password) },
-            enabled = !isSubmitting && email.isNotBlank() && password.isNotBlank(),
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text(
-                stringResource(
-                    if (formMode == AuthFormMode.SIGN_IN) R.string.profile_sign_in else R.string.profile_sign_up
-                )
-            )
-        }
-
-        Spacer(Modifier.height(8.dp))
-        TextButton(
-            onClick = onToggleMode,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text(
-                stringResource(
-                    if (formMode == AuthFormMode.SIGN_IN) R.string.profile_switch_to_sign_up
-                    else R.string.profile_switch_to_sign_in
-                )
-            )
         }
     }
 }
@@ -278,7 +169,6 @@ private fun SignedInContent(
                     text = displayName?.takeIf { it.isNotBlank() }
                         ?: email
                         ?: stringResource(R.string.profile_display_name_fallback),
-                    style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Medium
                 )
                 if (email != null) {

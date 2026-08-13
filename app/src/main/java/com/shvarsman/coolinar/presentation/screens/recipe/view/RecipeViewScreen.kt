@@ -51,7 +51,6 @@ import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Tab
@@ -95,6 +94,7 @@ import com.shvarsman.coolinar.domain.model.Recipe
 import com.shvarsman.coolinar.domain.model.RecipeIngredient
 import com.shvarsman.coolinar.domain.model.availability
 import com.shvarsman.coolinar.presentation.screens.common.AppBottomSheet
+import com.shvarsman.coolinar.presentation.screens.common.AppSnackbarHost
 import com.shvarsman.coolinar.presentation.screens.common.FieldLabel
 import com.shvarsman.coolinar.presentation.screens.common.ReadOnlyField
 import com.shvarsman.coolinar.presentation.screens.common.localizedName
@@ -148,7 +148,7 @@ fun RecipeViewScreen(
 
     Scaffold(
         contentWindowInsets = WindowInsets(0),
-        snackbarHost = { SnackbarHost(snackbarHostState) }
+        snackbarHost = { AppSnackbarHost(snackbarHostState) },
     ) { padding ->
         if (state.isLoading) {
             Box(

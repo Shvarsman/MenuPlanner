@@ -14,17 +14,18 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -36,6 +37,7 @@ import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -62,6 +64,11 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import com.shvarsman.coolinar.R
+import com.shvarsman.coolinar.domain.model.RecipeIngredient
+import com.shvarsman.coolinar.presentation.screens.common.IngredientListCard
+import com.shvarsman.coolinar.presentation.screens.common.MascotImage
+import com.shvarsman.coolinar.presentation.screens.common.MascotPose
+import com.shvarsman.coolinar.presentation.screens.common.localizedName
 import com.shvarsman.coolinar.presentation.screens.common.rememberSizedImageRequest
 import com.shvarsman.coolinar.presentation.ui.theme.CornerShape
 import kotlinx.coroutines.launch
@@ -139,17 +146,56 @@ fun CookingScreen(
         contentWindowInsets = WindowInsets(0),
         bottomBar = {
             Surface(color = MaterialTheme.colorScheme.background) {
-                Button(
-                    onClick = onFinished,
-                    enabled = state.allDone,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp)
-                        .navigationBarsPadding()
-                ) {
-                    Icon(Icons.Filled.Check, contentDescription = null)
-                    Spacer(Modifier.width(8.dp))
-                    Text(stringResource(R.string.done))
+                Column {
+                    if (state.allDone) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            MascotImage(
+                                pose = MascotPose.EXCITED,
+                                modifier = Modifier.size(40.dp)
+                            )
+                            Spacer(Modifier.width(8.dp))
+                            Text(
+                                text = stringResource(R.string.cooking_all_dishes_done),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+                    }
+                    Button(
+                        onClick = { viewModel.markDishDone(currentDish.recipe) },
+                        enabled = !currentDish.isDone,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 8.dp)
+                    ) {
+                        if (currentDish.isDone) {
+                            MascotImage(
+                                pose = MascotPose.HAPPY,
+                                modifier = Modifier.size(24.dp)
+                            )
+                            Spacer(Modifier.width(8.dp))
+                            Text(stringResource(R.string.done))
+                        } else {
+                            Text(stringResource(R.string.mark_dish_done))
+                        }
+                    }
+                    Button(
+                        onClick = onFinished,
+                        enabled = state.allDone,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp)
+                            .navigationBarsPadding()
+                    ) {
+                        Icon(Icons.Filled.Check, contentDescription = null)
+                        Spacer(Modifier.width(8.dp))
+                        Text(stringResource(R.string.done))
+                    }
                 }
             }
         }
@@ -162,7 +208,11 @@ fun CookingScreen(
         ) {
             if (currentDish.recipe.photoUri != null) {
                 AsyncImage(
-                    model = rememberSizedImageRequest(currentDish.recipe.photoUri, 480.dp, PhotoHeight),
+                    model = rememberSizedImageRequest(
+                        currentDish.recipe.photoUri,
+                        480.dp,
+                        PhotoHeight
+                    ),
                     contentDescription = currentDish.recipe.title,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
@@ -209,7 +259,12 @@ fun CookingScreen(
                         style = MaterialTheme.typography.headlineSmall,
                         fontWeight = FontWeight.Medium,
                         maxLines = 2,
-                        modifier = Modifier.padding(start = 16.dp, top = 16.dp, bottom = 12.dp, end = 16.dp)
+                        modifier = Modifier.padding(
+                            start = 16.dp,
+                            top = 16.dp,
+                            bottom = 12.dp,
+                            end = 16.dp
+                        )
                     )
 
                     if (dishes.size > 1) {
@@ -242,10 +297,7 @@ fun CookingScreen(
                     }
 
                     HorizontalPager(state = pagerState, modifier = Modifier.weight(1f)) { page ->
-                        DishContent(
-                            dish = dishes[page],
-                            onMarkDone = { viewModel.markDishDone(dishes[page].recipe) }
-                        )
+                        DishContent(dish = dishes[page])
                     }
                 }
             }
@@ -255,7 +307,10 @@ fun CookingScreen(
                     .padding(start = 16.dp)
                     .statusBarsPadding()
                     .clip(CornerShape)
-                    .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.9f), CornerShape),
+                    .background(
+                        MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.9f),
+                        CornerShape
+                    ),
                 onClick = onBack
             ) {
                 Icon(
@@ -269,8 +324,7 @@ fun CookingScreen(
 
 @Composable
 private fun DishContent(
-    dish: CookingDishUiState,
-    onMarkDone: () -> Unit
+    dish: CookingDishUiState
 ) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
@@ -294,21 +348,13 @@ private fun DishContent(
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
             )
         }
-        items(dish.recipe.ingredients) { ingredient ->
-            val scaled = ingredient.quantity * dish.menuEntryIds.size
-            Text(
-                if (ingredient.product.isToTaste) {
-                    stringResource(R.string.ingredient_to_taste, ingredient.product.name)
-                } else {
-                    stringResource(
-                        R.string.ingredient_with_qty,
-                        ingredient.product.name,
-                        formatQty(scaled),
-                        stringResource(ingredient.unit.labelRes)
-                    )
-                },
-                style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 2.dp)
+        item {
+            val scaledIngredients = dish.recipe.ingredients.map { ingredient ->
+                ingredient.copy(quantity = ingredient.quantity * dish.menuEntryIds.size)
+            }
+            IngredientListCard(
+                ingredients = scaledIngredients,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
             )
         }
 
@@ -321,25 +367,6 @@ private fun DishContent(
         }
 
         CookingStepsReadOnly(steps = dish.recipe.steps)
-
-        item {
-            Spacer(Modifier.height(12.dp))
-            Button(
-                onClick = onMarkDone,
-                enabled = !dish.isDone,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
-            ) {
-                if (dish.isDone) {
-                    Icon(Icons.Filled.Check, contentDescription = null)
-                    Spacer(Modifier.width(8.dp))
-                    Text(stringResource(R.string.done))
-                } else {
-                    Text(stringResource(R.string.mark_dish_done))
-                }
-            }
-        }
     }
 }
 

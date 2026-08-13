@@ -38,8 +38,12 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.shvarsman.coolinar.R
 import com.shvarsman.coolinar.domain.model.FridgeItem
+import com.shvarsman.coolinar.presentation.screens.common.MascotImage
+import com.shvarsman.coolinar.presentation.screens.common.MascotPose
+import com.shvarsman.coolinar.presentation.screens.common.MascotWelcomeTip
 import com.shvarsman.coolinar.presentation.screens.common.NavRow
 import com.shvarsman.coolinar.presentation.screens.common.StatCard
+import com.shvarsman.coolinar.presentation.screens.common.localizedName
 import com.shvarsman.coolinar.presentation.screens.recipe.components.RecipeCarouselSection
 import com.shvarsman.coolinar.presentation.ui.theme.CornerShape
 import com.shvarsman.coolinar.presentation.ui.theme.FloatingBottomBarClearance
@@ -65,6 +69,12 @@ fun HomeScreen(
     val shoppingListCount = uiState.shoppingListCount
     val totalRecipesCount = uiState.recipes.size
     val userName = uiState.userName
+
+    MascotWelcomeTip(
+        tipId = "home_intro",
+        message = stringResource(R.string.mascot_tip_home),
+        enabled = uiState.recipes.isNotEmpty() || expiringFridgeItems.isNotEmpty()
+    )
 
     Scaffold(
         modifier = modifier,
@@ -94,37 +104,34 @@ fun HomeScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             item(key = "greeting") {
-                Column(modifier = Modifier.padding(horizontal = 32.dp)) {
-                    Text(
-                        text = greetingText(userName),
-                        style = MaterialTheme.typography.headlineSmall,
-                        fontWeight = FontWeight.Medium
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 32.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    MascotImage(
+                        pose = greetingMascotPose(),
+                        modifier = Modifier.size(56.dp)
                     )
-                    Spacer(Modifier.height(4.dp))
-                    Text(
-                        text = homeStatusSubtitle(
-                            expiringCount = expiringFridgeItems.size,
-                            weeklyPlannedCount = weeklyPlannedCount,
-                            weeklyTotalCount = weeklyTotalCount
-                        ),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
-
-            item(key = "expiring_banner") {
-                if (expiringFridgeItems.isNotEmpty()) {
-                    ExpiringItemsBanner(
-                        items = expiringFridgeItems,
-                        onClick = onOpenFridge,
-                        modifier = Modifier.padding(horizontal = 16.dp)
-                    )
-                } else {
-                    FreshFridgeBanner(
-                        onClick = onOpenFridge,
-                        modifier = Modifier.padding(horizontal = 16.dp)
-                    )
+                    Spacer(Modifier.width(12.dp))
+                    Column {
+                        Text(
+                            text = greetingText(userName),
+                            style = MaterialTheme.typography.headlineSmall,
+                            fontWeight = FontWeight.Medium
+                        )
+                        Spacer(Modifier.height(4.dp))
+                        Text(
+                            text = homeStatusSubtitle(
+                                expiringCount = expiringFridgeItems.size,
+                                weeklyPlannedCount = weeklyPlannedCount,
+                                weeklyTotalCount = weeklyTotalCount
+                            ),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                 }
             }
 
@@ -182,6 +189,21 @@ fun HomeScreen(
                 }
             }
 
+            item(key = "expiring_banner") {
+                if (expiringFridgeItems.isNotEmpty()) {
+                    ExpiringItemsBanner(
+                        items = expiringFridgeItems,
+                        onClick = onOpenFridge,
+                        modifier = Modifier.padding(horizontal = 16.dp)
+                    )
+                } else {
+                    FreshFridgeBanner(
+                        onClick = onOpenFridge,
+                        modifier = Modifier.padding(horizontal = 16.dp)
+                    )
+                }
+            }
+
             item(key = "suggested_carousel") {
                 if (suggestedRecipes.isNotEmpty()) {
                     RecipeCarouselSection(
@@ -195,7 +217,8 @@ fun HomeScreen(
                         Text(
                             text = stringResource(R.string.can_cook_now),
                             style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Medium
+                            fontWeight = FontWeight.Medium,
+                            modifier = Modifier.padding(start = 16.dp)
                         )
                         Spacer(Modifier.height(8.dp))
                         NavRow(
@@ -221,6 +244,12 @@ private fun greetingText(userName: String?): String {
     return if (!userName.isNullOrBlank()) {
         stringResource(R.string.greeting_with_name, base, userName)
     } else stringResource(R.string.greeting_no_name, base)
+}
+
+@Composable
+private fun greetingMascotPose(): MascotPose {
+    val hour = java.time.LocalTime.now().hour
+    return if (hour in 6..21) MascotPose.WAVING else MascotPose.SLEEPY
 }
 
 @Composable
@@ -255,14 +284,9 @@ private fun ExpiringItemsBanner(
             modifier = Modifier.padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(
-                imageVector = ImageVector.vectorResource(R.drawable.unavailable),
-                modifier = Modifier.size(20.dp),
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onError
-            )
-            Spacer(Modifier.width(12.dp))
-            Column {
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
                 Text(
                     text = stringResource(R.string.expiring_soon_title),
                     style = MaterialTheme.typography.titleSmall,
@@ -272,12 +296,18 @@ private fun ExpiringItemsBanner(
                     items.joinToString(
                         limit = 3,
                         truncated = stringResource(R.string.and_more, items.size - 3)
-                    ) { it.product.name },
+                    ) { it.product.localizedName() },
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onError,
                     maxLines = 2
                 )
             }
+            Spacer(Modifier.width(12.dp))
+            MascotImage(
+                pose = MascotPose.WORRIED,
+                modifier = Modifier.size(40.dp)
+            )
+
         }
     }
 }
@@ -297,17 +327,16 @@ private fun FreshFridgeBanner(
             modifier = Modifier.padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(
-                imageVector = ImageVector.vectorResource(R.drawable.fridge),
-                modifier = Modifier.size(20.dp),
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.secondary
-            )
-            Spacer(Modifier.width(12.dp))
             Text(
                 text = stringResource(R.string.fridge_all_fresh),
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.secondary
+                color = MaterialTheme.colorScheme.secondary,
+                modifier = Modifier.weight(1f)
+            )
+            Spacer(Modifier.width(12.dp))
+            MascotImage(
+                pose = MascotPose.HAPPY,
+                modifier = Modifier.size(40.dp)
             )
         }
     }

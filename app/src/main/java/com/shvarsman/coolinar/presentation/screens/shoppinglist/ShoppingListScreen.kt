@@ -3,6 +3,7 @@ package com.shvarsman.coolinar.presentation.screens.shoppinglist
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -20,8 +21,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Kitchen
-import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DropdownMenuItem
@@ -33,7 +32,6 @@ import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
-import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
@@ -41,6 +39,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -61,10 +60,15 @@ import com.shvarsman.coolinar.R
 import com.shvarsman.coolinar.domain.model.Category
 import com.shvarsman.coolinar.domain.model.MeasureUnit
 import com.shvarsman.coolinar.domain.model.ShoppingListItem
+import com.shvarsman.coolinar.presentation.screens.common.AppSnackbarHost
 import com.shvarsman.coolinar.presentation.screens.common.DropdownFilterChip
 import com.shvarsman.coolinar.presentation.screens.common.FieldLabel
 import com.shvarsman.coolinar.presentation.screens.common.GlassFab
 import com.shvarsman.coolinar.presentation.screens.common.GlassIconButton
+import com.shvarsman.coolinar.presentation.screens.common.MascotEmptyState
+import com.shvarsman.coolinar.presentation.screens.common.MascotImage
+import com.shvarsman.coolinar.presentation.screens.common.MascotPose
+import com.shvarsman.coolinar.presentation.screens.common.MascotWelcomeTip
 import com.shvarsman.coolinar.presentation.screens.common.ProductPickerDialog
 import com.shvarsman.coolinar.presentation.screens.common.QuantityUnitField
 import com.shvarsman.coolinar.presentation.screens.common.SwipeToDeleteRow
@@ -73,6 +77,7 @@ import com.shvarsman.coolinar.presentation.screens.common.localizedName
 import com.shvarsman.coolinar.presentation.ui.icons.CategoryIcon
 import com.shvarsman.coolinar.presentation.ui.icons.ProductIcon
 import kotlinx.coroutines.launch
+import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -92,7 +97,14 @@ fun ShoppingListScreen(
     val sortOption by viewModel.sortOption.collectAsStateWithLifecycle()
     val editingItem by viewModel.editingItem.collectAsStateWithLifecycle()
     val showMoveConfirmation by viewModel.showMoveConfirmation.collectAsStateWithLifecycle()
+    val moveCompleted by viewModel.moveCompleted.collectAsStateWithLifecycle()
     val isEmpty = groupedUnchecked.isEmpty() && checkedItems.isEmpty()
+
+    MascotWelcomeTip(
+        tipId = "shoppinglist_intro",
+        message = stringResource(R.string.mascot_tip_shoppinglist),
+        enabled = !isEmpty
+    )
 
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
@@ -114,7 +126,7 @@ fun ShoppingListScreen(
 
     Scaffold(
         modifier = modifier,
-        snackbarHost = { SnackbarHost(snackbarHostState) },
+        snackbarHost = { AppSnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
                 navigationIcon = {
@@ -244,23 +256,12 @@ fun ShoppingListScreen(
 
 
             if (isEmpty) {
-                Column(
-                    modifier = Modifier.fillMaxSize(),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
-                ) {
-                    Icon(
-                        imageVector = ImageVector.vectorResource(R.drawable.shopping_list),
-                        contentDescription = null,
-                        modifier = Modifier.size(64.dp),
-                        tint = MaterialTheme.colorScheme.outline
-                    )
-                    Spacer(Modifier.height(12.dp))
-                    Text(
-                        if (searchQuery.isNotBlank() || selectedCategory != null) stringResource(R.string.nothing_found)
-                        else stringResource(R.string.shopping_list_empty),
-                        textAlign = TextAlign.Center,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                val isFiltering = searchQuery.isNotBlank() || selectedCategory != null
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    MascotEmptyState(
+                        pose = if (isFiltering) MascotPose.SEARCHING else MascotPose.SAD,
+                        title = if (isFiltering) stringResource(R.string.nothing_found)
+                        else stringResource(R.string.shopping_list_empty)
                     )
                 }
             } else {
@@ -334,6 +335,34 @@ fun ShoppingListScreen(
             },
             dismissButton = {
                 TextButton(onClick = { viewModel.cancelMoveToFridge() }) { Text(stringResource(R.string.cancel)) }
+            }
+        )
+    }
+
+    if (moveCompleted) {
+        LaunchedEffect(moveCompleted) {
+            kotlinx.coroutines.delay(1600.milliseconds)
+            viewModel.dismissMoveCompleted()
+        }
+        AlertDialog(
+            onDismissRequest = { viewModel.dismissMoveCompleted() },
+            confirmButton = {},
+            text = {
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    MascotImage(
+                        pose = MascotPose.EXCITED,
+                        modifier = Modifier.size(72.dp)
+                    )
+                    Spacer(Modifier.height(12.dp))
+                    Text(
+                        text = stringResource(R.string.moved_to_fridge_success),
+                        textAlign = TextAlign.Center,
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
             }
         )
     }

@@ -3,13 +3,11 @@ package com.shvarsman.coolinar.presentation.screens.recipe.list
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -29,7 +27,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
-import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
@@ -38,12 +35,8 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -51,7 +44,6 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ShareCompat
@@ -60,8 +52,12 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.shvarsman.coolinar.R
 import com.shvarsman.coolinar.domain.model.RecipeCategory
 import com.shvarsman.coolinar.domain.model.RecipeSummary
+import com.shvarsman.coolinar.presentation.screens.common.AppSnackbarHost
 import com.shvarsman.coolinar.presentation.screens.common.DropdownFilterChip
 import com.shvarsman.coolinar.presentation.screens.common.GlassFab
+import com.shvarsman.coolinar.presentation.screens.common.MascotEmptyState
+import com.shvarsman.coolinar.presentation.screens.common.MascotPose
+import com.shvarsman.coolinar.presentation.screens.common.MascotWelcomeTip
 import com.shvarsman.coolinar.presentation.screens.common.TopBarSearchField
 import com.shvarsman.coolinar.presentation.screens.recipe.components.RecipeCarouselSection
 import com.shvarsman.coolinar.presentation.screens.recipe.components.RecipeCategoryCarousel
@@ -103,6 +99,12 @@ fun RecipeListScreen(
         viewModel.onSearchQueryChange(it)
     }
 
+    MascotWelcomeTip(
+        tipId = "recipes_intro",
+        message = stringResource(R.string.mascot_tip_recipes),
+        enabled = allRecipes.isNotEmpty()
+    )
+
     val viewMode by viewModel.viewMode.collectAsStateWithLifecycle()
     val listState = rememberLazyListState()
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
@@ -132,7 +134,7 @@ fun RecipeListScreen(
 
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
-        snackbarHost = { SnackbarHost(snackbarHostState) },
+        snackbarHost = { AppSnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
                 scrollBehavior = scrollBehavior,
@@ -395,25 +397,13 @@ fun RecipeListScreen(
             if (isFiltering) {
                 if (grouped.isEmpty()) {
                     item {
-                        Column(
+                        MascotEmptyState(
+                            pose = MascotPose.SEARCHING,
+                            title = stringResource(R.string.nothing_found),
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(vertical = 48.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Icon(
-                                imageVector = ImageVector.vectorResource(R.drawable.recipes),
-                                contentDescription = null,
-                                modifier = Modifier.size(64.dp),
-                                tint = MaterialTheme.colorScheme.outline
-                            )
-                            Spacer(Modifier.height(12.dp))
-                            Text(
-                                text = stringResource(R.string.nothing_found),
-                                textAlign = TextAlign.Center,
-                                color = MaterialTheme.colorScheme.onBackground
-                            )
-                        }
+                                .padding(vertical = 48.dp)
+                        )
                     }
                 } else {
                     recipeGroupedItems(
@@ -456,25 +446,13 @@ fun RecipeListScreen(
 
                 if (allRecipes.isEmpty()) {
                     item {
-                        Column(
+                        MascotEmptyState(
+                            pose = MascotPose.SAD,
+                            title = stringResource(R.string.no_recipes_placeholder),
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(vertical = 48.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Icon(
-                                imageVector = ImageVector.vectorResource(R.drawable.recipes),
-                                contentDescription = null,
-                                modifier = Modifier.size(64.dp),
-                                tint = MaterialTheme.colorScheme.outline
-                            )
-                            Spacer(Modifier.height(12.dp))
-                            Text(
-                                text = stringResource(R.string.no_recipes_placeholder),
-                                textAlign = TextAlign.Center,
-                                color = MaterialTheme.colorScheme.onBackground
-                            )
-                        }
+                                .padding(vertical = 48.dp)
+                        )
                     }
                 }
             }

@@ -15,7 +15,6 @@ enum class CookingMethod(@StringRes val labelRes: Int) {
     BARBECUE(R.string.cooking_method_barbecue),
     SMOKING(R.string.cooking_method_smoking),
     SIMMERING(R.string.cooking_method_simmering),
-    CONFIT(R.string.cooking_method_confit),
     SOUS_VIDE(R.string.cooking_method_sous_vide),
     BLANCHING(R.string.cooking_method_blanching),
     FLAMBEING(R.string.cooking_method_flambeing),

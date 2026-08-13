@@ -176,9 +176,11 @@ fun AppNavGraph(showOnboarding: Boolean = false) {
             composable(Destination.CookSelection.route) {
                 CookSelectionScreen(
                     onBack = { rootNavController.popBackStack() },
-                    onNavigateToCooking = { rootNavController.navigate(Destination.Cooking.route) }
+                    onNavigateToCooking = { rootNavController.navigate(Destination.Cooking.route) },
+                    onNavigateToShoppingList = { rootNavController.navigate(Destination.ShoppingList.route) }
                 )
             }
+
             composable(Destination.Backup.route) {
                 BackupScreen(onBack = { rootNavController.popBackStack() })
             }

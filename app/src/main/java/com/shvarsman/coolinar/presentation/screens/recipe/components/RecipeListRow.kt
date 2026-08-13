@@ -16,11 +16,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.filled.Schedule
-import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Card
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DropdownMenu
@@ -139,7 +136,7 @@ fun RecipeListRow(
                     if (recipe.isFavorite) {
                         Surface(
                             shape = CircleShape,
-                            color = MaterialTheme.colorScheme.secondary,
+                            color = MaterialTheme.colorScheme.tertiary,
                             modifier = Modifier
                                 .padding(6.dp)
                                 .align(Alignment.TopEnd)
@@ -150,7 +147,7 @@ fun RecipeListRow(
                                 modifier = Modifier
                                     .padding(4.dp)
                                     .size(12.dp),
-                                tint = MaterialTheme.colorScheme.surface
+                                tint = MaterialTheme.colorScheme.onPrimary
                             )
                         }
                     }
@@ -170,10 +167,6 @@ fun RecipeListRow(
                     overflow = TextOverflow.Ellipsis
                 )
                 Spacer(Modifier.height(4.dp))
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(10.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(4.dp),
                         verticalAlignment = Alignment.CenterVertically
@@ -208,7 +201,6 @@ fun RecipeListRow(
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
-                }
             }
 
             if (!isSelectionMode) {

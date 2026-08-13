@@ -85,6 +85,7 @@ import com.shvarsman.coolinar.domain.model.UnitConversion
 import com.shvarsman.coolinar.domain.model.availability
 import com.shvarsman.coolinar.domain.model.computeReservedAmounts
 import com.shvarsman.coolinar.presentation.screens.common.AppBottomSheet
+import com.shvarsman.coolinar.presentation.screens.common.AppSnackbarHost
 import com.shvarsman.coolinar.presentation.screens.common.GlassIconButton
 import com.shvarsman.coolinar.presentation.screens.common.NavRow
 import com.shvarsman.coolinar.presentation.screens.common.localizedName
@@ -141,7 +142,7 @@ fun WeekMenuScreen(
 
     Scaffold(
         modifier = modifier,
-        snackbarHost = { SnackbarHost(snackbarHostState) },
+        snackbarHost = { AppSnackbarHost(snackbarHostState) },
         bottomBar = {
             Box(
                 modifier = Modifier
@@ -581,7 +582,7 @@ private fun MenuEntryCard(
                                     modifier = Modifier
                                         .padding(4.dp)
                                         .size(12.dp),
-                                    tint = MaterialTheme.colorScheme.surface
+                                    tint = MaterialTheme.colorScheme.onPrimary
                                 )
                             }
                         }

@@ -8,6 +8,7 @@ import androidx.room.Query
 import androidx.room.Relation
 import androidx.room.Transaction
 import androidx.room.Update
+import androidx.room.Upsert
 import com.shvarsman.coolinar.data.local.entity.ProductEntity
 import com.shvarsman.coolinar.data.local.entity.RecipeEntity
 import com.shvarsman.coolinar.data.local.entity.RecipeIngredientEntity
@@ -83,7 +84,7 @@ interface RecipeDao {
     @Query("SELECT * FROM recipes")
     suspend fun getAllWithIngredientsIncludingDeleted(): List<RecipeWithIngredients>
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Upsert
     suspend fun insertRecipe(recipe: RecipeEntity)
 
     @Update

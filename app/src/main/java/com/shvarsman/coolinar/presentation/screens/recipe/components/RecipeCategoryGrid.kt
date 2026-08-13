@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -32,7 +31,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.shvarsman.coolinar.R
 import com.shvarsman.coolinar.domain.model.RecipeCategory
-import com.shvarsman.coolinar.presentation.ui.icons.RecipeCategoryIcon
 import com.shvarsman.coolinar.presentation.ui.icons.imageRes
 
 /**
@@ -53,7 +51,12 @@ fun RecipeCategoryCarousel(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 4.dp),
+                .padding(
+                    start = 32.dp,
+                    end = 16.dp,
+                    top = 4.dp,
+                    bottom = 4.dp
+                ),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
