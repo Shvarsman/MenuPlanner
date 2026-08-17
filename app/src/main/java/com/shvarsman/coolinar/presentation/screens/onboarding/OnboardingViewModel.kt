@@ -28,18 +28,12 @@ class OnboardingViewModel @Inject constructor(
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), AuthState.Loading)
 
     private val _formMode = MutableStateFlow(AuthFormMode.SIGN_IN)
-    val formMode: StateFlow<AuthFormMode> = _formMode
 
     private val _isSubmitting = MutableStateFlow(false)
     val isSubmitting: StateFlow<Boolean> = _isSubmitting
 
     private val _errorRes = MutableStateFlow<Int?>(null)
     val errorRes: StateFlow<Int?> = _errorRes
-
-    fun setFormMode(mode: AuthFormMode) {
-        _formMode.value = mode
-        _errorRes.value = null
-    }
 
     fun clearError() {
         _errorRes.value = null
@@ -59,9 +53,12 @@ class OnboardingViewModel @Inject constructor(
         }
     }
 
-    /** Пользователь остаётся гостем — никакого Firebase-аккаунта не создаём, просто закрываем онбординг. */
-    fun finishOnboarding() {
-        viewModelScope.launch { onboardingRepository.setCompleted() }
+    /** startTour = true — пользователь выбрал "Продолжить без аккаунта"
+     * (гость, ни Firebase-аккаунта, ни данных — тур на демо-данных уместен).
+     * startTour = false — пользователь вошёл в существующий аккаунт, у него
+     * уже есть история использования, тур не нужен и был бы навязчив. */
+    fun finishOnboarding(startTour: Boolean) {
+        viewModelScope.launch { onboardingRepository.setCompleted(startTour) }
     }
 }
 

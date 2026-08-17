@@ -9,4 +9,7 @@ import kotlinx.coroutines.flow.Flow
 interface TipsRepository {
     fun isTipSeen(tipId: String): Flow<Boolean>
     suspend fun markTipSeen(tipId: String)
+
+    val tipsEnabled: Flow<Boolean>
+    suspend fun setTipsEnabled(enabled: Boolean)
 }

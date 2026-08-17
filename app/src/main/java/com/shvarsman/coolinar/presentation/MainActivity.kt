@@ -5,6 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -29,7 +30,8 @@ class MainActivity : ComponentActivity() {
 
                 if (hasCompletedOnboarding != null) {
                     keepSplashOnScreen = false
-                    AppNavGraph(showOnboarding = hasCompletedOnboarding == false)
+                    val showOnboarding = remember { hasCompletedOnboarding == false }
+                    AppNavGraph(showOnboarding = showOnboarding)
                 }
             }
         }

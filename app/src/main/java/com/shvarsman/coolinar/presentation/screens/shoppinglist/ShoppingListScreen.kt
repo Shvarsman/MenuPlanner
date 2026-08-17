@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -76,6 +77,7 @@ import com.shvarsman.coolinar.presentation.screens.common.TopBarSearchField
 import com.shvarsman.coolinar.presentation.screens.common.localizedName
 import com.shvarsman.coolinar.presentation.ui.icons.CategoryIcon
 import com.shvarsman.coolinar.presentation.ui.icons.ProductIcon
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -257,7 +259,12 @@ fun ShoppingListScreen(
 
             if (isEmpty) {
                 val isFiltering = searchQuery.isNotBlank() || selectedCategory != null
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .imePadding(),
+                    contentAlignment = Alignment.Center
+                ) {
                     MascotEmptyState(
                         pose = if (isFiltering) MascotPose.SEARCHING else MascotPose.SAD,
                         title = if (isFiltering) stringResource(R.string.nothing_found)
@@ -335,13 +342,14 @@ fun ShoppingListScreen(
             },
             dismissButton = {
                 TextButton(onClick = { viewModel.cancelMoveToFridge() }) { Text(stringResource(R.string.cancel)) }
-            }
+            },
+            containerColor = MaterialTheme.colorScheme.surfaceContainer
         )
     }
 
     if (moveCompleted) {
         LaunchedEffect(moveCompleted) {
-            kotlinx.coroutines.delay(1600.milliseconds)
+            delay(1600.milliseconds)
             viewModel.dismissMoveCompleted()
         }
         AlertDialog(

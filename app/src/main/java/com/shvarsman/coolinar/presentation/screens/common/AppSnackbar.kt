@@ -10,12 +10,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.shvarsman.coolinar.presentation.ui.theme.CornerShape
 
-/**
- * Единый стиль снекбара для всего приложения — своя форма (CornerShape) и
- * цвета из темы вместо дефолтного Material inverse-surface. Подключается
- * в Scaffold(snackbarHost = { AppSnackbarHost(hostState) }) вместо
- * стандартного SnackbarHost(hostState).
- */
 @Composable
 fun AppSnackbarHost(hostState: SnackbarHostState) {
     SnackbarHost(hostState = hostState) { data ->

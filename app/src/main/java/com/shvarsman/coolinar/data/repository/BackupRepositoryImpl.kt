@@ -72,7 +72,13 @@ class BackupRepositoryImpl @Inject constructor(
 
     override suspend fun importBackup(sourceUri: Uri): BackupResult =
         withContext(Dispatchers.IO) {
-            importBackupInternal(sourceUri)
+            context.contentResolver.openInputStream(sourceUri)?.use { importBackupInternal(it) }
+                ?: throw IllegalStateException("Не удалось открыть файл резервной копии")
+        }
+
+    override suspend fun importDemoBackup(assetFileName: String): BackupResult =
+        withContext(Dispatchers.IO) {
+            context.assets.open(assetFileName).use { importBackupInternal(it) }
         }
 
     private suspend fun exportBackupInternal(
@@ -219,32 +225,30 @@ class BackupRepositoryImpl @Inject constructor(
         )
     }
 
-    private suspend fun importBackupInternal(sourceUri: Uri): BackupResult {
+    private suspend fun importBackupInternal(rawIn: java.io.InputStream): BackupResult {
         var payload: BackupPayload? = null
         val extractedImages = mutableMapOf<String, String>()
 
-        context.contentResolver.openInputStream(sourceUri)?.use { rawIn ->
-            ZipInputStream(rawIn).use { zip ->
-                var entry: ZipEntry? = zip.nextEntry
-                while (entry != null) {
-                    when {
-                        entry.name == "backup.json" -> {
-                            payload = backupJson.decodeFromString<BackupPayload>(
-                                zip.readBytes().decodeToString()
-                            )
-                        }
-
-                        entry.name.startsWith("images/") && !entry.isDirectory -> {
-                            val fileName = entry.name.removePrefix("images/")
-                            val newUri = imageFileManager.persistImageBytes(zip.readBytes())
-                            extractedImages[fileName] = newUri
-                        }
+        ZipInputStream(rawIn).use { zip ->
+            var entry: ZipEntry? = zip.nextEntry
+            while (entry != null) {
+                when {
+                    entry.name == "backup.json" -> {
+                        payload = backupJson.decodeFromString<BackupPayload>(
+                            zip.readBytes().decodeToString()
+                        )
                     }
-                    zip.closeEntry()
-                    entry = zip.nextEntry
+
+                    entry.name.startsWith("images/") && !entry.isDirectory -> {
+                        val fileName = entry.name.removePrefix("images/")
+                        val newUri = imageFileManager.persistImageBytes(zip.readBytes())
+                        extractedImages[fileName] = newUri
+                    }
                 }
+                zip.closeEntry()
+                entry = zip.nextEntry
             }
-        } ?: throw IllegalStateException("Не удалось открыть файл резервной копии")
+        }
 
         val data = payload ?: throw IllegalStateException("Файл резервной копии повреждён")
 

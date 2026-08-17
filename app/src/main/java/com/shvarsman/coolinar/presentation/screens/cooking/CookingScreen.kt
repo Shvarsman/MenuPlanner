@@ -25,7 +25,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -37,7 +36,6 @@ import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -64,11 +62,9 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import com.shvarsman.coolinar.R
-import com.shvarsman.coolinar.domain.model.RecipeIngredient
 import com.shvarsman.coolinar.presentation.screens.common.IngredientListCard
 import com.shvarsman.coolinar.presentation.screens.common.MascotImage
 import com.shvarsman.coolinar.presentation.screens.common.MascotPose
-import com.shvarsman.coolinar.presentation.screens.common.localizedName
 import com.shvarsman.coolinar.presentation.screens.common.rememberSizedImageRequest
 import com.shvarsman.coolinar.presentation.ui.theme.CornerShape
 import kotlinx.coroutines.launch
@@ -171,7 +167,7 @@ fun CookingScreen(
                         enabled = !currentDish.isDone,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 8.dp)
+                            .padding(horizontal = 16.dp)
                     ) {
                         if (currentDish.isDone) {
                             MascotImage(
@@ -297,7 +293,7 @@ fun CookingScreen(
                     }
 
                     HorizontalPager(state = pagerState, modifier = Modifier.weight(1f)) { page ->
-                        DishContent(dish = dishes[page])
+                        DishContent(dish = dishes[page], bottomContentPadding = padding.calculateBottomPadding())
                     }
                 }
             }
@@ -324,11 +320,12 @@ fun CookingScreen(
 
 @Composable
 private fun DishContent(
-    dish: CookingDishUiState
+    dish: CookingDishUiState,
+    bottomContentPadding: androidx.compose.ui.unit.Dp = 16.dp
 ) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(top = 8.dp, bottom = 16.dp)
+        contentPadding = PaddingValues(top = 8.dp, bottom = bottomContentPadding + 16.dp)
     ) {
         if (dish.menuEntryIds.size > 1) {
             item {
@@ -369,6 +366,3 @@ private fun DishContent(
         CookingStepsReadOnly(steps = dish.recipe.steps)
     }
 }
-
-private fun formatQty(value: Double): String =
-    if (value == value.toLong().toDouble()) value.toLong().toString() else value.toString()

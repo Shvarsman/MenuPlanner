@@ -58,16 +58,12 @@ class ProductCatalogViewModel @Inject constructor(
     private val allProducts: StateFlow<List<Product>> = getAllProducts()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    // Продукты после фильтра "Мои/Все" — база для чипов категорий.
-    // Не зависит от поискового запроса, чтобы ряд чипов не дёргался при наборе текста.
     private val scopedProducts: StateFlow<List<Product>> = combine(
         allProducts, _showOnlyCustom
     ) { list, onlyCustom ->
         if (onlyCustom) list.filter { !it.isDefault } else list
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    /** Категории, реально присутствующие в текущей области (Мои/Все) — с числом
-     * продуктов в каждой, отсортированы в том же порядке, что и группы списка. */
     val availableCategories: StateFlow<List<Pair<Category, Int>>> = scopedProducts
         .mapOnDefault { list ->
             list.groupingBy { it.category }.eachCount()

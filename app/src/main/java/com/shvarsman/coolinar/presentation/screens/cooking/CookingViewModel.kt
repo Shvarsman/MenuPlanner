@@ -53,7 +53,8 @@ class CookingViewModel @Inject constructor(
      * закрываемые им записи меню — по одному вызову CompleteCookingUseCase на каждую
      * запись, что для повторов одного рецепта корректно списывает ингредиенты дважды. */
     fun markDishDone(recipe: Recipe) {
-        val dish = _state.value.dishes.firstOrNull { it.recipe.id == recipe.id && !it.isDone } ?: return
+        val dish =
+            _state.value.dishes.firstOrNull { it.recipe.id == recipe.id && !it.isDone } ?: return
         viewModelScope.launch {
             dish.menuEntryIds.forEach { menuEntryId ->
                 completeCookingUseCase(menuEntryId, dish.recipe)

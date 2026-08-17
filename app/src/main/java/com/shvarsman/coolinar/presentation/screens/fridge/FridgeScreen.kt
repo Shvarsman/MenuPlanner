@@ -14,7 +14,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -48,7 +48,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuItemColors
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
-import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.SwipeToDismissBox
@@ -74,7 +73,6 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -213,7 +211,8 @@ fun FridgeScreen(
                             Icon(
                                 imageVector = ImageVector.vectorResource(R.drawable.catalog),
                                 modifier = Modifier.size(20.dp),
-                                contentDescription = stringResource(R.string.all_products)
+                                contentDescription = stringResource(R.string.all_products),
+                                tint = MaterialTheme.colorScheme.onSurface
                             )
                         }
                     }
@@ -363,8 +362,13 @@ fun FridgeScreen(
                         label = { Text(stringResource(R.string.by_category)) },
                         shape = CornerShape,
                         colors = FilterChipDefaults.filterChipColors(
-                            selectedContainerColor = MaterialTheme.colorScheme.surface,
-                            selectedLabelColor = MaterialTheme.colorScheme.onSurface
+                            selectedContainerColor = MaterialTheme.colorScheme.primary,
+                            selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
+                            selectedLeadingIconColor = MaterialTheme.colorScheme.onPrimary,
+                            selectedTrailingIconColor = MaterialTheme.colorScheme.onPrimary,
+                            containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                            labelColor = MaterialTheme.colorScheme.onBackground,
+                            iconColor = MaterialTheme.colorScheme.onBackground
                         )
                     )
                 }
@@ -378,7 +382,12 @@ fun FridgeScreen(
                 }
 
                 listState.isEmpty -> {
-                    EmptyFridgeState(modifier = Modifier.fillMaxSize())
+                    EmptyFridgeState(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .imePadding(),
+                        isFiltering = searchQuery.isNotBlank() || selectedCategory != null
+                    )
                 }
 
                 else -> {
@@ -704,11 +713,12 @@ private fun ExpirationBadge(date: LocalDate) {
 }
 
 @Composable
-private fun EmptyFridgeState(modifier: Modifier = Modifier) {
+private fun EmptyFridgeState(modifier: Modifier = Modifier, isFiltering: Boolean) {
     Box(modifier = modifier, contentAlignment = Alignment.Center) {
         MascotEmptyState(
-            pose = MascotPose.SAD,
-            title = stringResource(R.string.fridge_empty)
+            pose = if (isFiltering) MascotPose.SEARCHING else MascotPose.SAD,
+            title = if (isFiltering) stringResource(R.string.nothing_found)
+            else stringResource(R.string.fridge_empty)
         )
     }
 }

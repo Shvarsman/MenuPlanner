@@ -41,4 +41,10 @@ interface ProductDao {
         """
     )
     suspend fun countUsages(productId: String): Int
+
+    @Query("SELECT * FROM products WHERE isDefault = 0")
+    suspend fun getAllUserCreated(): List<ProductEntity>
+
+    @Query("DELETE FROM products WHERE id IN (:ids)")
+    suspend fun deleteByIdsHard(ids: List<String>)
 }

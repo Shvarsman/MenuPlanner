@@ -16,7 +16,17 @@ class OnboardingRepositoryImpl @Inject constructor(
     override val hasCompletedOnboarding: Flow<Boolean> =
         dataStore.data.map { it[AppPreferencesKeys.ONBOARDING_COMPLETED] ?: false }
 
-    override suspend fun setCompleted() {
-        dataStore.edit { it[AppPreferencesKeys.ONBOARDING_COMPLETED] = true }
+    override suspend fun setCompleted(startTour: Boolean) {
+        dataStore.edit {
+            it[AppPreferencesKeys.ONBOARDING_COMPLETED] = true
+            it[AppPreferencesKeys.TOUR_PENDING] = startTour
+        }
+    }
+
+    override val isTourPending: Flow<Boolean> =
+        dataStore.data.map { it[AppPreferencesKeys.TOUR_PENDING] ?: false }
+
+    override suspend fun consumeTourPending() {
+        dataStore.edit { it[AppPreferencesKeys.TOUR_PENDING] = false }
     }
 }

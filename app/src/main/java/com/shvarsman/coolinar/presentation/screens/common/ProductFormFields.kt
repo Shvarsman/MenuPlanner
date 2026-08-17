@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.DropdownMenu
@@ -40,6 +41,7 @@ import com.shvarsman.coolinar.domain.model.Category
 import com.shvarsman.coolinar.domain.model.MeasureUnit
 import com.shvarsman.coolinar.presentation.ui.icons.CategoryIcon
 import com.shvarsman.coolinar.presentation.ui.theme.CornerShape
+import com.shvarsman.coolinar.presentation.ui.theme.gradientStyle
 
 /** Поле названия продукта — в едином стиле с остальными полями ввода. */
 @Composable
@@ -128,7 +130,16 @@ fun MeasureUnitField(
                     )
                 }
             }
-            DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            DropdownMenu(
+                modifier = modifier
+                    .clip(RoundedCornerShape(28.dp))
+                    .gradientStyle(),
+                expanded = expanded,
+                onDismissRequest = { expanded = false },
+                containerColor = MaterialTheme.colorScheme.surfaceContainer.copy(alpha = 0.9f),
+                shape = RoundedCornerShape(28.dp),
+                shadowElevation = 0.dp
+            ) {
                 MeasureUnit.entries.forEach { unit ->
                     DropdownMenuItem(
                         text = { Text(stringResource(unit.labelRes)) },
@@ -170,7 +181,9 @@ fun ProductFormFields(
         MeasureUnitField(selectedUnit = unit, onUnitChange = onUnitChange)
 
         Row(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -190,7 +203,9 @@ fun ProductFormFields(
         }
 
         Row(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {

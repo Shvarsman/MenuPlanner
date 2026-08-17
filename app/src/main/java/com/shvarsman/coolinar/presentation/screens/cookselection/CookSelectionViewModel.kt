@@ -1,7 +1,9 @@
 package com.shvarsman.coolinar.presentation.screens.cookselection
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.shvarsman.coolinar.R
 import com.shvarsman.coolinar.domain.model.IngredientAvailability
 import com.shvarsman.coolinar.domain.model.MenuEntry
 import com.shvarsman.coolinar.domain.model.RecipeIngredient
@@ -12,6 +14,7 @@ import com.shvarsman.coolinar.domain.usecase.menu.GetWeekMenuUseCase
 import com.shvarsman.coolinar.presentation.screens.cooking.CookingDish
 import com.shvarsman.coolinar.presentation.screens.cooking.CookingSessionHolder
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -24,7 +27,6 @@ import java.time.LocalDate
 import java.time.format.TextStyle
 import java.time.temporal.ChronoUnit
 import java.time.temporal.TemporalAdjusters
-import java.util.Locale
 import javax.inject.Inject
 
 /** Одно вхождение рецепта в меню с уже вычисленной реальной датой — единица списка выбора. */
@@ -59,12 +61,14 @@ data class CookSelectionUiState(
     val selectedCount: Int get() = selectedByRecipeId.values.sumOf { it.menuEntryIds.size }
     val canStartCooking: Boolean get() = selectedByRecipeId.isNotEmpty()
 }
+
 @HiltViewModel
 class CookSelectionViewModel @Inject constructor(
     getWeekMenu: GetWeekMenuUseCase,
     private val sessionHolder: CookingSessionHolder,
     private val recipeRepository: RecipeRepository,
-    private val getFridgeItems: GetFridgeItemsUseCase
+    private val getFridgeItems: GetFridgeItemsUseCase,
+    @ApplicationContext private val context: Context
 ) : ViewModel() {
 
     private val currentWeekStart =
@@ -93,7 +97,11 @@ class CookSelectionViewModel @Inject constructor(
     ) { current, next, include -> Triple(current, next, include) }
 
     val uiState: StateFlow<CookSelectionUiState> = combine(
-        menuFlow, _selectedByRecipeId, _duplicateDialogEntries, _navigateToCooking, missingIngredientsFlow
+        menuFlow,
+        _selectedByRecipeId,
+        _duplicateDialogEntries,
+        _navigateToCooking,
+        missingIngredientsFlow
     ) { (currentWeek, nextWeek, includeNext), selected, dialogEntries, navigate,
         (missingIngredients, showMissingDialog, navigateShopping) ->
         val today = LocalDate.now()
@@ -233,16 +241,19 @@ class CookSelectionViewModel @Inject constructor(
         return if (daysFromToday < 0) daysFromToday + 10_000 else daysFromToday
     }
 
-    private fun dayLabel(date: LocalDate, today: LocalDate): String = when (date) {
-        today -> "Сегодня"
-        today.plusDays(1) -> "Завтра"
-        else -> {
-            val dayName = date.dayOfWeek
-                .getDisplayName(TextStyle.FULL, Locale("ru"))
-                .replaceFirstChar { it.uppercase() }
-            "$dayName, ${date.dayOfMonth.toString().padStart(2, '0')}.${
-                date.monthValue.toString().padStart(2, '0')
-            }"
+    private fun dayLabel(date: LocalDate, today: LocalDate): String {
+        val locale = context.resources.configuration.locales[0]
+        return when (date) {
+            today -> context.getString(R.string.day_today)
+            today.plusDays(1) -> context.getString(R.string.day_tomorrow)
+            else -> {
+                val dayName = date.dayOfWeek
+                    .getDisplayName(TextStyle.FULL, locale)
+                    .replaceFirstChar { it.uppercase(locale) }
+                "$dayName, ${date.dayOfMonth.toString().padStart(2, '0')}.${
+                    date.monthValue.toString().padStart(2, '0')
+                }"
+            }
         }
     }
 }

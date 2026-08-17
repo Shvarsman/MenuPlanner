@@ -72,7 +72,6 @@ class RecipeCategoryViewModel @Inject constructor(
         viewModelScope.launch { setRecipeViewMode(mode.name) }
     }
 
-    // ── Множественный выбор ──────────────────────────────────────────
     private val _selectedIds = MutableStateFlow<Set<String>>(emptySet())
     val selectedIds: StateFlow<Set<String>> = _selectedIds
 

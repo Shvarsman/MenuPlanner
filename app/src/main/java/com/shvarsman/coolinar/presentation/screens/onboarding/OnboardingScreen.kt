@@ -46,7 +46,6 @@ import com.shvarsman.coolinar.presentation.screens.common.LabeledTextField
 import com.shvarsman.coolinar.presentation.screens.common.MascotImage
 import com.shvarsman.coolinar.presentation.screens.common.MascotSpeechBubble
 import com.shvarsman.coolinar.presentation.screens.common.PasswordField
-import com.shvarsman.coolinar.presentation.screens.profile.AuthFormMode
 import kotlinx.coroutines.launch
 
 private data class OnboardingPage(
@@ -79,7 +78,6 @@ fun OnboardingScreen(
     viewModel: OnboardingViewModel = hiltViewModel()
 ) {
     val authState by viewModel.authState.collectAsStateWithLifecycle()
-    val formMode by viewModel.formMode.collectAsStateWithLifecycle()
     val isSubmitting by viewModel.isSubmitting.collectAsStateWithLifecycle()
     val errorRes by viewModel.errorRes.collectAsStateWithLifecycle()
 
@@ -89,11 +87,10 @@ fun OnboardingScreen(
 
     LaunchedEffect(authState) {
         if (authState is AuthState.SignedIn) {
-            viewModel.finishOnboarding()
+            viewModel.finishOnboarding(startTour = false)
             onFinished()
         }
     }
-
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -105,14 +102,12 @@ fun OnboardingScreen(
                     ContentPage(contentPages[page])
                 } else {
                     AuthStepPage(
-                        formMode = formMode,
                         isSubmitting = isSubmitting,
                         errorRes = errorRes,
-                        onSetFormMode = { viewModel.setFormMode(it) },
                         onSubmit = { email, password -> viewModel.submit(email, password) },
                         onClearError = { viewModel.clearError() },
                         onSkip = {
-                            viewModel.finishOnboarding()
+                            viewModel.finishOnboarding(startTour = true)
                             onFinished()
                         }
                     )
@@ -199,12 +194,11 @@ private fun ContentPage(page: OnboardingPage) {
         )
     }
 }
+
 @Composable
 private fun AuthStepPage(
-    formMode: AuthFormMode,
     isSubmitting: Boolean,
     errorRes: Int?,
-    onSetFormMode: (AuthFormMode) -> Unit,
     onSubmit: (email: String, password: String) -> Unit,
     onClearError: () -> Unit,
     onSkip: () -> Unit
@@ -243,17 +237,10 @@ private fun AuthStepPage(
 
             if (!showForm) {
                 Button(
-                    onClick = { onSetFormMode(AuthFormMode.SIGN_IN); showForm = true },
+                    onClick = { showForm = true },
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(stringResource(R.string.profile_sign_in))
-                }
-                Spacer(Modifier.height(8.dp))
-                Button(
-                    onClick = { onSetFormMode(AuthFormMode.SIGN_UP); showForm = true },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text(stringResource(R.string.profile_sign_up))
                 }
                 Spacer(Modifier.height(16.dp))
                 TextButton(onClick = onSkip, modifier = Modifier.fillMaxWidth()) {
@@ -299,28 +286,7 @@ private fun AuthStepPage(
                     enabled = !isSubmitting && email.isNotBlank() && password.isNotBlank(),
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text(
-                        stringResource(
-                            if (formMode == AuthFormMode.SIGN_IN) R.string.profile_sign_in else R.string.profile_sign_up
-                        )
-                    )
-                }
-                Spacer(Modifier.height(8.dp))
-                TextButton(
-                    onClick = {
-                        onSetFormMode(if (formMode == AuthFormMode.SIGN_IN) AuthFormMode.SIGN_UP else AuthFormMode.SIGN_IN)
-                    },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text(
-                        stringResource(
-                            if (formMode == AuthFormMode.SIGN_IN) {
-                                R.string.profile_switch_to_sign_up
-                            } else {
-                                R.string.profile_switch_to_sign_in
-                            }
-                        )
-                    )
+                    Text(stringResource(R.string.profile_sign_in))
                 }
                 Spacer(Modifier.height(16.dp))
                 TextButton(onClick = onSkip, modifier = Modifier.fillMaxWidth()) {

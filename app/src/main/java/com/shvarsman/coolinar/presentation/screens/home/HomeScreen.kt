@@ -18,7 +18,6 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -48,6 +47,7 @@ import com.shvarsman.coolinar.presentation.screens.recipe.components.RecipeCarou
 import com.shvarsman.coolinar.presentation.ui.theme.CornerShape
 import com.shvarsman.coolinar.presentation.ui.theme.FloatingBottomBarClearance
 import com.shvarsman.coolinar.presentation.ui.theme.molleFont
+import java.time.LocalTime
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -235,7 +235,7 @@ fun HomeScreen(
 
 @Composable
 private fun greetingText(userName: String?): String {
-    val hour = java.time.LocalTime.now().hour
+    val hour = LocalTime.now().hour
     val base = when (hour) {
         in 5..11 -> stringResource(R.string.good_morning)
         in 12..17 -> stringResource(R.string.good_afternoon)
@@ -248,7 +248,7 @@ private fun greetingText(userName: String?): String {
 
 @Composable
 private fun greetingMascotPose(): MascotPose {
-    val hour = java.time.LocalTime.now().hour
+    val hour = LocalTime.now().hour
     return if (hour in 6..21) MascotPose.WAVING else MascotPose.SLEEPY
 }
 

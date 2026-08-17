@@ -1,5 +1,6 @@
 package com.shvarsman.coolinar.presentation.screens.profile
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,20 +15,15 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Logout
-import androidx.compose.material.icons.filled.AccountCircle
-import androidx.compose.material.icons.filled.ManageAccounts
-import androidx.compose.material.icons.filled.SettingsBackupRestore
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -49,9 +45,11 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import com.shvarsman.coolinar.R
 import com.shvarsman.coolinar.domain.model.AuthState
-import com.shvarsman.coolinar.presentation.screens.common.LabeledTextField
+import com.shvarsman.coolinar.presentation.screens.common.FormCard
+import com.shvarsman.coolinar.presentation.screens.common.MascotImage
+import com.shvarsman.coolinar.presentation.screens.common.MascotPose
 import com.shvarsman.coolinar.presentation.screens.common.NavRow
-import com.shvarsman.coolinar.presentation.screens.common.PasswordField
+import com.shvarsman.coolinar.presentation.screens.common.TipsSettingsViewModel
 import com.shvarsman.coolinar.presentation.ui.theme.FloatingBottomBarClearance
 import com.shvarsman.coolinar.presentation.ui.theme.molleFont
 
@@ -62,7 +60,7 @@ fun ProfileScreen(
     onOpenBackup: () -> Unit,
     onOpenProfileSettings: () -> Unit,
     onOpenAuth: () -> Unit,
-    viewModel: ProfileViewModel = hiltViewModel()
+    viewModel: ProfileViewModel = hiltViewModel(),
 ) {
     val authState by viewModel.authState.collectAsStateWithLifecycle()
 
@@ -156,12 +154,18 @@ private fun SignedInContent(
                     contentScale = ContentScale.Crop
                 )
             } else {
-                Icon(
-                    imageVector = ImageVector.vectorResource(R.drawable.profile_guest),
-                    contentDescription = null,
-                    modifier = Modifier.size(80.dp),
-                    tint = MaterialTheme.colorScheme.onSurface
-                )
+                Box(
+                    modifier = Modifier
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.surfaceContainerHighest)
+                ) {
+                    MascotImage(
+                        pose = MascotPose.NEUTRAL,
+                        modifier = Modifier
+                            .size(80.dp)
+                            .clip(CircleShape)
+                    )
+                }
             }
             Spacer(Modifier.width(16.dp))
             Column {
@@ -193,6 +197,25 @@ private fun SignedInContent(
             onClick = onOpenBackup
         )
 
+        FormCard {
+            val tipsViewModel: TipsSettingsViewModel = hiltViewModel()
+            val tipsEnabled by tipsViewModel.tipsEnabled.collectAsStateWithLifecycle()
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    stringResource(R.string.profile_show_hints),
+                    style = MaterialTheme.typography.bodyMedium
+                )
+                Switch(
+                    checked = tipsEnabled,
+                    onCheckedChange = { tipsViewModel.setTipsEnabled(it) }
+                )
+            }
+        }
+
         if (onSignOut != null) {
             NavRow(
                 icon = Icons.AutoMirrored.Filled.Logout,
@@ -217,7 +240,8 @@ private fun SignedInContent(
                 TextButton(onClick = { showSignOutConfirm = false }) {
                     Text(stringResource(R.string.cancel))
                 }
-            }
+            },
+            containerColor = MaterialTheme.colorScheme.surfaceContainer
         )
     }
 }

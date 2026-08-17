@@ -7,7 +7,6 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import coil3.request.ImageRequest
 
-/** Builds an ImageRequest that decodes only up to the on-screen pixel size. */
 @Composable
 fun rememberSizedImageRequest(model: Any?, width: Dp, height: Dp): ImageRequest {
     val context = LocalContext.current

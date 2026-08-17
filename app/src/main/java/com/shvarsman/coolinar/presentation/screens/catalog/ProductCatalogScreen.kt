@@ -5,6 +5,7 @@ package com.shvarsman.coolinar.presentation.screens.catalog
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -12,6 +13,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -55,7 +57,6 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -67,6 +68,8 @@ import com.shvarsman.coolinar.domain.model.Product
 import com.shvarsman.coolinar.presentation.screens.common.AppBottomSheet
 import com.shvarsman.coolinar.presentation.screens.common.AppSnackbarHost
 import com.shvarsman.coolinar.presentation.screens.common.DropdownFilterChip
+import com.shvarsman.coolinar.presentation.screens.common.MascotEmptyState
+import com.shvarsman.coolinar.presentation.screens.common.MascotPose
 import com.shvarsman.coolinar.presentation.screens.common.ProductFormFields
 import com.shvarsman.coolinar.presentation.screens.common.TopBarSearchField
 import com.shvarsman.coolinar.presentation.screens.common.localizedName
@@ -175,8 +178,13 @@ fun ProductCatalogScreen(
                     label = { Text(stringResource(R.string.my_products)) },
                     shape = CornerShape,
                     colors = FilterChipDefaults.filterChipColors(
-                        selectedContainerColor = MaterialTheme.colorScheme.surface,
-                        selectedLabelColor = MaterialTheme.colorScheme.onSurface
+                        selectedContainerColor = MaterialTheme.colorScheme.primary,
+                        selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
+                        selectedLeadingIconColor = MaterialTheme.colorScheme.onPrimary,
+                        selectedTrailingIconColor = MaterialTheme.colorScheme.onPrimary,
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                        labelColor = MaterialTheme.colorScheme.onBackground,
+                        iconColor = MaterialTheme.colorScheme.onBackground
                     )
                 )
                 FilterChip(
@@ -185,8 +193,13 @@ fun ProductCatalogScreen(
                     label = { Text(stringResource(R.string.all)) },
                     shape = CornerShape,
                     colors = FilterChipDefaults.filterChipColors(
-                        selectedContainerColor = MaterialTheme.colorScheme.surface,
-                        selectedLabelColor = MaterialTheme.colorScheme.onSurface
+                        selectedContainerColor = MaterialTheme.colorScheme.primary,
+                        selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
+                        selectedLeadingIconColor = MaterialTheme.colorScheme.onPrimary,
+                        selectedTrailingIconColor = MaterialTheme.colorScheme.onPrimary,
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                        labelColor = MaterialTheme.colorScheme.onBackground,
+                        iconColor = MaterialTheme.colorScheme.onBackground
                     )
                 )
                 DropdownFilterChip(
@@ -235,18 +248,17 @@ fun ProductCatalogScreen(
             }
 
             if (listState.isEmpty) {
-                Column(
-                    modifier = Modifier.fillMaxSize(),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .imePadding(),
+                    contentAlignment = Alignment.Center
                 ) {
-                    Text(
-                        if (searchQuery.isNotBlank()) stringResource(R.string.nothing_found)
+                    MascotEmptyState(
+                        pose = if (searchQuery.isNotBlank()) MascotPose.SEARCHING else MascotPose.SAD,
+                        title = if (searchQuery.isNotBlank()) stringResource(R.string.nothing_found)
                         else if (showOnlyCustom) stringResource(R.string.no_custom_products)
-                        else stringResource(R.string.catalog_empty),
-                        textAlign = TextAlign.Center,
-                        color = MaterialTheme.colorScheme.onBackground,
-                        modifier = Modifier.padding(horizontal = 32.dp)
+                        else stringResource(R.string.catalog_empty)
                     )
                 }
             } else {
@@ -349,7 +361,8 @@ fun ProductCatalogScreen(
                         )
                     )
                 }
-            }
+            },
+            containerColor = MaterialTheme.colorScheme.surfaceContainer
         )
     }
 }
@@ -367,7 +380,7 @@ private fun CatalogCategoryHeader(category: Category) {
         Text(
             text = stringResource(category.labelRes),
             style = MaterialTheme.typography.titleSmall,
-            color = MaterialTheme.colorScheme.primary
+            color = MaterialTheme.colorScheme.onBackground
         )
         HorizontalDivider(modifier = Modifier.weight(1f))
     }

@@ -66,7 +66,7 @@ fun TopBarSearchField(
                     fontSize = MaterialTheme.typography.bodyMedium.fontSize
                 ),
                 cursorBrush = SolidColor(MaterialTheme.colorScheme.onSurface),
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth().padding(end = 16.dp)
             ) { innerTextField ->
                 if (query.isEmpty()) {
                     Text(
@@ -86,7 +86,7 @@ fun TopBarSearchField(
                 contentDescription = stringResource(R.string.clear),
                 tint = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier
-                    .padding(horizontal = 16.dp)
+                    .padding(end = 16.dp)
                     .size(20.dp)
                     .clickable(
                         interactionSource = interactionSource,

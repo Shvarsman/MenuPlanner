@@ -22,6 +22,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TimeInput
 import androidx.compose.material3.TimePicker
+import androidx.compose.material3.TimePickerDefaults
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -59,7 +60,7 @@ fun DurationPickerDialog(
     ) {
         Surface(
             shape = RoundedCornerShape(28.dp),
-            color = MaterialTheme.colorScheme.surfaceContainerHigh,
+            color = MaterialTheme.colorScheme.surfaceContainer,
             tonalElevation = 6.dp,
             modifier = Modifier
                 .width(328.dp)
@@ -94,9 +95,21 @@ fun DurationPickerDialog(
                 }
 
                 if (showDial) {
-                    TimePicker(state = timePickerState)
+                    TimePicker(
+                        state = timePickerState,
+                        colors = TimePickerDefaults.colors(
+                            timeSelectorUnselectedContainerColor = MaterialTheme.colorScheme.surface,
+                            clockDialColor = MaterialTheme.colorScheme.surface,
+                            periodSelectorUnselectedContainerColor = MaterialTheme.colorScheme.surface
+                        )
+                    )
                 } else {
-                    TimeInput(state = timePickerState)
+                    TimeInput(
+                        state = timePickerState,
+                        colors = TimePickerDefaults.colors(
+                            timeSelectorUnselectedContainerColor = MaterialTheme.colorScheme.surface,
+                        )
+                    )
                 }
 
                 Spacer(modifier = Modifier.height(24.dp))

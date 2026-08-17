@@ -219,248 +219,243 @@
 Плавленый сыр;Сыры;г;0;processed_cheese;0;Processed cheese
 Яйцо куриное;Яйца;шт;0;egg;0;Chicken egg
 Яйцо перепелиное;Яйца;шт;0;quail_egg;0;Quail egg
-Хлеб белый;Хлеб и выпечка;шт;0;;0;White bread
-Хлеб черный (ржаной);Хлеб и выпечка;шт;0;;0;Rye bread
-Хлеб цельнозерновой;Хлеб и выпечка;шт;0;;0;Whole grain bread
-Багет;Хлеб и выпечка;шт;0;;0;Baguette
-Чиабатта;Хлеб и выпечка;шт;0;;0;Ciabatta
-Лаваш;Хлеб и выпечка;шт;0;;0;Lavash
-Питта;Хлеб и выпечка;шт;0;;0;Pita bread
-Тортилья пшеничная;Хлеб и выпечка;уп;0;;0;Wheat tortilla
-Тортилья кукурузная;Хлеб и выпечка;уп;0;;0;Corn tortilla
-Булочки для бургеров;Хлеб и выпечка;уп;0;;0;Burger buns
-Булочки для хот-догов;Хлеб и выпечка;уп;0;;0;Hot dog buns
-Тосты (хлеб для тостов);Хлеб и выпечка;уп;0;;0;Toast bread
-Круассан;Хлеб и выпечка;шт;0;;0;Croissant
-Багель;Хлеб и выпечка;шт;0;;0;Bagel
-Хлебцы;Хлеб и выпечка;уп;0;;0;Crispbread
-Блины готовые;Хлеб и выпечка;уп;0;;0;Ready-made pancakes
-Оладьи готовые;Хлеб и выпечка;уп;0;;0;Ready-made fritters
-Кекс;Хлеб и выпечка;шт;0;;0;Cupcake
-Маффин;Хлеб и выпечка;шт;0;;0;Muffin
-Крекеры;Хлеб и выпечка;уп;0;;0;Crackers
-Вафли;Хлеб и выпечка;уп;0;;0;Waffles
-Пряники;Хлеб и выпечка;уп;0;;0;Gingerbread cookies
-Пирог готовый;Хлеб и выпечка;шт;0;;0;Ready-made pie
-Тесто дрожжевое (охлажденное);Хлеб и выпечка;г;0;;0;Yeast dough (chilled)
-Тесто песочное;Хлеб и выпечка;г;0;;0;Shortcrust pastry
-Основа для пиццы;Хлеб и выпечка;г;0;;0;Pizza base
-Подсолнечное масло;Бакалея;мл;1;;0;Sunflower oil
-Оливковое масло Extra Virgin;Бакалея;мл;0;;0;Extra virgin olive oil
-Оливковое масло обычное;Бакалея;мл;0;;0;Regular olive oil
-Кукурузное масло;Бакалея;мл;0;;0;Corn oil
-Кунжутное масло;Бакалея;мл;0;;0;Sesame oil
-Льняное масло;Бакалея;мл;0;;0;Flaxseed oil
-Масло виноградной косточки;Бакалея;мл;0;;0;Grapeseed oil
-Столовый уксус 9%;Бакалея;мл;0;;0;Table vinegar 9%
-Винный уксус красный;Бакалея;мл;0;;0;Red wine vinegar
-Винный уксус белый;Бакалея;мл;0;;0;White wine vinegar
-Яблочный уксус;Бакалея;мл;0;;0;Apple cider vinegar
-Бальзамический уксус;Бакалея;мл;0;;0;Balsamic vinegar
-Рисовый уксус;Бакалея;мл;0;;0;Rice vinegar
-Пшеничная мука;Бакалея;г;0;;0;Wheat flour
-Кукурузная мука;Бакалея;г;0;;0;Corn flour
-Панировочные сухари;Бакалея;г;0;;0;Breadcrumbs
-Панко;Бакалея;г;0;;0;Panko breadcrumbs
-Разрыхлитель;Бакалея;г;1;;0;Baking powder
-Сода пищевая;Бакалея;г;1;;0;Baking soda
-Желатин;Бакалея;г;1;;0;Gelatin
-Агар-агар;Бакалея;г;0;;0;Agar-agar
-Дрожжи сухие;Бакалея;г;0;;0;Dry yeast
-Дрожжи свежие;Бакалея;г;0;;0;Fresh yeast
-Какао-порошок;Бакалея;г;0;;0;Cocoa powder
-Шоколад горький;Бакалея;г;0;;0;Dark chocolate
-Шоколад молочный;Бакалея;г;0;;0;Milk chocolate
-Шоколад белый;Бакалея;г;0;;0;White chocolate
-Шоколадные капли;Бакалея;г;0;;0;Chocolate chips
-Ванильный экстракт;Бакалея;мл;1;;0;Vanilla extract
-Ванильный сахар;Бакалея;г;1;;0;Vanilla sugar
-Кокосовая стружка;Бакалея;г;1;;0;Shredded coconut
-Крахмал картофельный;Бакалея;г;0;;0;Potato starch
-Крахмал кукурузный;Бакалея;г;0;;0;Corn starch
-Кокосовое молоко (консервы);Бакалея;банка;0;;0;Coconut milk (canned)
-Соевый соус;Соусы;мл;0;;0;Soy sauce
-Соус терияки;Соусы;мл;0;;0;Teriyaki sauce
-Устричный соус;Соусы;мл;0;;0;Oyster sauce
-Рыбный соус;Соусы;мл;0;;0;Fish sauce
-Соус Хойсин;Соусы;мл;0;;0;Hoisin sauce
-Кимчи-база;Соусы;г;0;;0;Kimchi paste
-Паста карри;Соусы;г;0;;0;Curry paste
-Паста мисо;Соусы;г;0;;0;Miso paste
-Майонез;Соусы;г;0;;0;Mayonnaise
-Кетчуп;Соусы;г;0;;0;Ketchup
-Горчица русская;Соусы;г;0;;0;Russian mustard
-Горчица дижонская;Соусы;г;0;;0;Dijon mustard
-Горчица зерновая;Соусы;г;0;;0;Wholegrain mustard
-Хрен;Соусы;г;0;;0;Horseradish
-Табаско;Соусы;мл;0;;0;Tabasco sauce
-Соус барбекю;Соусы;мл;0;;0;BBQ sauce
-Песто;Соусы;г;0;;0;Pesto
-Томатная паста;Соусы;г;0;;0;Tomato paste
-Ткемали;Соусы;г;0;;0;Tkemali sauce
-Аджика;Соусы;г;0;;0;Adjika
-Наршараб;Соусы;мл;0;;0;Narsharab
-Рис длиннозерный;Крупы;г;0;;0;Long-grain rice
-Рис круглозерный;Крупы;г;0;;0;Round-grain rice
-Рис бурый;Крупы;г;0;;0;Brown rice
-Рис дикий;Крупы;г;0;;0;Wild rice
-Рис арборио;Крупы;г;0;;0;Arborio rice
-Рис жасмин;Крупы;г;0;;0;Jasmine rice
-Рис басмати;Крупы;г;0;;0;Basmati rice
-Гречка;Крупы;г;0;;0;Buckwheat
-Овсяные хлопья (Геркулес);Крупы;г;0;;0;Rolled oats
-Киноа;Крупы;г;0;;0;Quinoa
-Булгур;Крупы;г;0;;0;Bulgur
-Кускус;Крупы;г;0;;0;Couscous
-Пшено;Крупы;г;0;;0;Millet
-Перловка;Крупы;г;0;;0;Pearl barley
-Полба;Крупы;г;0;;0;Spelt
-Манная крупа;Крупы;г;0;;0;Semolina
-Фасоль красная сухая;Бобовые;г;0;;0;Dried red beans
-Фасоль белая сухая;Бобовые;г;0;;0;Dried white beans
-Фасоль консервированная;Консервы;банка;0;;0;Canned beans
-Нут сухой;Бобовые;г;0;;0;Dried chickpeas
-Горох колотый;Бобовые;г;0;;0;Split peas
-Чечевица красная;Бобовые;г;0;;0;Red lentils
-Чечевица зеленая;Бобовые;г;0;;0;Green lentils
-Маш;Бобовые;г;0;;0;Mung beans
-Вермишель;Макароны;г;0;;0;Vermicelli
-Спагетти;Макароны;г;0;;0;Spaghetti
-Пенне;Макароны;г;0;;0;Penne
-Фузилли;Макароны;г;0;;0;Fusilli
-Фарфалле;Макароны;г;0;;0;Farfalle
-Папарделле;Макароны;г;0;;0;Pappardelle
-Лазанья;Макароны;г;0;;0;Lasagne sheets
-Тортеллини;Макароны;г;0;;0;Tortellini
-Лапша удон;Макароны;г;0;;0;Udon noodles
-Лапша соба;Макароны;г;0;;0;Soba noodles
-Рисовая лапша;Макароны;г;0;;0;Rice noodles
-Стеклянная лапша (фунчоза);Макароны;г;0;;0;Glass noodles
-Корица;Специи;г;1;;0;Cinnamon
-Мускатный орех;Специи;г;1;;0;Nutmeg
-Перец черный молотый;Специи;г;1;;0;Ground black pepper
-Перец черный горошком;Специи;г;1;;0;Black peppercorns
-Перец красный молотый;Специи;г;1;;0;Ground red pepper
-Перец душистый;Специи;г;1;;0;Allspice
-Паприка;Специи;г;1;;0;Paprika
-Куркума;Специи;г;1;;0;Turmeric
-Кориандр молотый;Специи;г;1;;0;Ground coriander
-Зира (кумин);Специи;г;1;;0;Cumin
-Кардамон;Специи;г;1;;0;Cardamom
-Гвоздика;Специи;г;1;;0;Cloves
-Лавровый лист;Специи;г;1;;0;Bay leaf
-Сушеный чеснок;Специи;г;1;;0;Dried garlic
-Сушеный лук;Специи;г;1;;0;Dried onion
-Хмели-сунели;Специи;г;1;;0;Khmeli-suneli seasoning
-Приправа для мяса;Специи;г;1;;0;Meat seasoning
-Приправа для рыбы;Специи;г;1;;0;Fish seasoning
-Ванилин;Специи;г;1;;0;Vanillin
-Соль поваренная;Специи;г;1;;0;Table salt
-Соль морская;Специи;г;1;;0;Sea salt
-Соль йодированная;Специи;г;1;;0;Iodized salt
-Грецкий орех;Орехи и семена;г;0;;0;Walnut
-Миндаль;Орехи и семена;г;0;;0;Almond
-Фундук;Орехи и семена;г;0;;0;Hazelnut
-Кешью;Орехи и семена;г;0;;0;Cashew
-Фисташки;Орехи и семена;г;0;;0;Pistachios
-Арахис;Орехи и семена;г;0;;0;Peanuts
-Кедровые орехи;Орехи и семена;г;0;;0;Pine nuts
-Кунжут белый;Орехи и семена;г;0;;0;White sesame
-Кунжут черный;Орехи и семена;г;0;;0;Black sesame
-Семена чиа;Орехи и семена;г;0;;0;Chia seeds
-Семена льна;Орехи и семена;г;0;;0;Flax seeds
-Тыквенные семечки;Орехи и семена;г;0;;0;Pumpkin seeds
-Семена подсолнечные;Орехи и семена;г;0;;0;Sunflower seeds
-Мак;Орехи и семена;г;0;;0;Poppy seeds
-Изюм;Сухофрукты;г;0;;0;Raisins
-Курага;Сухофрукты;г;0;;0;Dried apricots
+Хлеб белый;Хлеб и выпечка;шт;0;white_bread;0;White bread
+Хлеб черный (ржаной);Хлеб и выпечка;шт;0;rye_bread;0;Rye bread
+Хлеб цельнозерновой;Хлеб и выпечка;шт;0;whole_grain_bread;0;Whole grain bread
+Багет;Хлеб и выпечка;шт;0;baguette;0;Baguette
+Чиабатта;Хлеб и выпечка;шт;0;ciabatta;0;Ciabatta
+Лаваш;Хлеб и выпечка;шт;0;lavash;0;Lavash
+Питта;Хлеб и выпечка;шт;0;pita_bread;0;Pita bread
+Тортилья пшеничная;Хлеб и выпечка;уп;0;wheat_tortilla;0;Wheat tortilla
+Тортилья кукурузная;Хлеб и выпечка;уп;0;corn_tortilla;0;Corn tortilla
+Булочки для бургеров;Хлеб и выпечка;уп;0;burger_buns;0;Burger buns
+Булочки для хот-догов;Хлеб и выпечка;уп;0;hot_dog_buns;0;Hot dog buns
+Тосты (хлеб для тостов);Хлеб и выпечка;уп;0;toast_bread;0;Toast bread
+Круассан;Хлеб и выпечка;шт;0;croissant;0;Croissant
+Багель;Хлеб и выпечка;шт;0;bagel;0;Bagel
+Хлебцы;Хлеб и выпечка;уп;0;crispbread;0;Crispbread
+Блины готовые;Хлеб и выпечка;уп;0;ready_made_pancakes;0;Ready-made pancakes
+Оладьи готовые;Хлеб и выпечка;уп;0;ready_made_fritters;0;Ready-made fritters
+Кекс;Хлеб и выпечка;шт;0;cupcake;0;Cupcake
+Маффин;Хлеб и выпечка;шт;0;muffin;0;Muffin
+Крекеры;Хлеб и выпечка;уп;0;crackers;0;Crackers
+Вафли;Хлеб и выпечка;уп;0;waffles;0;Waffles
+Пряники;Хлеб и выпечка;уп;0;gingerbread_cookies;0;Gingerbread cookies
+Пирог готовый;Хлеб и выпечка;шт;0;ready_made_pie;0;Ready-made pie
+Тесто дрожжевое (охлажденное);Хлеб и выпечка;г;0;yeast_doughh;0;Yeast dough (chilled)
+Тесто песочное;Хлеб и выпечка;г;0;shortcrust_pastry;0;Shortcrust pastry
+Основа для пиццы;Хлеб и выпечка;г;0;pizza_base;0;Pizza base
+Подсолнечное масло;Бакалея;мл;1;sunflower_oil;0;Sunflower oil
+Оливковое масло Extra Virgin;Бакалея;мл;0;extra_virgin_olive_oil;0;Extra virgin olive oil
+Оливковое масло обычное;Бакалея;мл;0;regular_olive_oil;0;Regular olive oil
+Кукурузное масло;Бакалея;мл;0;corn_oil;0;Corn oil
+Кунжутное масло;Бакалея;мл;0;sesame_oil;0;Sesame oil
+Льняное масло;Бакалея;мл;0;flaxseed_oil;0;Flaxseed oil
+Масло виноградной косточки;Бакалея;мл;0;grapeseed_oil;0;Grapeseed oil
+Столовый уксус 9%;Бакалея;мл;0;table_vinegar;0;Table vinegar 9%
+Винный уксус красный;Бакалея;мл;0;red_wine_vinegar;0;Red wine vinegar
+Винный уксус белый;Бакалея;мл;0;white_wine_vinegar;0;White wine vinegar
+Яблочный уксус;Бакалея;мл;0;apple_cider_vinegar;0;Apple cider vinegar
+Бальзамический уксус;Бакалея;мл;0;balsamic_vinegar;0;Balsamic vinegar
+Рисовый уксус;Бакалея;мл;0;rice_vinegar;0;Rice vinegar
+Пшеничная мука;Бакалея;г;0;wheat_flour;0;Wheat flour
+Кукурузная мука;Бакалея;г;0;corn_flour;0;Corn flour
+Панировочные сухари;Бакалея;г;0;breadcrumbs;0;Breadcrumbs
+Панко;Бакалея;г;0;panko_breadcrumbs;0;Panko breadcrumbs
+Разрыхлитель;Бакалея;г;1;baking_powder;0;Baking powder
+Сода пищевая;Бакалея;г;1;baking_soda;0;Baking soda
+Желатин;Бакалея;г;1;gelatin;0;Gelatin
+Агар-агар;Бакалея;г;0;agar_agar;0;Agar-agar
+Дрожжи сухие;Бакалея;г;0;dry_yeast;0;Dry yeast
+Дрожжи свежие;Бакалея;г;0;fresh_yeast;0;Fresh yeast
+Какао-порошок;Бакалея;г;0;cocoa_powder;0;Cocoa powder
+Шоколад горький;Бакалея;г;0;dark_chocolate;0;Dark chocolate
+Шоколад молочный;Бакалея;г;0;milk_chocolate;0;Milk chocolate
+Шоколад белый;Бакалея;г;0;white_chocolate;0;White chocolate
+Шоколадные капли;Бакалея;г;0;chocolate_chips;0;Chocolate chips
+Ванильный экстракт;Бакалея;мл;1;vanilla_extract;0;Vanilla extract
+Ванильный сахар;Бакалея;г;1;vanilla_sugar;0;Vanilla sugar
+Кокосовая стружка;Бакалея;г;1;shredded_coconut;0;Shredded coconut
+Крахмал картофельный;Бакалея;г;0;potato_starch;0;Potato starch
+Крахмал кукурузный;Бакалея;г;0;corn_starch;0;Corn starch
+Соевый соус;Соусы;мл;0;soy_sauce;0;Soy sauce
+Соус терияки;Соусы;мл;0;teriyaki_sauce;0;Teriyaki sauce
+Устричный соус;Соусы;мл;0;oyster_sauce;0;Oyster sauce
+Рыбный соус;Соусы;мл;0;fish_sauce;0;Fish sauce
+Соус Хойсин;Соусы;мл;0;hoisin_sauce;0;Hoisin sauce
+Кимчи-база;Соусы;г;0;kimchi_paste;0;Kimchi paste
+Паста карри;Соусы;г;0;curry_paste;0;Curry paste
+Майонез;Соусы;г;0;mayonnaise;0;Mayonnaise
+Кетчуп;Соусы;г;0;ketchup;0;Ketchup
+Горчица дижонская;Соусы;г;0;dijon_mustard;0;Dijon mustard
+Горчица зерновая;Соусы;г;0;wholegrain_mustard;0;Wholegrain mustard
+Хрен;Соусы;г;0;horseradish;0;Horseradish
+Табаско;Соусы;мл;0;tabasco_sauce;0;Tabasco sauce
+Соус барбекю;Соусы;мл;0;bbq_sauce;0;BBQ sauce
+Песто;Соусы;г;0;pesto;0;Pesto
+Томатная паста;Соусы;г;0;tomato_paste;0;Tomato paste
+Аджика;Соусы;г;0;adjika;0;Adjika
+Наршараб;Соусы;мл;0;narsharab;0;Narsharab
+Рис длиннозерный;Крупы;г;0;long_grain_rice;0;Long-grain rice
+Рис круглозерный;Крупы;г;0;round_grain_rice;0;Round-grain rice
+Рис бурый;Крупы;г;0;brown_rice;0;Brown rice
+Рис дикий;Крупы;г;0;wild_rice;0;Wild rice
+Рис арборио;Крупы;г;0;arborio_rice;0;Arborio rice
+Рис жасмин;Крупы;г;0;jasmine_rice;0;Jasmine rice
+Рис басмати;Крупы;г;0;basmati_rice;0;Basmati rice
+Гречка;Крупы;г;0;buckwheat;0;Buckwheat
+Овсяные хлопья (Геркулес);Крупы;г;0;rolled_oats;0;Rolled oats
+Киноа;Крупы;г;0;quinoa;0;Quinoa
+Булгур;Крупы;г;0;bulgur;0;Bulgur
+Кускус;Крупы;г;0;couscous;0;Couscous
+Пшено;Крупы;г;0;millet;0;Millet
+Перловка;Крупы;г;0;pearl_barley;0;Pearl barley
+Полба;Крупы;г;0;spelt;0;Spelt
+Манная крупа;Крупы;г;0;semolina;0;Semolina
+Фасоль красная сухая;Бобовые;г;0;dried_red_beans;0;Dried red beans
+Фасоль белая сухая;Бобовые;г;0;dried_white_beans;0;Dried white beans
+Фасоль консервированная;Консервы;банка;0;canned_beans;0;Canned beans
+Нут сухой;Бобовые;г;0;dried_chickpeas;0;Dried chickpeas
+Горох колотый;Бобовые;г;0;split_peas;0;Split peas
+Чечевица красная;Бобовые;г;0;red_lentils;0;Red lentils
+Чечевица зеленая;Бобовые;г;0;green_lentils;0;Green lentils
+Маш;Бобовые;г;0;mung_beans;0;Mung beans
+Вермишель;Макароны;г;0;vermicelli;0;Vermicelli
+Спагетти;Макароны;г;0;spaghetti;0;Spaghetti
+Пенне;Макароны;г;0;penne;0;Penne
+Фузилли;Макароны;г;0;fusilli;0;Fusilli
+Фарфалле;Макароны;г;0;farfalle;0;Farfalle
+Папарделле;Макароны;г;0;pappardelle;0;Pappardelle
+Лазанья;Макароны;г;0;lasagne_sheets;0;Lasagne sheets
+Ньокки;Макароны;г;0;gnocchi;0;Gnocchi
+Макароны;Макароны;г;0;macaroni;0;Macaroni
+Ротэле;Макароны;г;0;rotelle;0;Rotelle
+Лапша удон;Макароны;г;0;udon_noodles;0;Udon noodles
+Лапша соба;Макароны;г;0;soba_noodles;0;Soba noodles
+Рисовая лапша;Макароны;г;0;rice_noodles;0;Rice noodles
+Стеклянная лапша (фунчоза);Макароны;г;0;glass_noodles;0;Glass noodles
+Корица;Специи;г;1;cinnamon;0;Cinnamon
+Мускатный орех;Специи;г;1;nutmeg;0;Nutmeg
+Перец черный молотый;Специи;г;1;ground_black_pepper;0;Ground black pepper
+Перец черный горошком;Специи;г;1;black_peppercorns;0;Black peppercorns
+Перец красный молотый;Специи;г;1;ground_red_pepper;0;Ground red pepper
+Перец душистый;Специи;г;1;allspice;0;Allspice
+Паприка;Специи;г;1;paprika;0;Paprika
+Куркума;Специи;г;1;turmeric;0;Turmeric
+Кориандр молотый;Специи;г;1;ground_coriander;0;Ground coriander
+Зира (кумин);Специи;г;1;cumin;0;Cumin
+Кардамон;Специи;г;1;cardamom;0;Cardamom
+Гвоздика;Специи;г;1;cloves;0;Cloves
+Лавровый лист;Специи;г;1;bay_leaf;0;Bay leaf
+Сушеный чеснок;Специи;г;1;dried_garlic;0;Dried garlic
+Хмели-сунели;Специи;г;1;khmeli_suneli_seasoning;0;Khmeli-suneli seasoning
+Приправа для мяса;Специи;г;1;meat_seasoning;0;Meat seasoning
+Приправа для рыбы;Специи;г;1;fish_seasoningg;0;Fish seasoning
+Ванилин;Специи;г;1;vanillin;0;Vanillin
+Соль поваренная;Специи;г;1;table_salt;0;Table salt
+Соль морская;Специи;г;1;sea_salt;0;Sea salt
+Соль йодированная;Специи;г;1;iodized_salt;0;Iodized salt
+Грецкий орех;Орехи и семена;г;0;walnut;0;Walnut
+Миндаль;Орехи и семена;г;0;almond;0;Almond
+Фундук;Орехи и семена;г;0;hazelnut;0;Hazelnut
+Кешью;Орехи и семена;г;0;cashew;0;Cashew
+Фисташки;Орехи и семена;г;0;pistachios;0;Pistachios
+Арахис;Орехи и семена;г;0;peanuts;0;Peanuts
+Кедровые орехи;Орехи и семена;г;0;pine_nuts;0;Pine nuts
+Кунжут белый;Орехи и семена;г;0;white_sesame;0;White sesame
+Кунжут черный;Орехи и семена;г;0;black_sesame;0;Black sesame
+Семена чиа;Орехи и семена;г;0;chia_seeds;0;Chia seeds
+Семена льна;Орехи и семена;г;0;flax_seeds;0;Flax seeds
+Тыквенные семечки;Орехи и семена;г;0;pumpkin_seeds;0;Pumpkin seeds
+Семена подсолнечные;Орехи и семена;г;0;sunflower_seeds;0;Sunflower seeds
+Мак;Орехи и семена;г;0;poppy_seeds;0;Poppy seeds
+Изюм;Сухофрукты;г;0;raisins;0;Raisins
+Курага;Сухофрукты;г;0;dried_apricots;0;Dried apricots
 Чернослив;Сухофрукты;г;0;prunes;0;Prunes
-Клюква вяленая;Сухофрукты;г;0;;0;Dried cranberries
-Цукаты;Сухофрукты;г;0;;0;Candied fruit
-Замороженная овощная смесь Гавайская;Заморозка;г;0;;0;Frozen Hawaiian vegetable mix
-Замороженная овощная смесь Мексиканская;Заморозка;г;0;;0;Frozen Mexican vegetable mix
-Брокколи замороженная;Заморозка;г;0;;0;Frozen broccoli
-Шпинат замороженный;Заморозка;г;0;;0;Frozen spinach
-Брюссельская капуста замороженная;Заморозка;г;0;;0;Frozen Brussels sprouts
-Фасоль стручковая замороженная;Заморозка;г;0;;0;Frozen green beans
-Ягоды замороженные;Заморозка;г;0;;0;Frozen mixed berries
-Клюква замороженная;Заморозка;г;0;;0;Frozen cranberries
-Брусника замороженная;Заморозка;г;0;;0;Frozen lingonberries
-Слоеное тесто дрожжевое;Заморозка;г;0;;0;Puff pastry (yeasted)
-Слоеное тесто бездрожжевое;Заморозка;г;0;;0;Puff pastry (yeast-free)
-Пельмени замороженные;Заморозка;г;0;;0;Frozen dumplings (pelmeni)
-Вареники замороженные;Заморозка;г;0;;0;Frozen dumplings (vareniki)
-Мороженое пломбир;Заморозка;г;0;;0;Vanilla ice cream
-Мороженое эскимо;Заморозка;шт;0;;0;Ice cream bar
-Замороженные креветки;Заморозка;г;0;;0;Frozen shrimp
-Замороженное филе рыбы;Заморозка;г;0;;0;Frozen fish fillet
-Кофе в зернах;Кофе и чай;г;0;;0;Coffee beans
-Кофе молотый;Кофе и чай;г;0;;0;Ground coffee
-Кофе растворимый;Кофе и чай;г;0;;0;Instant coffee
-Кофе в капсулах;Кофе и чай;уп;0;;0;Coffee capsules
-Чай черный листовой;Кофе и чай;г;0;;0;Loose black tea
-Чай зеленый листовой;Кофе и чай;г;0;;0;Loose green tea
-Чай травяной;Кофе и чай;г;0;;0;Herbal tea
-Чай фруктовый;Кофе и чай;г;0;;0;Fruit tea
-Чай в пакетиках;Кофе и чай;уп;0;;0;Tea bags
-Матча;Кофе и чай;г;0;;0;Matcha
-Какао порошок для напитков;Кофе и чай;г;0;;0;Cocoa drink powder
-Цикорий;Кофе и чай;г;0;;0;Chicory
-Вода;Напитки безалкогольные;мл;0;;0;Water
-Вода питьевая негазированная;Напитки безалкогольные;мл;0;;0;Still drinking water
-Вода питьевая газированная;Напитки безалкогольные;мл;0;;0;Sparkling drinking water
-Вода минеральная;Напитки безалкогольные;мл;0;;0;Mineral water
-Сок апельсиновый;Напитки безалкогольные;мл;0;;0;Orange juice
-Сок яблочный;Напитки безалкогольные;мл;0;;0;Apple juice
-Сок томатный;Напитки безалкогольные;мл;0;;0;Tomato juice
-Сок мультифрукт;Напитки безалкогольные;мл;0;;0;Multifruit juice
-Морс;Напитки безалкогольные;мл;0;;0;Fruit drink
-Компот;Напитки безалкогольные;мл;0;;0;Compote
-Лимонад;Напитки безалкогольные;мл;0;;0;Lemonade
-Газировка (кола, спрайт и т.д.);Напитки безалкогольные;мл;0;;0;Soda (cola, sprite, etc.)
-Тоник;Напитки безалкогольные;мл;0;;0;Tonic water
-Энергетический напиток;Напитки безалкогольные;мл;0;;0;Energy drink
-Изотоник (спортивный напиток);Напитки безалкогольные;мл;0;;0;Isotonic sports drink
-Квас;Напитки безалкогольные;мл;0;;0;Kvass
-Кокосовая вода;Напитки безалкогольные;мл;0;;0;Coconut water
-Смузи готовый;Напитки безалкогольные;мл;0;;0;Ready-made smoothie
-Пиво светлое;Напитки алкогольные;мл;0;;0;Lager beer
-Пиво темное;Напитки алкогольные;мл;0;;0;Dark beer
-Вино красное сухое;Напитки алкогольные;мл;0;;0;Dry red wine
-Вино белое сухое;Напитки алкогольные;мл;0;;0;Dry white wine
-Вино розовое;Напитки алкогольные;мл;0;;0;Rosé wine
-Игристое вино / шампанское;Напитки алкогольные;мл;0;;0;Sparkling wine / Champagne
-Водка;Напитки алкогольные;мл;0;;0;Vodka
-Виски;Напитки алкогольные;мл;0;;0;Whisky
-Ром;Напитки алкогольные;мл;0;;0;Rum
-Джин;Напитки алкогольные;мл;0;;0;Gin
-Текила;Напитки алкогольные;мл;0;;0;Tequila
-Коньяк;Напитки алкогольные;мл;0;;0;Cognac
-Ликер;Напитки алкогольные;мл;0;;0;Liqueur
-Сидр;Напитки алкогольные;мл;0;;0;Cider
-Вермут;Напитки алкогольные;мл;0;;0;Vermouth
-Мёд цветочный;Мёд и сладости;г;0;;0;Flower honey
-Мёд гречишный;Мёд и сладости;г;0;;0;Buckwheat honey
-Мёд липовый;Мёд и сладости;г;0;;0;Linden honey
-Сахар белый;Мёд и сладости;г;1;;0;White sugar
-Сахар коричневый (тростниковый);Мёд и сладости;г;1;;0;Brown (cane) sugar
-Сахарная пудра;Мёд и сладости;г;1;;0;Powdered sugar
-Мармелад;Мёд и сладости;г;0;;0;Fruit jelly candy
-Зефир;Мёд и сладости;г;0;;0;Marshmallow
-Пастила;Мёд и сладости;г;0;;0;Pastila
-Варенье клубничное;Мёд и сладости;г;0;;0;Strawberry jam
-Варенье вишневое;Мёд и сладости;г;0;;0;Cherry jam
-Джем;Мёд и сладости;г;0;;0;Jam
-Повидло;Мёд и сладости;г;0;;0;Fruit preserve
-Шоколадно-ореховая паста;Мёд и сладости;г;0;;0;Chocolate hazelnut spread
-Сгущенка вареная;Мёд и сладости;банка;0;;0;Boiled condensed milk
-Карамель;Мёд и сладости;г;0;;0;Caramel candy
-Конфеты шоколадные;Мёд и сладости;г;0;;0;Chocolate candy
-Ирис;Мёд и сладости;г;0;;0;Toffee
-Халва;Мёд и сладости;г;0;;0;Halva
-Кленовый сироп;Мёд и сладости;мл;0;;0;Maple syrup
-Сироп агавы;Мёд и сладости;мл;0;;0;Agave syrup
-Сироп для десертов;Мёд и сладости;мл;0;;0;Dessert syrup
+Клюква вяленая;Сухофрукты;г;0;dried_cranberries;0;Dried cranberries
+Цукаты;Сухофрукты;г;0;candied_fruit;0;Candied fruit
+Замороженная овощная смесь Гавайская;Заморозка;г;0;frozen_hawaiian_vegetable_mix;0;Frozen Hawaiian vegetable mix
+Замороженная овощная смесь Мексиканская;Заморозка;г;0;frozen_mexican_vegetable_mix;0;Frozen Mexican vegetable mix
+Брокколи замороженная;Заморозка;г;0;frozen_broccoli;0;Frozen broccoli
+Шпинат замороженный;Заморозка;г;0;frozen_spinach;0;Frozen spinach
+Брюссельская капуста замороженная;Заморозка;г;0;frozen_brussels_sprouts;0;Frozen Brussels sprouts
+Фасоль стручковая замороженная;Заморозка;г;0;frozen_green_beans;0;Frozen green beans
+Ягоды замороженные;Заморозка;г;0;frozen_mixed_berries;0;Frozen mixed berries
+Клюква замороженная;Заморозка;г;0;frozen_cranberries;0;Frozen cranberries
+Брусника замороженная;Заморозка;г;0;frozen_lingonberries;0;Frozen lingonberries
+Слоеное тесто дрожжевое;Заморозка;г;0;puff_pastry_yeasted;0;Puff pastry (yeasted)
+Слоеное тесто бездрожжевое;Заморозка;г;0;puff_pastry_yeast_free;0;Puff pastry (yeast-free)
+Пельмени замороженные;Заморозка;г;0;frozen_dumplings_pelmeni;0;Frozen dumplings (pelmeni)
+Вареники замороженные;Заморозка;г;0;frozen_dumplings_vareniki;0;Frozen dumplings (vareniki)
+Мороженое пломбир;Заморозка;г;0;vanilla_ice_cream;0;Vanilla ice cream
+Мороженое эскимо;Заморозка;шт;0;ice_cream_bar;0;Ice cream bar
+Замороженные креветки;Заморозка;г;0;frozen_shrimp;0;Frozen shrimp
+Замороженное филе рыбы;Заморозка;г;0;frozen_fish_fillet;0;Frozen fish fillet
+Кофе в зернах;Кофе и чай;г;0;coffee_beans;0;Coffee beans
+Кофе молотый;Кофе и чай;г;0;ground_coffee;0;Ground coffee
+Кофе растворимый;Кофе и чай;г;0;instant_coffee;0;Instant coffee
+Кофе в капсулах;Кофе и чай;уп;0;coffee_capsules;0;Coffee capsules
+Чай черный листовой;Кофе и чай;г;0;loose_black_tea;0;Loose black tea
+Чай зеленый листовой;Кофе и чай;г;0;loose_green_teaa;0;Loose green tea
+Чай травяной;Кофе и чай;г;0;herbal_tea;0;Herbal tea
+Чай в пакетиках;Кофе и чай;уп;0;tea_bags;0;Tea bags
+Матча;Кофе и чай;г;0;matcha;0;Matcha
+Какао порошок для напитков;Кофе и чай;г;0;cocoa_drink_powder;0;Cocoa drink powder
+Цикорий;Кофе и чай;г;0;chicory;0;Chicory
+Вода;Напитки безалкогольные;мл;0;water;1;Water
+Вода питьевая негазированная;Напитки безалкогольные;мл;0;still_drinking_water;0;Still drinking water
+Вода питьевая газированная;Напитки безалкогольные;мл;0;sparkling_drinking_water;0;Sparkling drinking water
+Вода минеральная;Напитки безалкогольные;мл;0;mineral_water;0;Mineral water
+Сок апельсиновый;Напитки безалкогольные;мл;0;orange_juice;0;Orange juice
+Сок яблочный;Напитки безалкогольные;мл;0;apple_juice;0;Apple juice
+Сок томатный;Напитки безалкогольные;мл;0;tomato_juice;0;Tomato juice
+Сок мультифрукт;Напитки безалкогольные;мл;0;multifruit_juice;0;Multifruit juice
+Морс;Напитки безалкогольные;мл;0;fruit_drink;0;Fruit drink
+Компот;Напитки безалкогольные;мл;0;compote;0;Compote
+Лимонад;Напитки безалкогольные;мл;0;lemonade;0;Lemonade
+Газировка (кола, спрайт и т.д.);Напитки безалкогольные;мл;0;soda;0;Soda (cola, sprite, etc.)
+Тоник;Напитки безалкогольные;мл;0;tonic_water;0;Tonic water
+Энергетический напиток;Напитки безалкогольные;мл;0;energy_drinkk;0;Energy drink
+Изотоник (спортивный напиток);Напитки безалкогольные;мл;0;isotonic_sports_drink;0;Isotonic sports drink
+Квас;Напитки безалкогольные;мл;0;kvass;0;Kvass
+Кокосовая вода;Напитки безалкогольные;мл;0;coconut_water;0;Coconut water
+Смузи готовый;Напитки безалкогольные;мл;0;ready_made_smoothiee;0;Ready-made smoothie
+Пиво светлое;Напитки алкогольные;мл;0;lager_beerr;0;Lager beer
+Пиво темное;Напитки алкогольные;мл;0;dark_beer;0;Dark beer
+Вино красное сухое;Напитки алкогольные;мл;0;dry_red_wine;0;Dry red wine
+Вино белое сухое;Напитки алкогольные;мл;0;dry_white_wine;0;Dry white wine
+Вино розовое;Напитки алкогольные;мл;0;rosé_wine;0;Rosé wine
+Игристое вино / шампанское;Напитки алкогольные;мл;0;champagne;0;Sparkling wine / Champagne
+Водка;Напитки алкогольные;мл;0;vodka;0;Vodka
+Виски;Напитки алкогольные;мл;0;whisky;0;Whisky
+Ром;Напитки алкогольные;мл;0;rum;0;Rum
+Джин;Напитки алкогольные;мл;0;gin;0;Gin
+Текила;Напитки алкогольные;мл;0;tequila;0;Tequila
+Коньяк;Напитки алкогольные;мл;0;cognac;0;Cognac
+Ликер;Напитки алкогольные;мл;0;liqueur;0;Liqueur
+Сидр;Напитки алкогольные;мл;0;cider;0;Cider
+Вермут;Напитки алкогольные;мл;0;vermouth;0;Vermouth
+Мёд цветочный;Мёд и сладости;г;0;flower_honey;0;Flower honey
+Мёд гречишный;Мёд и сладости;г;0;buckwheat_honey;0;Buckwheat honey
+Мёд липовый;Мёд и сладости;г;0;linden_honey;0;Linden honey
+Сахар белый;Мёд и сладости;г;1;white_sugarr;0;White sugar
+Сахар коричневый (тростниковый);Мёд и сладости;г;1;brown_sugar;0;Brown (cane) sugar
+Сахарная пудра;Мёд и сладости;г;1;powdered_sugar;0;Powdered sugar
+Мармелад;Мёд и сладости;г;0;fruit_jelly_candy;0;Fruit jelly candy
+Зефир;Мёд и сладости;г;0;marshmallow;0;Marshmallow
+Варенье клубничное;Мёд и сладости;г;0;strawberry_jam;0;Strawberry jam
+Варенье вишневое;Мёд и сладости;г;0;cherry_jamm;0;Cherry jam
+Джем;Мёд и сладости;г;0;jam;0;Jam
+Повидло;Мёд и сладости;г;0;fruit_preservee;0;Fruit preserve
+Шоколадно-ореховая паста;Мёд и сладости;г;0;chocolate_hazelnut_spread;0;Chocolate hazelnut spread
+Сгущенка вареная;Мёд и сладости;банка;0;boiled_condensed_milk;0;Boiled condensed milk
+Карамель;Мёд и сладости;г;0;caramel_candy;0;Caramel candy
+Конфеты шоколадные;Мёд и сладости;г;0;chocolate_candy;0;Chocolate candy
+Ирис;Мёд и сладости;г;0;toffee;0;Toffee
+Халва;Мёд и сладости;г;0;halva;0;Halva
+Кленовый сироп;Мёд и сладости;мл;0;maple_syrup;0;Maple syrup
+Сироп агавы;Мёд и сладости;мл;0;agave_syrup;0;Agave syrup
+Сироп для десертов;Мёд и сладости;мл;0;dessert_syrupp;0;Dessert syrup
 Чипсы картофельные;Снеки;уп;0;chips;0;Potato chips
 Чипсы кукурузные (начос);Снеки;уп;0;nachos;0;Corn chips (nachos)
 Попкорн;Снеки;уп;0;popcorn;0;Popcorn

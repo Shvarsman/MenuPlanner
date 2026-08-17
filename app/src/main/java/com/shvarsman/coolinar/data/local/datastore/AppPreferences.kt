@@ -14,8 +14,12 @@ object AppPreferencesKeys {
     val DISPLAY_NAME = stringPreferencesKey("display_name")
     val ONBOARDING_COMPLETED = booleanPreferencesKey("onboarding_completed")
     val RECIPE_VIEW_MODE = stringPreferencesKey("recipe_view_mode")
-    // Идентификаторы contextual tip'ов (маскот с подсказкой), которые
-    // пользователь уже видел один раз — каждый показывается не более
-    // одного раза за всё время использования приложения.
     val SEEN_TIPS = stringSetPreferencesKey("seen_tips")
+    val TOUR_PENDING = booleanPreferencesKey("tour_pending")
+    val TIPS_ENABLED = booleanPreferencesKey("tips_enabled")
+    val FRIDGE_SORT_OPTION = stringPreferencesKey("fridge_sort_option")
+    val FRIDGE_GROUP_BY_CATEGORY = booleanPreferencesKey("fridge_group_by_category")
+    val SHOPPING_SORT_OPTION = stringPreferencesKey("shopping_sort_option")
+    val RECIPE_SORT_OPTION = stringPreferencesKey("recipe_sort_option")
+    val RECIPE_GROUPING_OPTION = stringPreferencesKey("recipe_grouping_option")
 }

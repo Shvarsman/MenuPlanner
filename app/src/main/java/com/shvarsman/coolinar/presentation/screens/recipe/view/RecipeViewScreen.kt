@@ -188,34 +188,28 @@ fun RecipeViewScreen(
 
         val collapseConnection = remember(minOffsetPx, maxOffsetPx) {
             object : NestedScrollConnection {
-                // 1. Перехватываем жест ДО внутреннего списка
                 override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
                     val delta = available.y
-                    // Палец движется вверх (скроллим контент вниз)
                     return if (delta < 0) {
                         val newOffset = (offsetPx + delta).coerceIn(minOffsetPx, maxOffsetPx)
                         val consumedByHeader = newOffset - offsetPx
                         offsetPx = newOffset
-                        // Сообщаем Compose, сколько пикселей забрала шапка
                         Offset(0f, consumedByHeader)
                     } else {
                         Offset.Zero
                     }
                 }
 
-                // 2. Дорабатываем жест ПОСЛЕ того, как внутренний список уперся в край
                 override fun onPostScroll(
                     consumed: Offset,
                     available: Offset,
                     source: NestedScrollSource
                 ): Offset {
                     val delta = available.y
-                    // Палец движется вниз (скроллим контент наверх), и список уже дошел до первой позиции (верх)
                     return if (delta > 0) {
                         val newOffset = (offsetPx + delta).coerceIn(minOffsetPx, maxOffsetPx)
                         val consumedByHeader = newOffset - offsetPx
                         offsetPx = newOffset
-                        // Забираем оставшийся скролл на раскрытие шапки
                         Offset(0f, consumedByHeader)
                     } else {
                         Offset.Zero
@@ -282,9 +276,6 @@ fun RecipeViewScreen(
                         )
                     )
 
-                    // Кнопка внутри "шапки" контейнера — при полном сворачивании
-                    // контейнер доезжает до зоны навигационных иконок, и кнопка
-                    // оказывается прямо под ними
                     Button(
                         onClick = { viewModel.openAddToMenuSheet() },
                         modifier = Modifier
@@ -349,7 +340,6 @@ fun RecipeViewScreen(
                 }
             }
 
-            // Плавающие навигационные иконки — поверх всего, последними в Box
             Row(
                 modifier = Modifier
                     .fillMaxWidth()

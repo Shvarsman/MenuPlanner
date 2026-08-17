@@ -10,12 +10,6 @@ import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.text.style.TextOverflow
 
-/**
- * LargeTopAppBar, где заголовок занимает до 2 строк в развёрнутом состоянии
- * (снизу, крупным шрифтом) и схлопывается ровно в одну строку с многоточием
- * при скролле — collapsedFraction из scrollBehavior.state показывает, насколько
- * панель уже сжата, и maxLines переключается по этому значению.
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CollapsingLargeTopAppBar(

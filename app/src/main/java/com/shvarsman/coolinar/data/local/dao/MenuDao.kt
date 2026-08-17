@@ -25,7 +25,7 @@ interface MenuDao {
     @Query("SELECT * FROM menu_entries WHERE id = :id")
     suspend fun getByIdIncludingDeleted(id: String): MenuEntryEntity?
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Upsert
     suspend fun insert(entry: MenuEntryEntity)
 
     @Query("UPDATE menu_entries SET isDeleted = 1, updatedAt = :updatedAt WHERE id = :id")
@@ -35,4 +35,7 @@ interface MenuDao {
     suspend fun restoreById(id: String, updatedAt: Long)
     @Query("SELECT * FROM menu_entries")
     suspend fun getAllIncludingDeleted(): List<MenuEntryEntity>
+
+    @Query("DELETE FROM menu_entries")
+    suspend fun deleteAllHard()
 }

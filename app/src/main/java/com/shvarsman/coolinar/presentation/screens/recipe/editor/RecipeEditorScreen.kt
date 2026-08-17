@@ -6,30 +6,23 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.AddAPhoto
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Kitchen
-import androidx.compose.material.icons.filled.Timer
-import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.CircularProgressIndicator
@@ -67,6 +60,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -87,13 +81,12 @@ import com.shvarsman.coolinar.presentation.screens.common.FieldLabel
 import com.shvarsman.coolinar.presentation.screens.common.GlassIconButton
 import com.shvarsman.coolinar.presentation.screens.common.IngredientListCard
 import com.shvarsman.coolinar.presentation.screens.common.LabeledTextField
+import com.shvarsman.coolinar.presentation.screens.common.NavRow
 import com.shvarsman.coolinar.presentation.screens.common.ProductPickerDialog
 import com.shvarsman.coolinar.presentation.screens.common.QuantityUnitField
-import com.shvarsman.coolinar.presentation.screens.common.SelectionTile
 import com.shvarsman.coolinar.presentation.screens.common.SelectorField
 import com.shvarsman.coolinar.presentation.screens.common.StepContent
 import com.shvarsman.coolinar.presentation.screens.common.TimerMinutesPickerDialog
-import com.shvarsman.coolinar.presentation.screens.common.TopBarSearchField
 import com.shvarsman.coolinar.presentation.screens.common.buildRenderedSteps
 import com.shvarsman.coolinar.presentation.screens.common.rememberSizedImageRequest
 import com.shvarsman.coolinar.presentation.ui.icons.CookingMethodIcon
@@ -256,7 +249,12 @@ fun RecipeEditorScreen(
                         value = stringResource(state.category.labelRes),
                         placeholder = stringResource(R.string.select_category_placeholder),
                         leadingIcon = state.category.icon,
-                        customLeadingIcon = { RecipeCategoryIcon(category = state.category, modifier = Modifier.size(20.dp)) },
+                        customLeadingIcon = {
+                            RecipeCategoryIcon(
+                                category = state.category,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        },
                         onClick = { showCategoryBottomSheet = true },
                     )
                 }
@@ -270,7 +268,12 @@ fun RecipeEditorScreen(
                         placeholder = stringResource(R.string.select_method_placeholder),
                         leadingIcon = Icons.Filled.Kitchen,
                         customLeadingIcon = if (currentMethod != null) {
-                            { CookingMethodIcon(method = currentMethod, modifier = Modifier.size(20.dp)) }
+                            {
+                                CookingMethodIcon(
+                                    method = currentMethod,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
                         } else null,
                         onClick = { showCookingMethodBottomSheet = true }
                     )
@@ -327,7 +330,7 @@ fun RecipeEditorScreen(
                             .padding(
                                 start = 32.dp,
                                 end = 16.dp,
-                                top = 4.dp,
+                                top = 8.dp,
                                 bottom = 4.dp
                             ),
                         horizontalArrangement = Arrangement.SpaceBetween,
@@ -337,14 +340,16 @@ fun RecipeEditorScreen(
                             stringResource(R.string.ingredients),
                             style = MaterialTheme.typography.titleMedium
                         )
-                        TextButton(onClick = { viewModel.openIngredientPicker() }) {
-                            Icon(
-                                imageVector = Icons.Filled.Add,
-                                contentDescription = null,
-                                modifier = Modifier.size(18.dp)
-                            )
-                            Spacer(Modifier.width(4.dp))
-                            Text(stringResource(R.string.add))
+                        if (state.ingredients.isNotEmpty()) {
+                            TextButton(onClick = { viewModel.openIngredientPicker() }) {
+                                Icon(
+                                    imageVector = Icons.Filled.Add,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                                Spacer(Modifier.width(4.dp))
+                                Text(stringResource(R.string.add))
+                            }
                         }
                     }
                 }
@@ -356,6 +361,21 @@ fun RecipeEditorScreen(
                             onRemove = { viewModel.removeIngredient(it) },
                             onIngredientClick = { editingIngredient = it },
                             modifier = Modifier.padding(horizontal = 16.dp)
+                        )
+                    }
+                } else {
+                    item {
+                        NavRow(
+                            icon = Icons.Filled.Add,
+                            text = stringResource(R.string.add_ingredient),
+                            onClick = { viewModel.openIngredientPicker() },
+                            modifier = Modifier.padding(
+                                start = 16.dp,
+                                end = 16.dp,
+                                bottom = 16.dp
+                            ),
+                            containerColor = MaterialTheme.colorScheme.surface,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
@@ -420,7 +440,8 @@ fun RecipeEditorScreen(
                 TextButton(onClick = {
                     showExitConfirmation = false
                 }) { Text(stringResource(R.string.cancel)) }
-            }
+            },
+            containerColor = MaterialTheme.colorScheme.surfaceContainer
         )
     }
 
@@ -429,24 +450,40 @@ fun RecipeEditorScreen(
             title = stringResource(R.string.select_category_placeholder),
             onDismissRequest = { showCategoryBottomSheet = false }
         ) { onClose ->
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(2),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .heightIn(max = 420.dp)
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                items(RecipeCategory.entries) { category ->
-                    SelectionTile(
-                        text = stringResource(category.labelRes),
-                        icon = { RecipeCategoryIcon(category = category) },
-                        isSelected = state.category == category,
-                        onClick = {
-                            viewModel.onCategoryChange(category)
-                            onClose()
+                RecipeCategory.entries.chunked(2).forEach { rowCategories ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(IntrinsicSize.Min),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        rowCategories.forEach { category ->
+                            GridSelectionTile(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .fillMaxHeight(),
+                                text = stringResource(category.labelRes),
+                                icon = {
+                                    RecipeCategoryIcon(
+                                        category = category,
+                                        modifier = Modifier.size(40.dp)
+                                    )
+                                },
+                                isSelected = state.category == category,
+                                onClick = {
+                                    viewModel.onCategoryChange(category)
+                                    onClose()
+                                }
+                            )
                         }
-                    )
+                        if (rowCategories.size < 2) {
+                            Spacer(modifier = Modifier.weight(1f))
+                        }
+                    }
                 }
             }
             Spacer(modifier = Modifier.height(16.dp))
@@ -454,75 +491,47 @@ fun RecipeEditorScreen(
     }
 
     if (showCookingMethodBottomSheet) {
-        var searchQuery by remember { mutableStateOf("") }
-        val filteredMethods = CookingMethod.entries.filter { method ->
-            stringResource(method.labelRes).contains(searchQuery, ignoreCase = true)
-        }
-
         AppBottomSheet(
             title = stringResource(R.string.cooking_method),
-            fillMaxHeight = true,
             onDismissRequest = { showCookingMethodBottomSheet = false }
         ) { onClose ->
-            TopBarSearchField(
-                query = searchQuery,
-                onQueryChange = { searchQuery = it },
-                placeholder = stringResource(R.string.search_method_placeholder),
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f)
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                if (filteredMethods.isEmpty()) {
-                    Box(
+                CookingMethod.entries.chunked(3).forEach { rowMethods ->
+                    Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(vertical = 32.dp),
-                        contentAlignment = Alignment.Center
+                            .height(IntrinsicSize.Min),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        Text(
-                            text = stringResource(R.string.nothing_found),
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                } else {
-                    LazyColumn(
-                        modifier = Modifier.fillMaxSize(),
-                        verticalArrangement = Arrangement.spacedBy(4.dp),
-                        contentPadding = PaddingValues(bottom = 16.dp)
-                    ) {
-                        items(filteredMethods) { method ->
-                            val isSelected = state.cookingMethod == method
-                            SelectionTile(
+                        rowMethods.forEach { method ->
+                            GridSelectionTile(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .fillMaxHeight(),
                                 text = stringResource(method.labelRes),
                                 icon = {
-                                    if (isSelected) {
-                                        Icon(
-                                            imageVector = Icons.Default.Check,
-                                            contentDescription = null,
-                                            tint = MaterialTheme.colorScheme.primary
-                                        )
-                                    } else {
-                                        CookingMethodIcon(method = method)
-                                    }
+                                    CookingMethodIcon(
+                                        method = method,
+                                        modifier = Modifier.size(40.dp)
+                                    )
                                 },
-                                isSelected = isSelected,
-                                useTransparentUnselected = true,
-                                minHeight = 56.dp,
+                                isSelected = state.cookingMethod == method,
                                 onClick = {
                                     viewModel.onCookingMethodChange(method)
                                     onClose()
                                 }
                             )
                         }
+                        repeat(3 - rowMethods.size) {
+                            Spacer(modifier = Modifier.weight(1f))
+                        }
                     }
                 }
             }
+            Spacer(modifier = Modifier.height(16.dp))
         }
     }
 
@@ -563,7 +572,8 @@ fun RecipeEditorScreen(
                 }
             },
             title = { Text(stringResource(R.string.error)) },
-            text = { Text(message) }
+            text = { Text(message) },
+            containerColor = MaterialTheme.colorScheme.surfaceContainer
         )
     }
 }
@@ -664,7 +674,7 @@ private fun CoverPhotoPicker(
             .fillMaxWidth()
             .height(180.dp)
             .clip(CornerShape),
-        color = MaterialTheme.colorScheme.surfaceVariant
+        color = MaterialTheme.colorScheme.surface
     ) {
         Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
             if (photoUri != null) {
@@ -717,10 +727,54 @@ private fun EditIngredientDialog(
                 onConfirm(selectedUnit, quantityText.toDoubleOrNull() ?: ingredient.quantity)
             }) { Text(stringResource(R.string.save)) }
         },
-        dismissButton = { TextButton(onClick = onDismiss) {
-            Text(stringResource(R.string.cancel)) }
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(R.string.cancel))
+            }
         }
     )
+}
+
+@Composable
+private fun GridSelectionTile(
+    text: String,
+    icon: @Composable () -> Unit,
+    isSelected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Surface(
+        onClick = onClick,
+        modifier = modifier,
+        shape = CornerShape,
+        color = if (isSelected) {
+            MaterialTheme.colorScheme.primaryContainer
+        } else {
+            MaterialTheme.colorScheme.surface
+        }
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxHeight()
+                .padding(vertical = 12.dp, horizontal = 4.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            icon()
+            Spacer(Modifier.height(6.dp))
+            Text(
+                text = text,
+                style = MaterialTheme.typography.labelSmall,
+                textAlign = TextAlign.Center,
+                maxLines = 2,
+                color = if (isSelected) {
+                    MaterialTheme.colorScheme.onPrimary
+                } else {
+                    MaterialTheme.colorScheme.onSurface
+                }
+            )
+        }
+    }
 }
 
 private fun formatQty(value: Double): String =

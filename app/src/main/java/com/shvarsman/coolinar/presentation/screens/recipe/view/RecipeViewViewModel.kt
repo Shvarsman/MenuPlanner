@@ -63,7 +63,7 @@ class RecipeViewViewModel @Inject constructor(
     val isAddToMenuSheetOpen: StateFlow<Boolean> = _isAddToMenuSheetOpen
 
     private val _menuAddedEvent =
-        MutableStateFlow(0) // счётчик — каждое изменение = новое событие для Snackbar
+        MutableStateFlow(0)
     val menuAddedEvent: StateFlow<Int> = _menuAddedEvent
 
     val fridgeItems: StateFlow<List<FridgeItem>> = getFridgeItems()

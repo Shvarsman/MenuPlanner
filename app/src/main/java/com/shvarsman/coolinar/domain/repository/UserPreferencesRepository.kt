@@ -2,17 +2,25 @@ package com.shvarsman.coolinar.domain.repository
 
 import kotlinx.coroutines.flow.Flow
 
-/**
- * Имя пользователя — локальная настройка устройства, не привязана к Firebase.
- * Одинаково доступна и гостю, и вошедшему пользователю; переживает signOut().
- */
 interface UserPreferencesRepository {
     val displayName: Flow<String?>
     suspend fun setDisplayName(name: String)
 
-    /** Вид карточек на экранах со списком рецептов (фото/список) — хранится
-     * как сырая строка (имя enum RecipeViewMode), а не сам enum, чтобы domain-
-     * слой не зависел от presentation-модуля, где объявлен RecipeViewMode. */
     val recipeViewMode: Flow<String?>
     suspend fun setRecipeViewMode(mode: String)
+
+    val fridgeSortOption: Flow<String?>
+    suspend fun setFridgeSortOption(option: String)
+
+    val fridgeGroupByCategory: Flow<Boolean>
+    suspend fun setFridgeGroupByCategory(value: Boolean)
+
+    val shoppingSortOption: Flow<String?>
+    suspend fun setShoppingSortOption(option: String)
+
+    val recipeSortOption: Flow<String?>
+    suspend fun setRecipeSortOption(option: String)
+
+    val recipeGroupingOption: Flow<String?>
+    suspend fun setRecipeGroupingOption(option: String)
 }

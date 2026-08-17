@@ -43,4 +43,7 @@ interface ShoppingListDao {
 
     @Query("SELECT * FROM shopping_list_items")
     suspend fun getAllIncludingDeleted(): List<ShoppingListItemEntity>
+
+    @Query("DELETE FROM shopping_list_items")
+    suspend fun deleteAllHard()
 }

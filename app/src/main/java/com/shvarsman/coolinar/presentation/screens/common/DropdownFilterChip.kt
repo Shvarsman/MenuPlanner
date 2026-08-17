@@ -61,11 +61,13 @@ fun DropdownFilterChip(
             },
             shape = shape,
             colors = FilterChipDefaults.filterChipColors(
-                selectedContainerColor = MaterialTheme.colorScheme.surface,
-                selectedLabelColor = MaterialTheme.colorScheme.onBackground,
-                disabledLabelColor = MaterialTheme.colorScheme.onSurface,
-                disabledLeadingIconColor = MaterialTheme.colorScheme.onSurface,
-                disabledTrailingIconColor = MaterialTheme.colorScheme.onSurface
+                selectedContainerColor = MaterialTheme.colorScheme.primary,
+                selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
+                selectedLeadingIconColor = MaterialTheme.colorScheme.onPrimary,
+                selectedTrailingIconColor = MaterialTheme.colorScheme.onPrimary,
+                containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                labelColor = MaterialTheme.colorScheme.onBackground,
+                iconColor = MaterialTheme.colorScheme.onBackground
             )
         )
         DropdownMenu(

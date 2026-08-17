@@ -12,11 +12,11 @@ data class BackupResult(
 )
 
 interface BackupRepository {
-    /** Экспортирует резервную копию согласно [type]. Для [BackupType.SINGLE_RECIPE]
-     * обязателен [singleRecipeId]. */
     suspend fun exportBackup(destinationUri: Uri, type: BackupType, singleRecipeId: String? = null): BackupResult
-
-    /** Восстанавливает данные из архива. Тип резервной копии определяется
-     * автоматически по содержимому файла — вызывающей стороне не нужно его знать. */
     suspend fun importBackup(sourceUri: Uri): BackupResult
+
+    /** Восстанавливает демо-данные из файла в assets (для guided-тура) —
+     * та же логика импорта, что и importBackup(Uri), только источник не
+     * выбирается пользователем через SAF, а зашит в приложение. */
+    suspend fun importDemoBackup(assetFileName: String): BackupResult
 }

@@ -1,6 +1,7 @@
 package com.shvarsman.coolinar.presentation.navigation
 
 import androidx.annotation.DrawableRes
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
@@ -13,11 +14,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.MenuBook
-import androidx.compose.material.icons.filled.AccountCircle
-import androidx.compose.material.icons.filled.Kitchen
-import androidx.compose.material.icons.filled.RestaurantMenu
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
@@ -27,6 +23,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -39,6 +36,8 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
@@ -68,6 +67,10 @@ import com.shvarsman.coolinar.presentation.screens.recipe.list.RecipeListScreen
 import com.shvarsman.coolinar.presentation.screens.recipe.suggested.SuggestedRecipesScreen
 import com.shvarsman.coolinar.presentation.screens.recipe.view.RecipeViewScreen
 import com.shvarsman.coolinar.presentation.screens.shoppinglist.ShoppingListScreen
+import com.shvarsman.coolinar.presentation.tour.DemoDataViewModel
+import com.shvarsman.coolinar.presentation.tour.TourFinishDialog
+import com.shvarsman.coolinar.presentation.tour.TourOverlay
+import com.shvarsman.coolinar.presentation.tour.TourViewModel
 import com.shvarsman.coolinar.presentation.ui.theme.CornerShape
 import com.shvarsman.coolinar.presentation.ui.theme.gradientStyle
 
@@ -87,200 +90,255 @@ private val bottomItems = listOf(
 @Composable
 fun AppNavGraph(showOnboarding: Boolean = false) {
     val rootNavController = rememberNavController()
-
+    val tourViewModel: TourViewModel = hiltViewModel()
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background
     ) {
-        NavHost(
-            navController = rootNavController,
-            startDestination = if (showOnboarding) "onboarding" else "main_tabs_wrapper",
-            enterTransition = {
-                slideInHorizontally(initialOffsetX = { it }) + fadeIn()
-            },
-            exitTransition = {
-                slideOutHorizontally(targetOffsetX = { -it }) + fadeOut()
-            },
-            popEnterTransition = {
-                slideInHorizontally(initialOffsetX = { -it }) + fadeIn()
-            },
-            popExitTransition = {
-                slideOutHorizontally(targetOffsetX = { it }) + fadeOut()
-            }
-        ) {
-            composable("main_tabs_wrapper") {
-                MainTabsScreen(rootNavController = rootNavController)
-            }
-
-            composable("onboarding") {
-                OnboardingScreen(
-                    onFinished = {
-                        rootNavController.navigate("main_tabs_wrapper") {
-                            popUpTo("onboarding") { inclusive = true }
-                        }
-                    }
-                )
-            }
-
-            composable(Destination.ProductCatalog.route) {
-                ProductCatalogScreen(onBack = { rootNavController.popBackStack() })
-            }
-
-            composable(
-                route = Destination.RecipeCategoryList.route,
-                arguments = listOf(navArgument("category") { type = NavType.StringType })
+        Box(Modifier.fillMaxSize()) {
+            NavHost(
+                navController = rootNavController,
+                startDestination = if (showOnboarding) "onboarding" else "main_tabs_wrapper",
+                enterTransition = {
+                    slideInHorizontally(initialOffsetX = { it }) + fadeIn()
+                },
+                exitTransition = {
+                    slideOutHorizontally(targetOffsetX = { -it }) + fadeOut()
+                },
+                popEnterTransition = {
+                    slideInHorizontally(initialOffsetX = { -it }) + fadeIn()
+                },
+                popExitTransition = {
+                    slideOutHorizontally(targetOffsetX = { it }) + fadeOut()
+                }
             ) {
-                RecipeCategoryScreen(
-                    onBack = { rootNavController.popBackStack() },
-                    onViewRecipe = { id ->
-                        rootNavController.navigate(Destination.RecipeView.createRoute(id))
-                    },
-                    onEditRecipe = { id ->
-                        rootNavController.navigate(Destination.RecipeEditor.createRoute(id))
-                    }
-                )
-            }
+                composable("main_tabs_wrapper") {
+                    MainTabsScreen(
+                        rootNavController = rootNavController,
+                        tourViewModel = tourViewModel
+                    )
+                }
 
-            composable(
-                route = Destination.RecipeView.route,
-                arguments = listOf(navArgument("recipeId") { type = NavType.StringType })
-            ) { backStackEntry ->
-                val recipeId = backStackEntry.arguments?.getString("recipeId") ?: ""
-                RecipeViewScreen(
-                    recipeId = recipeId,
-                    onBack = { rootNavController.popBackStack() },
-                    onEdit = { id ->
-                        rootNavController.navigate(Destination.RecipeEditor.createRoute(id))
-                    }
-                )
-            }
+                composable("onboarding") {
+                    OnboardingScreen(
+                        onFinished = {
+                            rootNavController.navigate("main_tabs_wrapper") {
+                                popUpTo("onboarding") { inclusive = true }
+                            }
+                        }
+                    )
+                }
 
-            composable(
-                route = Destination.RecipeEditor.route,
-                arguments = listOf(navArgument("recipeId") { type = NavType.StringType })
-            ) { backStackEntry ->
-                val recipeId = backStackEntry.arguments?.getString("recipeId") ?: ""
-                RecipeEditorScreen(
-                    recipeId = recipeId,
-                    onDone = { rootNavController.popBackStack() }
-                )
-            }
+                composable(Destination.ProductCatalog.route) {
+                    ProductCatalogScreen(onBack = { rootNavController.popBackStack() })
+                }
 
-            composable(Destination.Cooking.route) {
-                CookingScreen(
-                    onBack = { rootNavController.popBackStack() },
-                    onFinished = { rootNavController.popBackStack() }
-                )
-            }
+                composable(
+                    route = Destination.RecipeCategoryList.route,
+                    arguments = listOf(navArgument("category") { type = NavType.StringType })
+                ) {
+                    RecipeCategoryScreen(
+                        onBack = { rootNavController.popBackStack() },
+                        onViewRecipe = { id ->
+                            rootNavController.navigate(Destination.RecipeView.createRoute(id))
+                        },
+                        onEditRecipe = { id ->
+                            rootNavController.navigate(Destination.RecipeEditor.createRoute(id))
+                        }
+                    )
+                }
 
-            composable(Destination.CookSelection.route) {
-                CookSelectionScreen(
-                    onBack = { rootNavController.popBackStack() },
-                    onNavigateToCooking = { rootNavController.navigate(Destination.Cooking.route) },
-                    onNavigateToShoppingList = { rootNavController.navigate(Destination.ShoppingList.route) }
-                )
-            }
+                composable(
+                    route = Destination.RecipeView.route,
+                    arguments = listOf(navArgument("recipeId") { type = NavType.StringType })
+                ) { backStackEntry ->
+                    val recipeId = backStackEntry.arguments?.getString("recipeId") ?: ""
+                    RecipeViewScreen(
+                        recipeId = recipeId,
+                        onBack = { rootNavController.popBackStack() },
+                        onEdit = { id ->
+                            rootNavController.navigate(Destination.RecipeEditor.createRoute(id))
+                        }
+                    )
+                }
 
-            composable(Destination.Backup.route) {
-                BackupScreen(onBack = { rootNavController.popBackStack() })
-            }
+                composable(
+                    route = Destination.RecipeEditor.route,
+                    arguments = listOf(navArgument("recipeId") { type = NavType.StringType })
+                ) { backStackEntry ->
+                    val recipeId = backStackEntry.arguments?.getString("recipeId") ?: ""
+                    RecipeEditorScreen(
+                        recipeId = recipeId,
+                        onDone = { rootNavController.popBackStack() }
+                    )
+                }
 
-            composable(Destination.AllCategories.route) {
-                AllCategoriesScreen(
-                    onBack = { rootNavController.popBackStack() },
-                    onCategoryClick = { category ->
-                        rootNavController.navigate(
-                            Destination.RecipeCategoryList.createRoute(
-                                category
+                composable(Destination.Cooking.route) {
+                    CookingScreen(
+                        onBack = { rootNavController.popBackStack() },
+                        onFinished = { rootNavController.popBackStack() }
+                    )
+                }
+
+                composable(Destination.CookSelection.route) {
+                    CookSelectionScreen(
+                        onBack = { rootNavController.popBackStack() },
+                        onNavigateToCooking = { rootNavController.navigate(Destination.Cooking.route) },
+                        onNavigateToShoppingList = { rootNavController.navigate(Destination.ShoppingList.route) }
+                    )
+                }
+
+                composable(Destination.Backup.route) {
+                    BackupScreen(onBack = { rootNavController.popBackStack() })
+                }
+
+                composable(Destination.AllCategories.route) {
+                    AllCategoriesScreen(
+                        onBack = { rootNavController.popBackStack() },
+                        onCategoryClick = { category ->
+                            rootNavController.navigate(
+                                Destination.RecipeCategoryList.createRoute(
+                                    category
+                                )
                             )
-                        )
-                    }
-                )
-            }
+                        }
+                    )
+                }
 
-            composable(Destination.SuggestedRecipes.route) {
-                SuggestedRecipesScreen(
-                    onBack = { rootNavController.popBackStack() },
-                    onViewRecipe = { id ->
-                        rootNavController.navigate(
-                            Destination.RecipeView.createRoute(
-                                id
+                composable(Destination.SuggestedRecipes.route) {
+                    SuggestedRecipesScreen(
+                        onBack = { rootNavController.popBackStack() },
+                        onViewRecipe = { id ->
+                            rootNavController.navigate(
+                                Destination.RecipeView.createRoute(
+                                    id
+                                )
                             )
-                        )
-                    },
-                    onEditRecipe = { id ->
-                        rootNavController.navigate(
-                            Destination.RecipeEditor.createRoute(
-                                id
+                        },
+                        onEditRecipe = { id ->
+                            rootNavController.navigate(
+                                Destination.RecipeEditor.createRoute(
+                                    id
+                                )
                             )
-                        )
-                    }
-                )
-            }
+                        }
+                    )
+                }
 
-            composable(Destination.AllRecipesList.route) {
-                AllRecipesListScreen(
-                    onBack = { rootNavController.popBackStack() },
-                    onViewRecipe = { id ->
-                        rootNavController.navigate(
-                            Destination.RecipeView.createRoute(
-                                id
+                composable(Destination.AllRecipesList.route) {
+                    AllRecipesListScreen(
+                        onBack = { rootNavController.popBackStack() },
+                        onViewRecipe = { id ->
+                            rootNavController.navigate(
+                                Destination.RecipeView.createRoute(
+                                    id
+                                )
                             )
-                        )
-                    },
-                    onEditRecipe = { id ->
-                        rootNavController.navigate(
-                            Destination.RecipeEditor.createRoute(
-                                id
+                        },
+                        onEditRecipe = { id ->
+                            rootNavController.navigate(
+                                Destination.RecipeEditor.createRoute(
+                                    id
+                                )
                             )
-                        )
-                    }
-                )
+                        }
+                    )
+                }
+
+                composable(Destination.WeekMenu.route) {
+                    WeekMenuScreen(
+                        onBack = { rootNavController.popBackStack() },
+                        onCreateRecipe = {
+                            rootNavController.navigate(
+                                Destination.RecipeEditor.createRoute(Destination.RecipeEditor.NEW_RECIPE_ID)
+                            )
+                        },
+                        onOpenCookSelection = { rootNavController.navigate(Destination.CookSelection.route) },
+                        onViewRecipe = { recipeId ->
+                            rootNavController.navigate(
+                                Destination.RecipeView.createRoute(
+                                    recipeId
+                                )
+                            )
+                        }
+                    )
+                }
+
+                composable(Destination.Backup.route) {
+                    BackupScreen(onBack = { rootNavController.popBackStack() })
+                }
+
+                composable(Destination.ProfileSettings.route) {
+                    ProfileSettingsScreen(onBack = { rootNavController.popBackStack() })
+                }
+
+                composable(Destination.ShoppingList.route) {
+                    ShoppingListScreen(onBack = { rootNavController.popBackStack() })
+                }
+
+                composable(Destination.ProfileAuth.route) {
+                    AuthScreen(
+                        onBack = { rootNavController.popBackStack() },
+                        onAuthSuccess = { rootNavController.popBackStack() })
+                }
             }
 
-            composable(Destination.WeekMenu.route) {
-                WeekMenuScreen(
-                    onBack = { rootNavController.popBackStack() },
-                    onCreateRecipe = {
-                        rootNavController.navigate(
-                            Destination.RecipeEditor.createRoute(Destination.RecipeEditor.NEW_RECIPE_ID)
-                        )
-                    },
-                    onOpenCookSelection = { rootNavController.navigate(Destination.CookSelection.route) },
-                    onViewRecipe = { recipeId ->
-                        rootNavController.navigate(Destination.RecipeView.createRoute(recipeId))
-                    }
-                )
-            }
-
-            composable(Destination.Backup.route) {
-                BackupScreen(onBack = { rootNavController.popBackStack() })
-            }
-
-            composable(Destination.ProfileSettings.route) {
-                ProfileSettingsScreen(onBack = { rootNavController.popBackStack() })
-            }
-
-            composable(Destination.ShoppingList.route) {
-                ShoppingListScreen(onBack = { rootNavController.popBackStack() })
-            }
-
-            composable(Destination.ProfileAuth.route) {
-                AuthScreen(
-                    onBack = { rootNavController.popBackStack() },
-                    onAuthSuccess = { rootNavController.popBackStack() })
-            }
+            TourOverlay(
+                tourViewModel = tourViewModel,
+                rootNavController = rootNavController
+            )
         }
     }
 }
 
 @Composable
-private fun MainTabsScreen(rootNavController: NavHostController) {
+private fun MainTabsScreen(
+    rootNavController: NavHostController,
+    tourViewModel: TourViewModel = hiltViewModel(),
+    demoDataViewModel: DemoDataViewModel = hiltViewModel()
+) {
     val childNavController = rememberNavController()
     val navBackStackEntry by childNavController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
 
     var hideBottomBar by remember { mutableStateOf(false) }
+
+    val isReady by tourViewModel.isReady.collectAsStateWithLifecycle()
+    LaunchedEffect(Unit) {
+        tourViewModel.prepare { demoDataViewModel.restoreDemoDataIfNeeded() }
+    }
+
+    if (!isReady) {
+        Box(Modifier.fillMaxSize(), contentAlignment = androidx.compose.ui.Alignment.Center) {
+            androidx.compose.material3.CircularProgressIndicator()
+        }
+        return
+    }
+
+    val pendingTab by tourViewModel.pendingTabSelection.collectAsStateWithLifecycle()
+    LaunchedEffect(pendingTab) {
+        val route = pendingTab ?: return@LaunchedEffect
+        childNavController.navigate(route) {
+            popUpTo(childNavController.graph.findStartDestination().id) { saveState = true }
+            launchSingleTop = true
+            restoreState = true
+        }
+        tourViewModel.consumeTabSelection()
+    }
+
+    val showFinishDialog by tourViewModel.showFinishDialog.collectAsStateWithLifecycle()
+    val isProcessingFinish by tourViewModel.isProcessingFinish.collectAsStateWithLifecycle()
+    if (showFinishDialog) {
+        TourFinishDialog(
+            isProcessing = isProcessingFinish,
+            onDeleteAll = {
+                tourViewModel.confirmFinish { demoDataViewModel.deleteAllDemoData() }
+            },
+            onKeepRecipes = {
+                tourViewModel.confirmFinish { demoDataViewModel.deleteAllDemoDataExceptRecipes() }
+            }
+        )
+    }
 
     Scaffold(
         contentWindowInsets = WindowInsets(0),
@@ -356,12 +414,32 @@ private fun MainTabsScreen(rootNavController: NavHostController) {
         NavHost(
             navController = childNavController,
             startDestination = Destination.Home.route,
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier.fillMaxSize(),
+            enterTransition = {
+                val direction =
+                    tabDirection(initialState.destination.route, targetState.destination.route)
+                slideInHorizontally(
+                    initialOffsetX = { if (direction >= 0) it / 4 else -it / 4 },
+                    animationSpec = tween(320)
+                ) + fadeIn(animationSpec = tween(220))
+            },
+            exitTransition = {
+                val direction =
+                    tabDirection(initialState.destination.route, targetState.destination.route)
+                slideOutHorizontally(
+                    targetOffsetX = { if (direction >= 0) -it / 4 else it / 4 },
+                    animationSpec = tween(320)
+                ) + fadeOut(animationSpec = tween(220))
+            }
         ) {
             composable(Destination.Home.route) {
                 HomeScreen(
                     onViewRecipe = { recipeId ->
-                        rootNavController.navigate(Destination.RecipeView.createRoute(recipeId))
+                        rootNavController.navigate(
+                            Destination.RecipeView.createRoute(
+                                recipeId
+                            )
+                        )
                     },
                     onOpenWeekMenu = { rootNavController.navigate(Destination.WeekMenu.route) },
                     onOpenFridge = {
@@ -431,4 +509,10 @@ private fun MainTabsScreen(rootNavController: NavHostController) {
             }
         }
     }
+}
+
+private fun tabDirection(from: String?, to: String?): Int {
+    val fromIndex = bottomItems.indexOfFirst { it.destination.route == from }
+    val toIndex = bottomItems.indexOfFirst { it.destination.route == to }
+    return toIndex - fromIndex
 }

@@ -40,6 +40,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.shvarsman.coolinar.R
+import com.shvarsman.coolinar.domain.repository.BackupResult
 import com.shvarsman.coolinar.domain.repository.BackupType
 import com.shvarsman.coolinar.presentation.screens.common.FormCard
 import com.shvarsman.coolinar.presentation.screens.common.GlassIconButton
@@ -216,7 +217,8 @@ fun BackupScreen(
                         Spacer(Modifier.width(12.dp))
                         Text(text = stringResource(R.string.backup_processing))
                     }
-                }
+                },
+                containerColor = MaterialTheme.colorScheme.surfaceContainer
             )
         }
 
@@ -233,7 +235,8 @@ fun BackupScreen(
                     }
                 },
                 title = { Text(text = stringResource(R.string.done)) },
-                text = { Text(text = exportSummary(state)) }
+                text = { Text(text = exportSummary(state)) },
+                containerColor = MaterialTheme.colorScheme.surfaceContainer
             )
         }
 
@@ -250,7 +253,8 @@ fun BackupScreen(
                     }
                 },
                 title = { Text(text = stringResource(R.string.done)) },
-                text = { Text(text = importSummary(state.result)) }
+                text = { Text(text = importSummary(state.result)) },
+                containerColor = MaterialTheme.colorScheme.surfaceContainer
             )
         }
 
@@ -267,7 +271,8 @@ fun BackupScreen(
                     }
                 },
                 title = { Text(text = stringResource(R.string.error)) },
-                text = { Text(text = state.message) }
+                text = { Text(text = state.message) },
+                containerColor = MaterialTheme.colorScheme.surfaceContainer
             )
         }
 
@@ -297,7 +302,7 @@ private fun exportSummary(state: BackupUiState.ExportSuccess): String {
 }
 
 @Composable
-private fun importSummary(r: com.shvarsman.coolinar.domain.repository.BackupResult): String {
+private fun importSummary(r: BackupResult): String {
     val parts = mutableListOf<String>()
     if (r.recipesCount > 0) parts.add(
         stringResource(

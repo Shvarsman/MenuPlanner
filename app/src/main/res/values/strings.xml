@@ -38,6 +38,8 @@
     <string name="profile_display_name_guest">Guest</string>
     <string name="profile_avatar_change">Edit photo</string>
     <string name="profile_avatar_remove">Delete photo</string>
+    <string name="profile_show_hints">Show mascot hints</string>
+    <string name="profile_hints_section_title">Tips</string>
 
     <!-- Онбординг-->
     <string name="onboarding_page1_title">Hi! I\'m Iradiy</string>
@@ -66,6 +68,18 @@
     <string name="mascot_tip_weekmenu">I\'ll help you plan your week - organize your recipes by day, and I\'ll put together a shopping list</string>
     <string name="mascot_tip_profile">Here are your settings. If anything happens, I\'m always here.</string>
     <string name="mascot_tip_got_it">It\'s clear</string>
+    <string name="tour_home">Hi, I\'m Iradiy! Come on, I\'ll show you how things work here. I\'ll keep an eye on your fridge and tell you what to cook.</string>
+    <string name="tour_fridge">Here\'s your fridge — it\'s got all the groceries you have in the house. Swipe left to remove an item, or hold to select multiple items. And if anything\'s missing, we\'ll add it to the list.</string>
+    <string name="tour_shoppinglist">This is a shopping list. Check off what you bought, and I\'ll transfer it all to the fridge with just one click. Now let\'s decide what to cook with this.</string>
+    <string name="tour_recipes">Here are all your recipes. I\'ll show you what you can make right now with what you have at home. And if you want to plan ahead, let\'s move on</string>
+    <string name="tour_weekmenu">I\'ll help you plan your week—organize your recipes by day, and I\'ll put together the shopping list myself. All that\'s left is to check out the last place.</string>
+    <string name="tour_profile">Here are your settings. Register to avoid losing all your data. I\'m always here if you need anything. That concludes my tour!</string>
+    <string name="tour_next">Next</string>
+    <string name="tour_finish">Finish</string>
+    <string name="tour_finish_dialog_title">Ready to get started for real?</string>
+    <string name="tour_finish_dialog_message">This was demo data for getting to know the app. What should I do with it?</string>
+    <string name="tour_finish_keep_recipes">Leave the recipes and start from scratch</string>
+    <string name="tour_finish_delete_all">Delete everything and start over</string>
 
     <!-- Бэкап-->
     <string name="backup_title">Backup</string>
@@ -235,6 +249,8 @@
     <string name="missing_ingredients_message">Some ingredients for this recipe aren\'t in your fridge. They\'ve already been added to your shopping list.</string>
     <string name="go_to_shopping_list">Go to shopping list</string>
     <string name="continue_cooking">Continue</string>
+    <string name="day_today">Today</string>
+    <string name="day_tomorrow">Tomorrow</string>
 
     <!--FridgeScreen-->
     <string name="selected_count">Selected: %1$d</string>
@@ -374,6 +390,7 @@
     <string name="duration_unknown">Time not set</string>
     <string name="recipe_time_difficulty">%1$s • %2$s</string>
     <string name="share">Share</string>
+    <string name="add_ingredient">Add ingredient</string>
 
     <!-- Product categories -->
     <string name="category_fruits">Fruits</string>

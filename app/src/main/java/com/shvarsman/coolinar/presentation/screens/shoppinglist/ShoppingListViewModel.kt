@@ -7,6 +7,8 @@ import com.shvarsman.coolinar.domain.model.Category
 import com.shvarsman.coolinar.domain.model.MeasureUnit
 import com.shvarsman.coolinar.domain.model.Product
 import com.shvarsman.coolinar.domain.model.ShoppingListItem
+import com.shvarsman.coolinar.domain.usecase.preferences.GetShoppingSortOptionUseCase
+import com.shvarsman.coolinar.domain.usecase.preferences.SetShoppingSortOptionUseCase
 import com.shvarsman.coolinar.domain.usecase.product.FindOrCreateProductUseCase
 import com.shvarsman.coolinar.domain.usecase.product.GetAllProductsUseCase
 import com.shvarsman.coolinar.domain.usecase.shoppinglist.AddToShoppingListUseCase
@@ -34,6 +36,7 @@ enum class ShoppingSortOption(@androidx.annotation.StringRes val displayNameRes:
     QUANTITY_ASC(R.string.sort_quantity_asc),
     QUANTITY_DESC(R.string.sort_quantity_desc)
 }
+
 @HiltViewModel
 class ShoppingListViewModel @Inject constructor(
     getShoppingList: GetShoppingListUseCase,
@@ -44,7 +47,9 @@ class ShoppingListViewModel @Inject constructor(
     private val restoreShoppingItem: RestoreShoppingItemUseCase,
     private val findOrCreateProduct: FindOrCreateProductUseCase,
     private val moveItemsToFridge: MoveItemsToFridgeUseCase,
-    private val updateShoppingItem: UpdateShoppingItemUseCase
+    private val updateShoppingItem: UpdateShoppingItemUseCase,
+    private val getShoppingSortOption: GetShoppingSortOptionUseCase,
+    private val setShoppingSortOption: SetShoppingSortOptionUseCase
 ) : ViewModel() {
 
     val items: StateFlow<List<ShoppingListItem>> = getShoppingList()
@@ -58,7 +63,6 @@ class ShoppingListViewModel @Inject constructor(
         viewModelScope.launch { restoreShoppingItem(id) }
     }
 
-    // ── Поиск / фильтр / сортировка ──────────────────────────────────
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery
     fun onSearchQueryChange(query: String) {
@@ -73,8 +77,20 @@ class ShoppingListViewModel @Inject constructor(
 
     private val _sortOption = MutableStateFlow(ShoppingSortOption.NAME_ASC)
     val sortOption: StateFlow<ShoppingSortOption> = _sortOption
+
+    init {
+        viewModelScope.launch {
+            getShoppingSortOption().collect { saved ->
+                val option =
+                    saved?.let { name -> ShoppingSortOption.entries.firstOrNull { it.name == name } }
+                if (option != null) _sortOption.value = option
+            }
+        }
+    }
+
     fun selectSortOption(option: ShoppingSortOption) {
         _sortOption.value = option
+        viewModelScope.launch { setShoppingSortOption(option.name) }
     }
 
     val availableCategories: StateFlow<List<Pair<Category, Int>>> = items
@@ -98,8 +114,14 @@ class ShoppingListViewModel @Inject constructor(
             }
             .let { filtered ->
                 when (sort) {
-                    ShoppingSortOption.NAME_ASC -> filtered.sortedBy { it.product.sortName().lowercase() }
-                    ShoppingSortOption.NAME_DESC -> filtered.sortedByDescending { it.product.sortName().lowercase() }
+                    ShoppingSortOption.NAME_ASC -> filtered.sortedBy {
+                        it.product.sortName().lowercase()
+                    }
+
+                    ShoppingSortOption.NAME_DESC -> filtered.sortedByDescending {
+                        it.product.sortName().lowercase()
+                    }
+
                     ShoppingSortOption.QUANTITY_ASC -> filtered.sortedBy { it.quantity }
                     ShoppingSortOption.QUANTITY_DESC -> filtered.sortedByDescending { it.quantity }
                 }
@@ -120,7 +142,6 @@ class ShoppingListViewModel @Inject constructor(
         .mapOnDefault { list -> list.filter { it.isChecked } }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    // hasCheckedItems — по ВСЕМ товарам, не только видимым после фильтра/поиска
     val hasCheckedItems: StateFlow<Boolean> = items
         .mapOnDefault { list -> list.any { it.isChecked } }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
@@ -149,8 +170,6 @@ class ShoppingListViewModel @Inject constructor(
         quantity: Double,
         expirationDate: LocalDate? = null
     ) {
-        // expirationDate тут всегда null — диалог добавления в списке покупок
-        // сознательно не запрашивает срок годности (см. ProductPickerDialog(showExpirationDate = false))
         viewModelScope.launch {
             addToShoppingList(product, unit, quantity, expirationDate)
             closePicker()
@@ -161,7 +180,6 @@ class ShoppingListViewModel @Inject constructor(
         viewModelScope.launch { toggleShoppingItem(item.id, !item.isChecked) }
     }
 
-    // ── Редактирование количества по долгому нажатию ─────────────────
     private val _editingItem = MutableStateFlow<ShoppingListItem?>(null)
     val editingItem: StateFlow<ShoppingListItem?> = _editingItem
 
@@ -181,13 +199,9 @@ class ShoppingListViewModel @Inject constructor(
         }
     }
 
-    // ── Перенос отмеченного в холодильник — только подтверждение, без даты ──
     private val _showMoveConfirmation = MutableStateFlow(false)
     val showMoveConfirmation: StateFlow<Boolean> = _showMoveConfirmation
 
-    // Одноразовый сигнал "перенос завершён" — экран показывает маскота-праздник
-    // и сам сбрасывает флаг через dismissMoveCompleted(), это не постоянное
-    // состояние экрана, а разовое уведомление об успехе действия.
     private val _moveCompleted = MutableStateFlow(false)
     val moveCompleted: StateFlow<Boolean> = _moveCompleted
 
@@ -203,7 +217,7 @@ class ShoppingListViewModel @Inject constructor(
         val ids = items.value.filter { it.isChecked }.map { it.id }.toSet()
         _showMoveConfirmation.value = false
         viewModelScope.launch {
-            moveItemsToFridge(ids) // без expirationDates — все null, дата задаётся позже в холодильнике
+            moveItemsToFridge(ids)
             _moveCompleted.value = true
         }
     }

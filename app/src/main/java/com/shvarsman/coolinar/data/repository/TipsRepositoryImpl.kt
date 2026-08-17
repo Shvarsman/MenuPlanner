@@ -22,4 +22,13 @@ class TipsRepositoryImpl @Inject constructor(
             prefs[AppPreferencesKeys.SEEN_TIPS] = current + tipId
         }
     }
+
+    // По умолчанию false — точечные подсказки выключены, пока пользователь
+    // явно не включит их в профиле.
+    override val tipsEnabled: Flow<Boolean> =
+        dataStore.data.map { it[AppPreferencesKeys.TIPS_ENABLED] ?: false }
+
+    override suspend fun setTipsEnabled(enabled: Boolean) {
+        dataStore.edit { it[AppPreferencesKeys.TIPS_ENABLED] = enabled }
+    }
 }

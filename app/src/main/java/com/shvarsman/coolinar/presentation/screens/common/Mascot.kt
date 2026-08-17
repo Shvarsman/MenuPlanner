@@ -18,6 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.RoundRect
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathOperation
@@ -136,7 +137,7 @@ private fun rememberSpeechBubbleShape(
     return remember(density, cornerRadius, tailWidth, tailHeight) {
         object : Shape {
             override fun createOutline(
-                size: androidx.compose.ui.geometry.Size,
+                size: Size,
                 layoutDirection: LayoutDirection,
                 density: Density
             ): Outline {
@@ -181,7 +182,7 @@ fun MascotSpeechBubble(
     val shape = rememberSpeechBubbleShape(tailHeight = tailHeight)
     Surface(
         shape = shape,
-        color = MaterialTheme.colorScheme.surfaceContainerHigh,
+        color = MaterialTheme.colorScheme.surfaceContainer,
         modifier = modifier
     ) {
         Column(

@@ -13,16 +13,17 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Event
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Card
@@ -64,6 +65,7 @@ import androidx.compose.ui.unit.dp
 import com.shvarsman.coolinar.R
 import com.shvarsman.coolinar.domain.model.MeasureUnit
 import com.shvarsman.coolinar.presentation.ui.theme.CornerShape
+import com.shvarsman.coolinar.presentation.ui.theme.gradientStyle
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneOffset
@@ -139,8 +141,15 @@ fun QuantityUnitField(
                     )
                 }
                 DropdownMenu(
+                    modifier = modifier
+                        .clip(RoundedCornerShape(28.dp))
+                        .gradientStyle(),
                     expanded = unitMenuExpanded,
-                    onDismissRequest = { unitMenuExpanded = false }) {
+                    onDismissRequest = { unitMenuExpanded = false },
+                    containerColor = MaterialTheme.colorScheme.surfaceContainer.copy(alpha = 0.9f),
+                    shape = RoundedCornerShape(28.dp),
+                    shadowElevation = 0.dp
+                ) {
                     MeasureUnit.entries.forEach { unit ->
                         DropdownMenuItem(
                             text = { Text(stringResource(unit.labelRes)) },

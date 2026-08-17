@@ -7,7 +7,6 @@ import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
@@ -44,14 +43,8 @@ class MascotTipViewModel @Inject constructor(
     private val tipsRepository: TipsRepository
 ) : ViewModel() {
 
-    /** Одноразовое чтение, а не непрерывная подписка — сознательно НЕ StateFlow.
-     * Раньше здесь был .stateIn(...), создававший новый Flow при каждом вызове
-     * из composable (то есть при каждой рекомпозиции экрана) — это порождало
-     * новую подписку на DataStore каждый раз и на долю секунды отдавало
-     * промежуточное "не видел" (null/false) до того, как реальное значение
-     * долетало, из-за чего подсказка мигала. Одноразовое чтение полностью
-     * убирает эту гонку. */
     suspend fun isTipSeenOnce(tipId: String): Boolean = tipsRepository.isTipSeen(tipId).first()
+    suspend fun isTipsEnabledOnce(): Boolean = tipsRepository.tipsEnabled.first()
 
     fun markSeen(tipId: String) {
         viewModelScope.launch { tipsRepository.markTipSeen(tipId) }
@@ -74,13 +67,13 @@ fun MascotWelcomeTip(
 ) {
     var isVisible by remember(tipId) { mutableStateOf(false) }
     var isMounted by remember(tipId) { mutableStateOf(false) }
-    // Уже проверяли DataStore и подсказку либо решили не показывать (уже видел),
-    // либо ждём, пока enabled станет true (контент экрана загрузится) — второй
-    // раз запрос к DataStore не шлём при каждой рекомпозиции.
     var checked by remember(tipId) { mutableStateOf(false) }
 
     LaunchedEffect(tipId, enabled) {
         if (checked || !enabled) return@LaunchedEffect
+        if (!viewModel.isTipsEnabledOnce()) {
+            checked = true; return@LaunchedEffect
+        }
         val alreadySeen = viewModel.isTipSeenOnce(tipId)
         checked = true
         if (!alreadySeen) {
@@ -90,11 +83,6 @@ fun MascotWelcomeTip(
     }
 
     fun dismiss() {
-        // Помечаем увиденным ТОЛЬКО здесь, по явному закрытию — а не в момент
-        // показа. Если помечать сразу при показе, любой перерендер экрана,
-        // из-за которого LaunchedEffect(tipId) выше перезапускается, находит
-        // tipId уже помеченным и подсказка больше не появляется — снаружи это
-        // выглядит как "показалась и тут же пропала".
         viewModel.markSeen(tipId)
         isVisible = false
     }

@@ -11,7 +11,11 @@ import com.shvarsman.coolinar.domain.model.RecipeCategory
 import com.shvarsman.coolinar.domain.model.RecipeSummary
 import com.shvarsman.coolinar.domain.model.availability
 import com.shvarsman.coolinar.domain.usecase.fridge.GetFridgeItemsUseCase
+import com.shvarsman.coolinar.domain.usecase.preferences.GetRecipeGroupingOptionUseCase
+import com.shvarsman.coolinar.domain.usecase.preferences.GetRecipeSortOptionUseCase
 import com.shvarsman.coolinar.domain.usecase.preferences.GetRecipeViewModeUseCase
+import com.shvarsman.coolinar.domain.usecase.preferences.SetRecipeGroupingOptionUseCase
+import com.shvarsman.coolinar.domain.usecase.preferences.SetRecipeSortOptionUseCase
 import com.shvarsman.coolinar.domain.usecase.preferences.SetRecipeViewModeUseCase
 import com.shvarsman.coolinar.domain.usecase.recipe.DeleteRecipeUseCase
 import com.shvarsman.coolinar.domain.usecase.recipe.GetRecipeSummariesUseCase
@@ -66,13 +70,6 @@ enum class RecipeTimeBucket(@StringRes val labelRes: Int) {
     }
 }
 
-/**
- * Заголовок группы, не привязанный к одному enum'у — группировка теперь
- * бывает по категории/времени/сложности/способу приготовления, а иконку
- * (RecipeCategoryIcon) можно нарисовать только для категории, поэтому она
- * хранится отдельным опциональным полем и используется только когда
- * применимо (см. RecipeGroupedList.kt).
- */
 data class RecipeGroupHeader(
     val id: String,
     @StringRes val labelRes: Int,
@@ -88,7 +85,11 @@ class RecipeListViewModel @Inject constructor(
     private val restoreRecipe: RestoreRecipeUseCase,
     private val toggleFavorite: ToggleRecipeFavoriteUseCase,
     getRecipeViewMode: GetRecipeViewModeUseCase,
-    private val setRecipeViewMode: SetRecipeViewModeUseCase
+    private val setRecipeViewMode: SetRecipeViewModeUseCase,
+    getRecipeSortOption: GetRecipeSortOptionUseCase,
+    private val setRecipeSortOption: SetRecipeSortOptionUseCase,
+    getRecipeGroupingOption: GetRecipeGroupingOptionUseCase,
+    private val setRecipeGroupingOption: SetRecipeGroupingOptionUseCase
 ) : ViewModel() {
 
     private val _searchQuery = MutableStateFlow("")
@@ -109,23 +110,39 @@ class RecipeListViewModel @Inject constructor(
         _selectedCookingMethod.value = if (_selectedCookingMethod.value == method) null else method
     }
 
+    /** Persisted через DataStore — тот же паттерн, что viewMode ниже. */
     private val _sortOption = MutableStateFlow(RecipeSortOption.TITLE_ASC)
     val sortOption: StateFlow<RecipeSortOption> = _sortOption
+
+    init {
+        viewModelScope.launch {
+            getRecipeSortOption().collect { stored ->
+                val option =
+                    stored?.let { runCatching { RecipeSortOption.valueOf(it) }.getOrNull() }
+                if (option != null) _sortOption.value = option
+            }
+        }
+        viewModelScope.launch {
+            getRecipeGroupingOption().collect { stored ->
+                val option =
+                    stored?.let { runCatching { RecipeGroupingOption.valueOf(it) }.getOrNull() }
+                if (option != null) _groupingOption.value = option
+            }
+        }
+    }
+
     fun selectSortOption(option: RecipeSortOption) {
         _sortOption.value = option
+        viewModelScope.launch { setRecipeSortOption(option.name) }
     }
 
     private val _groupingOption = MutableStateFlow(RecipeGroupingOption.CATEGORY)
     val groupingOption: StateFlow<RecipeGroupingOption> = _groupingOption
     fun selectGroupingOption(option: RecipeGroupingOption) {
         _groupingOption.value = option
+        viewModelScope.launch { setRecipeGroupingOption(option.name) }
     }
 
-    /** Persisted через DataStore (не rememberSaveable) — переживает не только
-     * поворот экрана, но и навигацию между экранами, и полное закрытие
-     * приложения. Общая настройка для всех экранов со списком рецептов
-     * (RecipeListScreen/AllRecipesListScreen/SuggestedRecipesScreen здесь,
-     * RecipeCategoryScreen — через свою RecipeCategoryViewModel). */
     val viewMode: StateFlow<RecipeViewMode> = getRecipeViewMode()
         .map { stored ->
             stored?.let { runCatching { RecipeViewMode.valueOf(it) }.getOrNull() }
@@ -166,10 +183,6 @@ class RecipeListViewModel @Inject constructor(
     private val fridgeItems: StateFlow<List<FridgeItem>> = getFridgeItems()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    /** Рецепты, которые можно приготовить прямо сейчас — у всех ингредиентов
-     * (кроме "по вкусу") хватает продукта в холодильнике. Рецепты без единого
-     * ингредиента не считаются "доступными" — это, скорее всего, недозаполненный
-     * черновик, а не то, что реально стоит предлагать готовить. */
     val suggestedRecipes: StateFlow<List<RecipeSummary>> = combine(
         fullRecipes, fridgeItems, allRecipes
     ) { recipes, fridge, summaries ->
@@ -185,8 +198,6 @@ class RecipeListViewModel @Inject constructor(
         .mapOnDefault { it }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    /** Категории с числом рецептов — база для чипа-фильтра, не зависит от
-     * поиска/сортировки, чтобы список вариантов не дёргался при наборе текста. */
     val availableCategories: StateFlow<List<Pair<RecipeCategory, Int>>> = allRecipes
         .mapOnDefault { list ->
             list.groupingBy { it.category }.eachCount()
@@ -195,8 +206,6 @@ class RecipeListViewModel @Inject constructor(
         }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    /** Способы приготовления с числом рецептов — та же идея, что и для
-     * категорий; рецепты без указанного способа в список не попадают. */
     val availableCookingMethods: StateFlow<List<Pair<CookingMethod, Int>>> = allRecipes
         .mapOnDefault { list ->
             list.mapNotNull { it.cookingMethod }
@@ -207,9 +216,6 @@ class RecipeListViewModel @Inject constructor(
         }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    /** Нули (время не указано) всегда уходят в конец списка независимо от
-     * направления сортировки — иначе при DESC они оказались бы наверху,
-     * что выглядит как "самые долгие рецепты", а не "время неизвестно". */
     private fun timeComparator(descending: Boolean): Comparator<RecipeSummary> {
         val base = compareBy<RecipeSummary> { it.cookingTimeMinutes == null }
         return if (descending) {
@@ -302,7 +308,6 @@ class RecipeListViewModel @Inject constructor(
             .mapOnDefault { it }
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    // ── Множественный выбор ──────────────────────────────────────────
     private val _selectedIds = MutableStateFlow<Set<String>>(emptySet())
     val selectedIds: StateFlow<Set<String>> = _selectedIds
 
@@ -315,17 +320,10 @@ class RecipeListViewModel @Inject constructor(
             if (id in _selectedIds.value) _selectedIds.value - id else _selectedIds.value + id
     }
 
-    /** Выбирает все рецепты из ТЕКУЩЕГО отфильтрованного списка, а не вообще
-     * все — иначе "выбрать все" при активном фильтре/поиске выбрало бы и то,
-     * что не видно на экране, что выглядело бы как баг. */
     fun selectAll() {
         _selectedIds.value = filteredRecipes.value.map { it.id }.toSet()
     }
 
-    /** Для экранов, где видимый набор рецептов — не filteredRecipes этой же
-     * ViewModel (SuggestedRecipesScreen показывает suggestedRecipes,
-     * AllRecipesListScreen — allRecipes) — id видимых элементов передаёт сам
-     * экран, чтобы "выбрать все" не захватывало то, что реально не отображено. */
     fun selectAllVisible(ids: List<String>) {
         _selectedIds.value = ids.toSet()
     }

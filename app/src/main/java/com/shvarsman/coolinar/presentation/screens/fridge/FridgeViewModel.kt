@@ -14,6 +14,10 @@ import com.shvarsman.coolinar.domain.usecase.fridge.DeleteFridgeItemUseCase
 import com.shvarsman.coolinar.domain.usecase.fridge.GetFridgeItemsUseCase
 import com.shvarsman.coolinar.domain.usecase.fridge.RestoreFridgeItemUseCase
 import com.shvarsman.coolinar.domain.usecase.fridge.UpdateFridgeItemUseCase
+import com.shvarsman.coolinar.domain.usecase.preferences.GetFridgeGroupByCategoryUseCase
+import com.shvarsman.coolinar.domain.usecase.preferences.GetFridgeSortOptionUseCase
+import com.shvarsman.coolinar.domain.usecase.preferences.SetFridgeGroupByCategoryUseCase
+import com.shvarsman.coolinar.domain.usecase.preferences.SetFridgeSortOptionUseCase
 import com.shvarsman.coolinar.domain.usecase.product.FindOrCreateProductUseCase
 import com.shvarsman.coolinar.domain.usecase.product.GetAllProductsUseCase
 import com.shvarsman.coolinar.presentation.utils.GroupedRow
@@ -58,7 +62,11 @@ class FridgeViewModel @Inject constructor(
     private val updateFridgeItem: UpdateFridgeItemUseCase,
     private val deleteFridgeItem: DeleteFridgeItemUseCase,
     private val restoreFridgeItem: RestoreFridgeItemUseCase,
-    private val findOrCreateProduct: FindOrCreateProductUseCase
+    private val findOrCreateProduct: FindOrCreateProductUseCase,
+    private val getFridgeSortOption: GetFridgeSortOptionUseCase,
+    private val setFridgeSortOption: SetFridgeSortOptionUseCase,
+    private val getFridgeGroupByCategory: GetFridgeGroupByCategoryUseCase,
+    private val setFridgeGroupByCategory: SetFridgeGroupByCategoryUseCase
 ) : ViewModel() {
 
     private val _searchQuery = MutableStateFlow("")
@@ -78,12 +86,28 @@ class FridgeViewModel @Inject constructor(
 
     private val _groupByCategory = MutableStateFlow(false)
     val groupByCategory: StateFlow<Boolean> = _groupByCategory
+
+    init {
+        viewModelScope.launch {
+            getFridgeSortOption().collect { saved ->
+                val option =
+                    saved?.let { name -> FridgeSortOption.entries.firstOrNull { it.name == name } }
+                if (option != null) _sortOption.value = option
+            }
+        }
+        viewModelScope.launch {
+            getFridgeGroupByCategory().collect { saved -> _groupByCategory.value = saved }
+        }
+    }
+
     fun toggleGroupByCategory() {
         _groupByCategory.value = !_groupByCategory.value
+        viewModelScope.launch { setFridgeGroupByCategory(_groupByCategory.value) }
     }
 
     fun selectSortOption(option: FridgeSortOption) {
         _sortOption.value = option
+        viewModelScope.launch { setFridgeSortOption(option.name) }
     }
 
     private val _isLoading = MutableStateFlow(true)
@@ -92,12 +116,12 @@ class FridgeViewModel @Inject constructor(
     private val allItems: StateFlow<List<FridgeItem>> = getFridgeItems()
         .onEach {
             _isLoading.value = false
-        } // фикс "продукты не сразу появляются" — раньше isEmpty=true
+        }
         .stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(5000),
             emptyList()
-        ) // показывал "пусто" до первой эмиссии Room
+        )
 
     val availableCategories: StateFlow<List<Pair<Category, Int>>> = allItems
         .mapOnDefault { list ->
@@ -149,13 +173,18 @@ class FridgeViewModel @Inject constructor(
 
         val sorted = when (state.sort) {
             FridgeSortOption.NAME_ASC -> filtered.sortedBy { it.product.sortName().lowercase() }
-            FridgeSortOption.NAME_DESC -> filtered.sortedByDescending { it.product.sortName().lowercase() }
+            FridgeSortOption.NAME_DESC -> filtered.sortedByDescending {
+                it.product.sortName().lowercase()
+            }
+
             FridgeSortOption.EXPIRATION_SOON -> filtered.sortedWith(compareBy(nullsLast()) { it.expirationDate })
             FridgeSortOption.EXPIRATION_LATE -> filtered.sortedWith(compareByDescending(nullsFirst()) { it.expirationDate })
             FridgeSortOption.QUANTITY_ASC -> filtered.sortedBy { it.quantity }
             FridgeSortOption.QUANTITY_DESC -> filtered.sortedByDescending { it.quantity }
             FridgeSortOption.FAVORITES_FIRST -> filtered.sortedWith(
-                compareByDescending<FridgeItem> { it.isFavorite }.thenBy { it.product.sortName().lowercase() }
+                compareByDescending<FridgeItem> { it.isFavorite }.thenBy {
+                    it.product.sortName().lowercase()
+                }
             )
         }
 
@@ -198,7 +227,6 @@ class FridgeViewModel @Inject constructor(
         _errorMessage.value = null
     }
 
-    // ── Множественный выбор ──────────────────────────────────────────
     private val _selectedIds = MutableStateFlow<Set<String>>(emptySet())
     val selectedIds: StateFlow<Set<String>> = _selectedIds
 
@@ -223,7 +251,7 @@ class FridgeViewModel @Inject constructor(
         val items = allItems.value.filter { it.id in _selectedIds.value }
         if (items.isEmpty()) return
         val makeFavorite =
-            items.any { !it.isFavorite } // если хоть один не в избранном — добавляем все, иначе снимаем у всех
+            items.any { !it.isFavorite }
         viewModelScope.launch {
             items.forEach { updateFridgeItem(it.copy(isFavorite = makeFavorite)) }
             _selectedIds.value = emptySet()
@@ -293,9 +321,5 @@ class FridgeViewModel @Inject constructor(
                 _errorMessage.value = e.message
             }
         }
-    }
-
-    fun onDeleteClick(item: FridgeItem) {
-        viewModelScope.launch { deleteFridgeItem(item.id) }
     }
 }

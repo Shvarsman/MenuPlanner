@@ -80,7 +80,6 @@ class RecipeEditorViewModel @Inject constructor(
 
     private var loadedForRecipeId: String? = null
 
-    // "Слепок" состояния сразу после загрузки — база для сравнения при вычислении isDirty
     private var initialSnapshot: RecipeEditorState? = null
 
     /**
@@ -361,7 +360,7 @@ class RecipeEditorViewModel @Inject constructor(
 
     fun save() {
         val current = _state.value
-        if (current.isSaving) return // защита от повторного сабмита по двойному тапу
+        if (current.isSaving) return
 
         viewModelScope.launch {
             _state.update { it.copy(isSaving = true) }
@@ -400,7 +399,10 @@ class RecipeEditorViewModel @Inject constructor(
                 _state.update {
                     it.copy(
                         isSaving = false,
-                        errorMessage = context.getString(R.string.save_recipe_error, e.localizedMessage)
+                        errorMessage = context.getString(
+                            R.string.save_recipe_error,
+                            e.localizedMessage
+                        )
                     )
                 }
             }

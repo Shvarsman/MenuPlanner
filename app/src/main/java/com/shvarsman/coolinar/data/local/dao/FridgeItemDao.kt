@@ -41,4 +41,7 @@ interface FridgeItemDao {
 
     @Query("SELECT * FROM fridge_items")
     suspend fun getAllIncludingDeleted(): List<FridgeItemEntity>
+
+    @Query("DELETE FROM fridge_items")
+    suspend fun deleteAllHard()
 }

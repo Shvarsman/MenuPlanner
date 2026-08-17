@@ -89,11 +89,9 @@ class MenuViewModel @Inject constructor(
     private val _selectedDay = MutableStateFlow<DayOfWeek>(LocalDate.now().dayOfWeek)
     private val _selectedWeekOffset = MutableStateFlow(0)
 
-    // Меню недели, которую сейчас листает пользователь на WeekMenuScreen (текущая/следующая)
     private val selectedWeekMenuFlow: Flow<List<MenuEntry>> =
         _selectedWeekOffset.flatMapLatest { offset -> getWeekMenu(weekStartFor(offset)) }
 
-    // Всегда следующая неделя — по ней считается прогресс на главном экране
     private val nextWeekMenuFlow: Flow<List<MenuEntry>> = getWeekMenu(weekStartFor(1))
 
     private val pendingRemovals = mutableMapOf<String, MenuEntryRemovalResult>()

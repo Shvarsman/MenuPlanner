@@ -9,7 +9,6 @@ import com.shvarsman.coolinar.data.remote.storage.RemoteImageUploader
 import com.shvarsman.coolinar.domain.model.AuthException
 import com.shvarsman.coolinar.domain.model.AuthState
 import com.shvarsman.coolinar.domain.repository.AuthRepository
-import com.shvarsman.coolinar.domain.repository.UserPreferencesRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted

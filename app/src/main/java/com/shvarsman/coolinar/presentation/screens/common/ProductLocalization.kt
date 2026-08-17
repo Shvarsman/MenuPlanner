@@ -1,8 +1,6 @@
 package com.shvarsman.coolinar.presentation.screens.common
 
 import android.content.res.Resources
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.platform.LocalConfiguration
 import com.shvarsman.coolinar.domain.model.Product
 
 /** Название продукта на текущем языке интерфейса. Для сидовых продуктов

@@ -105,6 +105,12 @@ interface RecipeDao {
     @Query("DELETE FROM recipe_ingredients WHERE recipeId = :recipeId")
     suspend fun deleteIngredientsForRecipe(recipeId: String)
 
+    @Query("DELETE FROM recipes WHERE id IN (:ids)")
+    suspend fun deleteByIdsHard(ids: List<String>)
+
+    @Query("SELECT id FROM recipes")
+    suspend fun getAllIdsIncludingDeleted(): List<String>
+
     @Transaction
     suspend fun upsertRecipeWithIngredients(
         recipe: RecipeEntity,

@@ -38,6 +38,8 @@
     <string name="profile_display_name_guest">Гость</string>
     <string name="profile_avatar_change">Изменить фото</string>
     <string name="profile_avatar_remove">Удалить фото</string>
+    <string name="profile_show_hints">Показывать подсказки маскота</string>
+    <string name="profile_hints_section_title">Подсказки</string>
 
     <!-- Онбординг-->
     <string name="profile_display_name">Имя</string>
@@ -67,6 +69,18 @@
     <string name="mascot_tip_weekmenu">Помогу распланировать неделю — расставь рецепты по дням, и я соберу список покупок</string>
     <string name="mascot_tip_profile">Здесь твои настройки. Если что — я всегда рядом</string>
     <string name="mascot_tip_got_it">Понятно</string>
+    <string name="tour_home">Привет, я Ирадий! Идём, покажу — как здесь всё устроено. Я слежу за твоим холодильником и подскажу, что приготовить</string>
+    <string name="tour_fridge">Вот твой холодильник — тут все продукты, что есть дома. Смахни влево, чтобы убрать продукт, или зажми — выбрать сразу несколько. А если чего-то не хватает — запишем в список</string>
+    <string name="tour_shoppinglist">Это список покупок. Отмечай купленное — а я сама перенесу всё в холодильник одной кнопкой. Теперь решим, что из этого приготовить</string>
+    <string name="tour_recipes">Тут все твои рецепты. Я подскажу, что можно приготовить прямо сейчас из того, что есть дома. А если хочешь спланировать заранее — идём дальше</string>
+    <string name="tour_weekmenu">Помогу распланировать неделю — расставь рецепты по дням, и я сама соберу список покупок. Осталось заглянуть в последнее место</string>
+    <string name="tour_profile">Здесь твои настройки. Зарегистрируйся чтобы не потерять все данные. Я всегда рядом, если что-то понадобится. На этом моя экскурсия закончена!</string>
+    <string name="tour_next">Далее</string>
+    <string name="tour_finish">Закончить</string>
+    <string name="tour_finish_dialog_title">Готовы начать по-настоящему?</string>
+    <string name="tour_finish_dialog_message">Это были демо-данные для знакомства с приложением. Что с ними сделать?</string>
+    <string name="tour_finish_keep_recipes">Оставить рецепты, начать с чистого листа</string>
+    <string name="tour_finish_delete_all">Удалить всё и начать заново</string>
 
     <!-- Бэкап-->
     <string name="backup_title">Резервное копирование</string>
@@ -236,6 +250,8 @@
     <string name="missing_ingredients_message">Для этого рецепта не хватает некоторых продуктов в холодильнике. Они уже добавлены в список покупок.</string>
     <string name="go_to_shopping_list">В магазин</string>
     <string name="continue_cooking">Продолжить</string>
+    <string name="day_today">Сегодня</string>
+    <string name="day_tomorrow">Завтра</string>
 
     <!--FridgeScreen-->
     <string name="selected_count">Выбрано: %1$d</string>
@@ -377,6 +393,7 @@
     <string name="duration_unknown">Время не указано</string>
     <string name="recipe_time_difficulty">%1$s • %2$s</string>
     <string name="share">Поделиться</string>
+    <string name="add_ingredient">Добавить ингредиент</string>
 
     <!-- Категории продуктов -->
     <string name="category_fruits">Фрукты</string>
