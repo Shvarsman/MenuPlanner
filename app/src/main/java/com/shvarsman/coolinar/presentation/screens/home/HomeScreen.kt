@@ -59,7 +59,7 @@ fun HomeScreen(
     onShowAllSuggested: () -> Unit,
     onShowAllRecipes: () -> Unit,
     onViewRecipe: (recipeId: String) -> Unit,
-    viewModel: MenuViewModel = hiltViewModel()
+    viewModel: HomeViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val suggestedRecipes = uiState.suggestedRecipes

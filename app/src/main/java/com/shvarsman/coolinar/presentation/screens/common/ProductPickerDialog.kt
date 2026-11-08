@@ -18,6 +18,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
@@ -56,6 +57,7 @@ import java.time.LocalDate
 fun ProductPickerDialog(
     modifier: Modifier = Modifier,
     catalog: List<Product>,
+    fridgeProductIds: Set<String>? = null,
     onDismiss: () -> Unit,
     onConfirm: (product: Product, unit: MeasureUnit, quantity: Double, expirationDate: LocalDate?) -> Unit,
     onCreateProduct: suspend (
@@ -66,6 +68,7 @@ fun ProductPickerDialog(
 ) {
     var step by remember { mutableStateOf(PickerStep.SELECT) }
     var query by remember { mutableStateOf("") }
+    var filterOnlyFridge by remember { mutableStateOf(false) }
     var selectedProduct by remember { mutableStateOf<Product?>(null) }
     var quantityText by remember { mutableStateOf("") }
     var selectedUnit by remember { mutableStateOf(MeasureUnit.PIECE) }
@@ -82,8 +85,13 @@ fun ProductPickerDialog(
     val createProductErrorTemplate = stringResource(R.string.create_product_error)
     val emptyProductNameError = stringResource(R.string.empty_product_name_error)
 
-    val filtered = remember(query, catalog) {
-        val bySearch = if (query.isBlank()) catalog else catalog.filter {
+    val filtered = remember(query, catalog, filterOnlyFridge, fridgeProductIds) {
+        val base = if (filterOnlyFridge && fridgeProductIds != null) {
+            catalog.filter { it.id in fridgeProductIds }
+        } else {
+            catalog
+        }
+        val bySearch = if (query.isBlank()) base else base.filter {
             it.name.contains(query, ignoreCase = true) || it.nameEn.contains(
                 query,
                 ignoreCase = true
@@ -118,6 +126,26 @@ fun ProductPickerDialog(
                         placeholder = stringResource(R.string.search_product),
                         modifier = Modifier.fillMaxWidth()
                     )
+                    if (!fridgeProductIds.isNullOrEmpty()) {
+                        Spacer(Modifier.height(6.dp))
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 4.dp),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            FilterChip(
+                                selected = !filterOnlyFridge,
+                                onClick = { filterOnlyFridge = false },
+                                label = { Text(stringResource(R.string.filter_all)) }
+                            )
+                            FilterChip(
+                                selected = filterOnlyFridge,
+                                onClick = { filterOnlyFridge = true },
+                                label = { Text(stringResource(R.string.filter_only_fridge)) }
+                            )
+                        }
+                    }
                     Spacer(Modifier.height(8.dp))
                     TextButton(
                         onClick = {

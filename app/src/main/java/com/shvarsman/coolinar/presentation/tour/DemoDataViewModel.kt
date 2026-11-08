@@ -1,6 +1,7 @@
 package com.shvarsman.coolinar.presentation.tour
 
 import androidx.lifecycle.ViewModel
+import com.shvarsman.coolinar.domain.repository.DemoDataRepository
 import com.shvarsman.coolinar.domain.usecase.backup.ImportDemoBackupUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CompletableDeferred
@@ -9,7 +10,7 @@ import javax.inject.Inject
 @HiltViewModel
 class DemoDataViewModel @Inject constructor(
     private val importDemoBackup: ImportDemoBackupUseCase,
-    private val demoDataRepository: com.shvarsman.coolinar.data.repository.DemoDataRepositoryImpl
+    private val demoDataRepository: DemoDataRepository
 ) : ViewModel() {
 
     private var restoreJob: CompletableDeferred<Unit>? = null

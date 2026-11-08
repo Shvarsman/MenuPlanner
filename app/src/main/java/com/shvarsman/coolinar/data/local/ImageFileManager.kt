@@ -5,6 +5,7 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
 import androidx.core.net.toUri
+import com.shvarsman.coolinar.domain.repository.ImageStorageRepository
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -12,15 +13,17 @@ import java.io.File
 import java.io.FileOutputStream
 import java.util.UUID
 import javax.inject.Inject
+import javax.inject.Singleton
 import kotlin.math.max
 
+@Singleton
 class ImageFileManager @Inject constructor(
     @ApplicationContext private val context: Context
-) {
+) : ImageStorageRepository {
     private val imagesDir: File
         get() = File(context.filesDir, "recipe_images").apply { if (!exists()) mkdirs() }
 
-    suspend fun persistImage(sourceUri: Uri): String = withContext(Dispatchers.IO) {
+    override suspend fun persistImage(sourceUri: Uri): String = withContext(Dispatchers.IO) {
         val fileName = "img_${UUID.randomUUID()}.jpg"
         val destFile = File(imagesDir, fileName)
         val bitmap = decodeSampledBitmap(sourceUri, MAX_DIMENSION_PX)
@@ -60,10 +63,10 @@ class ImageFileManager @Inject constructor(
         destFile.toUri().toString()
     }
 
-    suspend fun deleteImage(uriString: String) = withContext(Dispatchers.IO) {
+    override suspend fun deleteImage(uriString: String): Boolean = withContext(Dispatchers.IO) {
         runCatching {
-            uriString.toUri().path?.let { path -> File(path).delete() }
-        }
+            uriString.toUri().path?.let { path -> File(path).delete() } == true
+        }.getOrDefault(false)
     }
 
     private fun decodeSampledBitmap(sourceUri: Uri, maxDimension: Int): Bitmap? {

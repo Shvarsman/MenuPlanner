@@ -7,6 +7,7 @@ import com.shvarsman.coolinar.domain.model.AuthException
 import com.shvarsman.coolinar.domain.model.AuthState
 import com.shvarsman.coolinar.domain.repository.AuthRepository
 import com.shvarsman.coolinar.domain.usecase.auth.SignUpWithEmailUseCase
+import com.shvarsman.coolinar.presentation.utils.toAuthErrorRes
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -54,7 +55,7 @@ class ProfileViewModel @Inject constructor(
                 AuthFormMode.SIGN_IN -> authRepository.signInWithEmail(email, password)
                 AuthFormMode.SIGN_UP -> signUpWithEmail(email, password)
             }
-            result.onFailure { _errorRes.value = it.toErrorRes() }
+            result.onFailure { _errorRes.value = it.toAuthErrorRes() }
             _isSubmitting.value = false
         }
     }
@@ -62,13 +63,4 @@ class ProfileViewModel @Inject constructor(
     fun signOut() {
         viewModelScope.launch { authRepository.signOut() }
     }
-}
-
-private fun Throwable.toErrorRes(): Int = when (this) {
-    is AuthException.InvalidEmail -> R.string.profile_error_invalid_email
-    is AuthException.WeakPassword -> R.string.profile_error_weak_password
-    is AuthException.WrongCredentials -> R.string.profile_error_wrong_credentials
-    is AuthException.EmailAlreadyInUse -> R.string.profile_error_email_in_use
-    is AuthException.NetworkError -> R.string.profile_error_network
-    else -> R.string.profile_error_generic
 }

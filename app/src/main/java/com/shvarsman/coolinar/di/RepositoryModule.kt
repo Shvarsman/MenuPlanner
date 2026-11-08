@@ -1,6 +1,8 @@
 package com.shvarsman.coolinar.di
 
+import com.shvarsman.coolinar.data.local.ImageFileManager
 import com.shvarsman.coolinar.data.repository.BackupRepositoryImpl
+import com.shvarsman.coolinar.data.repository.DemoDataRepositoryImpl
 import com.shvarsman.coolinar.data.repository.FirebaseAuthRepositoryImpl
 import com.shvarsman.coolinar.data.repository.FridgeRepositoryImpl
 import com.shvarsman.coolinar.data.repository.MenuRepositoryImpl
@@ -13,7 +15,9 @@ import com.shvarsman.coolinar.data.repository.TipsRepositoryImpl
 import com.shvarsman.coolinar.data.repository.UserPreferencesRepositoryImpl
 import com.shvarsman.coolinar.domain.repository.AuthRepository
 import com.shvarsman.coolinar.domain.repository.BackupRepository
+import com.shvarsman.coolinar.domain.repository.DemoDataRepository
 import com.shvarsman.coolinar.domain.repository.FridgeRepository
+import com.shvarsman.coolinar.domain.repository.ImageStorageRepository
 import com.shvarsman.coolinar.domain.repository.MenuRepository
 import com.shvarsman.coolinar.domain.repository.OnboardingRepository
 import com.shvarsman.coolinar.domain.repository.ProductRepository
@@ -75,4 +79,12 @@ abstract class RepositoryModule {
     @Binds
     @Singleton
     abstract fun bindTipsRepository(impl: TipsRepositoryImpl): TipsRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindDemoDataRepository(impl: DemoDataRepositoryImpl): DemoDataRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindImageStorageRepository(impl: ImageFileManager): ImageStorageRepository
 }

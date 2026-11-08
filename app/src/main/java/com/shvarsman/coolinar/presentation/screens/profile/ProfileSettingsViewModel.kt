@@ -4,11 +4,9 @@ import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.shvarsman.coolinar.R
-import com.shvarsman.coolinar.data.local.ImageFileManager
-import com.shvarsman.coolinar.data.remote.storage.RemoteImageUploader
-import com.shvarsman.coolinar.domain.model.AuthException
 import com.shvarsman.coolinar.domain.model.AuthState
 import com.shvarsman.coolinar.domain.repository.AuthRepository
+import com.shvarsman.coolinar.presentation.utils.toAuthErrorRes
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -20,9 +18,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class ProfileSettingsViewModel @Inject constructor(
-    private val authRepository: AuthRepository,
-    private val remoteImageUploader: RemoteImageUploader,
-    private val imageFileManager: ImageFileManager
+    private val authRepository: AuthRepository
 ) : ViewModel() {
 
     val displayName: StateFlow<String?> = authRepository.authState
@@ -63,32 +59,23 @@ class ProfileSettingsViewModel @Inject constructor(
 
     fun updateAvatar(sourceUri: Uri) {
         if (_isUpdatingAvatar.value) return
-        val uid = authRepository.currentUserId ?: return
         viewModelScope.launch {
             _isUpdatingAvatar.value = true
             _avatarErrorRes.value = null
-            runCatching {
-                val localUri = imageFileManager.persistImage(sourceUri)
-                val remoteUrl = remoteImageUploader.uploadAvatar(uid, localUri)
-                imageFileManager.deleteImage(localUri)
-                remoteUrl
-            }.mapCatching { remoteUrl ->
-                authRepository.updatePhotoUrl(remoteUrl).getOrThrow()
-            }.onFailure {
-                _avatarErrorRes.value = R.string.profile_error_generic
-            }
+            authRepository.uploadAvatar(sourceUri)
+                .onFailure {
+                    _avatarErrorRes.value = R.string.profile_error_generic
+                }
             _isUpdatingAvatar.value = false
         }
     }
 
     fun removeAvatar() {
         if (_isUpdatingAvatar.value) return
-        val currentUrl = avatarUrl.value ?: return
         viewModelScope.launch {
             _isUpdatingAvatar.value = true
             _avatarErrorRes.value = null
-            authRepository.updatePhotoUrl(null)
-                .onSuccess { remoteImageUploader.delete(currentUrl) }
+            authRepository.removeAvatar()
                 .onFailure { _avatarErrorRes.value = R.string.profile_error_generic }
             _isUpdatingAvatar.value = false
         }
@@ -115,17 +102,8 @@ class ProfileSettingsViewModel @Inject constructor(
             _passwordChanged.value = false
             authRepository.changePassword(currentPassword, newPassword)
                 .onSuccess { _passwordChanged.value = true }
-                .onFailure { _passwordErrorRes.value = it.toErrorRes() }
+                .onFailure { _passwordErrorRes.value = it.toAuthErrorRes() }
             _isChangingPassword.value = false
         }
     }
-}
-
-private fun Throwable.toErrorRes(): Int = when (this) {
-    is AuthException.InvalidEmail -> R.string.profile_error_invalid_email
-    is AuthException.WeakPassword -> R.string.profile_error_weak_password
-    is AuthException.WrongCredentials -> R.string.profile_error_wrong_credentials
-    is AuthException.EmailAlreadyInUse -> R.string.profile_error_email_in_use
-    is AuthException.NetworkError -> R.string.profile_error_network
-    else -> R.string.profile_error_generic
 }

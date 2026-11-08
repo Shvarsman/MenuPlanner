@@ -62,7 +62,7 @@ data class MenuUiState(
 )
 
 @HiltViewModel
-class MenuViewModel @Inject constructor(
+class HomeViewModel @Inject constructor(
     getWeekMenu: GetWeekMenuUseCase,
     getRecipes: GetRecipesUseCase,
     getRecipeSummaries: GetRecipeSummariesUseCase,

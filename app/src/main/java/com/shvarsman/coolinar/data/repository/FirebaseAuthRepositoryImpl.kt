@@ -1,5 +1,6 @@
 package com.shvarsman.coolinar.data.repository
 
+import android.net.Uri
 import androidx.core.net.toUri
 import com.google.firebase.FirebaseNetworkException
 import com.google.firebase.auth.EmailAuthProvider
@@ -10,6 +11,8 @@ import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import com.google.firebase.auth.FirebaseAuthWeakPasswordException
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.UserProfileChangeRequest
+import com.shvarsman.coolinar.data.local.ImageFileManager
+import com.shvarsman.coolinar.data.remote.storage.RemoteImageUploader
 import com.shvarsman.coolinar.domain.model.AuthException
 import com.shvarsman.coolinar.domain.model.AuthState
 import com.shvarsman.coolinar.domain.model.User
@@ -25,7 +28,9 @@ import javax.inject.Singleton
 
 @Singleton
 class FirebaseAuthRepositoryImpl @Inject constructor(
-    private val firebaseAuth: FirebaseAuth
+    private val firebaseAuth: FirebaseAuth,
+    private val imageFileManager: ImageFileManager,
+    private val remoteImageUploader: RemoteImageUploader
 ) : AuthRepository {
 
     override val currentUserId: String?
@@ -43,11 +48,13 @@ class FirebaseAuthRepositoryImpl @Inject constructor(
     override suspend fun signUpWithEmail(email: String, password: String): Result<Unit> =
         runCatchingAuth {
             firebaseAuth.createUserWithEmailAndPassword(email, password).await()
+            return@runCatchingAuth
         }
 
     override suspend fun signInWithEmail(email: String, password: String): Result<Unit> =
         runCatchingAuth {
             firebaseAuth.signInWithEmailAndPassword(email, password).await()
+            return@runCatchingAuth
         }
 
     override suspend fun changePassword(currentPassword: String, newPassword: String): Result<Unit> =
@@ -85,6 +92,28 @@ class FirebaseAuthRepositoryImpl @Inject constructor(
             refreshCurrentUser()
         }
 
+    override suspend fun uploadAvatar(sourceUri: Uri): Result<String> =
+        runCatchingAuth {
+            val uid = currentUserId ?: throw AuthException.Unknown("Нет активной сессии")
+            val localUri = imageFileManager.persistImage(sourceUri)
+            val remoteUrl = try {
+                remoteImageUploader.uploadAvatar(uid, localUri)
+            } finally {
+                imageFileManager.deleteImage(localUri)
+            }
+            updatePhotoUrl(remoteUrl).getOrThrow()
+            remoteUrl
+        }
+
+    override suspend fun removeAvatar(): Result<Unit> =
+        runCatchingAuth {
+            val currentUrl = firebaseAuth.currentUser?.photoUrl?.toString()
+            updatePhotoUrl(null).getOrThrow()
+            if (!currentUrl.isNullOrBlank()) {
+                runCatching { remoteImageUploader.delete(currentUrl) }
+            }
+        }
+
     private suspend fun refreshCurrentUser() {
         firebaseAuth.currentUser?.reload()?.await()
         _authState.value = firebaseAuth.currentUser.toAuthState()
@@ -94,9 +123,8 @@ class FirebaseAuthRepositoryImpl @Inject constructor(
         firebaseAuth.signOut()
     }
 
-    private suspend fun runCatchingAuth(block: suspend () -> Unit): Result<Unit> = try {
-        block()
-        Result.success(Unit)
+    private suspend fun <T> runCatchingAuth(block: suspend () -> T): Result<T> = try {
+        Result.success(block())
     } catch (e: FirebaseAuthWeakPasswordException) {
         Result.failure(AuthException.WeakPassword())
     } catch (e: FirebaseAuthInvalidCredentialsException) {

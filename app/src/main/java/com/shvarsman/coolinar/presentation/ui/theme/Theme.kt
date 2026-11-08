@@ -20,18 +20,22 @@ private val lightScheme = lightColorScheme(
     secondary = LightSecondary,
     onSecondary = LightOnSecondary,
     secondaryContainer = LightSecondaryContainer,
+    onSecondaryContainer = LightOnSecondaryContainer,
     tertiary = LightTertiary,
+    onTertiary = LightOnTertiary,
     onSurfaceVariant = LightOnSurfaceVariant,
     background = LightBackground,
     onBackground = LightOnBackground,
     surface = LightSurface,
-    error = LightError,
-    onError = LightOnError,
-    surfaceContainer = LightSurfaceContainer,
-    onSurface= LightOnSurface,
-    surfaceContainerHighest = LightSurfaceContainerHighest,
+    onSurface = LightOnSurface,
     surfaceVariant = LightSurfaceVariant,
-    surfaceContainerHigh = LightSurfaceContainerHigh
+    surfaceContainer = LightSurfaceContainer,
+    surfaceContainerHigh = LightSurfaceContainerHigh,
+    surfaceContainerHighest = LightSurfaceContainerHighest,
+    outline = LightOutline,
+    outlineVariant = LightOutlineVariant,
+    error = LightError,
+    onError = LightOnError
 )
 
 private val darkScheme = darkColorScheme(
@@ -42,20 +46,28 @@ private val darkScheme = darkColorScheme(
     secondary = DarkSecondary,
     onSecondary = DarkOnSecondary,
     secondaryContainer = DarkSecondaryContainer,
+    onSecondaryContainer = DarkOnSecondaryContainer,
     tertiary = DarkTertiary,
+    onTertiary = DarkOnTertiary,
+    onSurfaceVariant = DarkOnSurfaceVariant,
     background = DarkBackground,
     onBackground = DarkOnBackground,
     surface = DarkSurface,
     onSurface = DarkOnSurface,
-    error = DarkError,
-    onError = DarkOnError,
-    surfaceContainer = DarkSurfaceContainer,
-    surfaceContainerHighest = DarkSurfaceContainerHighest,
     surfaceVariant = DarkSurfaceVariant,
-    onSurfaceVariant = DarkOnSurfaceVariant
+    surfaceContainer = DarkSurfaceContainer,
+    surfaceContainerHigh = DarkSurfaceContainerHigh,
+    surfaceContainerHighest = DarkSurfaceContainerHighest,
+    outline = DarkOutline,
+    outlineVariant = DarkOutlineVariant,
+    error = DarkError,
+    onError = DarkOnError
 )
 
-val CornerShape = RoundedCornerShape(28.dp)
+val ShapeSmall = RoundedCornerShape(8.dp)
+val ShapeMedium = RoundedCornerShape(16.dp)
+val ShapeLarge = RoundedCornerShape(24.dp)
+val CornerShape = RoundedCornerShape(20.dp)
 val FloatingBottomBarClearance = 96.dp
 
 @Composable

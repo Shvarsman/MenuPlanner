@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "766166798101",
+    "project_id": "coolinar-f0510",
+    "storage_bucket": "coolinar-f0510.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:766166798101:android:09539f4efa9d2db038231c",
+        "android_client_info": {
+          "package_name": "com.shvarsman.coolinar"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAiM9JUkg8jpKPXDukxoF3D6XZYFbF9XHY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -5,7 +5,6 @@ import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.shvarsman.coolinar.R
-import com.shvarsman.coolinar.data.local.ImageFileManager
 import com.shvarsman.coolinar.domain.model.Category
 import com.shvarsman.coolinar.domain.model.CookingMethod
 import com.shvarsman.coolinar.domain.model.FridgeItem
@@ -16,6 +15,7 @@ import com.shvarsman.coolinar.domain.model.RecipeCategory
 import com.shvarsman.coolinar.domain.model.RecipeDifficulty
 import com.shvarsman.coolinar.domain.model.RecipeIngredient
 import com.shvarsman.coolinar.domain.model.StepContentItem
+import com.shvarsman.coolinar.domain.repository.ImageStorageRepository
 import com.shvarsman.coolinar.domain.repository.RecipeRepository
 import com.shvarsman.coolinar.domain.usecase.fridge.GetFridgeItemsUseCase
 import com.shvarsman.coolinar.domain.usecase.product.FindOrCreateProductUseCase
@@ -57,7 +57,7 @@ class RecipeEditorViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
     private val recipeRepository: RecipeRepository,
     private val saveRecipe: SaveRecipeUseCase,
-    private val imageFileManager: ImageFileManager,
+    private val imageStorageRepository: ImageStorageRepository,
     private val findOrCreateProduct: FindOrCreateProductUseCase,
     getAllProducts: GetAllProductsUseCase,
     getFridgeItems: GetFridgeItemsUseCase
@@ -185,7 +185,7 @@ class RecipeEditorViewModel @Inject constructor(
     fun onCoverPhotoSelected(uri: Uri) {
         viewModelScope.launch {
             val persistedUri = withContext(Dispatchers.IO) {
-                imageFileManager.persistImage(uri)
+                imageStorageRepository.persistImage(uri)
             }
             updateState { it.copy(photoUri = persistedUri) }
         }
@@ -314,7 +314,7 @@ class RecipeEditorViewModel @Inject constructor(
     fun addStepImage(uri: Uri) {
         viewModelScope.launch {
             val persistedUri = withContext(Dispatchers.IO) {
-                imageFileManager.persistImage(uri)
+                imageStorageRepository.persistImage(uri)
             }
 
             var newLastIndex = -1
@@ -338,7 +338,7 @@ class RecipeEditorViewModel @Inject constructor(
         val itemToRemove = _state.value.steps.getOrNull(index)
         if (itemToRemove is StepContentItem.Image) {
             viewModelScope.launch(Dispatchers.IO) {
-                imageFileManager.deleteImage(itemToRemove.url)
+                imageStorageRepository.deleteImage(itemToRemove.url)
             }
         }
         updateState { current ->

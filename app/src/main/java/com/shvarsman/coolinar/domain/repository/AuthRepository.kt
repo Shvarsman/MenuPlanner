@@ -1,5 +1,6 @@
 package com.shvarsman.coolinar.domain.repository
 
+import android.net.Uri
 import com.shvarsman.coolinar.domain.model.AuthState
 import kotlinx.coroutines.flow.Flow
 
@@ -19,6 +20,10 @@ interface AuthRepository {
     suspend fun updateDisplayName(displayName: String): Result<Unit>
 
     suspend fun updatePhotoUrl(photoUrl: String?): Result<Unit>
+
+    suspend fun uploadAvatar(sourceUri: Uri): Result<String>
+
+    suspend fun removeAvatar(): Result<Unit>
 
     suspend fun signOut()
 }

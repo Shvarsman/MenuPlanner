@@ -5,15 +5,14 @@ import com.shvarsman.coolinar.data.local.dao.MenuDao
 import com.shvarsman.coolinar.data.local.dao.ProductDao
 import com.shvarsman.coolinar.data.local.dao.RecipeDao
 import com.shvarsman.coolinar.data.local.dao.ShoppingListDao
+import com.shvarsman.coolinar.domain.repository.DemoDataRepository
 import javax.inject.Inject
 
 /**
  * Физическая очистка демо-данных после guided-тура. НЕ использует обычные
  * репозитории/юзкейсы удаления — те все идут через soft-delete + tombstone
  * для синхронизации с Firestore, что для демо-данных не нужно и оставляло
- * бы вечный "мусор" (isDeleted = true) в базе. Работает с DAO напрямую —
- * осознанное отступление от чистой архитектуры для узкой инфраструктурной
- * задачи, не бизнес-операции.
+ * бы вечный "мусор" (isDeleted = true) в базе. Работает с DAO напрямую.
  */
 class DemoDataRepositoryImpl @Inject constructor(
     private val fridgeItemDao: FridgeItemDao,
@@ -21,11 +20,11 @@ class DemoDataRepositoryImpl @Inject constructor(
     private val menuDao: MenuDao,
     private val recipeDao: RecipeDao,
     private val productDao: ProductDao
-) {
+) : DemoDataRepository {
 
     /** Удаляет всё: холодильник, список покупок, меню, все рецепты и все
      * пользовательские (не сидовые) продукты. */
-    suspend fun purgeAll() {
+    override suspend fun purgeAll() {
         fridgeItemDao.deleteAllHard()
         shoppingListDao.deleteAllHard()
         menuDao.deleteAllHard()
@@ -41,7 +40,7 @@ class DemoDataRepositoryImpl @Inject constructor(
      * пользовательские продукты — но НЕ рецепты и НЕ продукты, которые в
      * оставленных рецептах используются как ингредиенты (иначе рецепты
      * остались бы без части ингредиентов из-за ForeignKey CASCADE). */
-    suspend fun purgeAllExceptRecipes() {
+    override suspend fun purgeAllExceptRecipes() {
         fridgeItemDao.deleteAllHard()
         shoppingListDao.deleteAllHard()
         menuDao.deleteAllHard()

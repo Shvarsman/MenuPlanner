@@ -1,6 +1,7 @@
 package com.shvarsman.coolinar.presentation.screens.cooking
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -36,6 +37,7 @@ import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -141,56 +143,72 @@ fun CookingScreen(
     Scaffold(
         contentWindowInsets = WindowInsets(0),
         bottomBar = {
-            Surface(color = MaterialTheme.colorScheme.background) {
-                Column {
+            Surface(
+                color = MaterialTheme.colorScheme.surface,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 12.dp)
+                        .navigationBarsPadding(),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
                     if (state.allDone) {
                         Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 16.dp, vertical = 8.dp),
+                            modifier = Modifier.fillMaxWidth(),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             MascotImage(
                                 pose = MascotPose.EXCITED,
-                                modifier = Modifier.size(40.dp)
+                                modifier = Modifier.size(44.dp)
                             )
-                            Spacer(Modifier.width(8.dp))
+                            Spacer(Modifier.width(10.dp))
                             Text(
                                 text = stringResource(R.string.cooking_all_dishes_done),
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurface
                             )
                         }
-                    }
-                    Button(
-                        onClick = { viewModel.markDishDone(currentDish.recipe) },
-                        enabled = !currentDish.isDone,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp)
-                    ) {
-                        if (currentDish.isDone) {
-                            MascotImage(
-                                pose = MascotPose.HAPPY,
-                                modifier = Modifier.size(24.dp)
-                            )
+                        Button(
+                            onClick = onFinished,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Icon(Icons.Filled.Check, contentDescription = null)
                             Spacer(Modifier.width(8.dp))
-                            Text(stringResource(R.string.done))
-                        } else {
+                            Text(stringResource(R.string.cooking_finish_session))
+                        }
+                    } else if (currentDish.isDone) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                MascotImage(
+                                    pose = MascotPose.HAPPY,
+                                    modifier = Modifier.size(36.dp)
+                                )
+                                Spacer(Modifier.width(8.dp))
+                                Text(
+                                    text = stringResource(R.string.dish_ready),
+                                    style = MaterialTheme.typography.titleMedium,
+                                    color = MaterialTheme.colorScheme.secondary
+                                )
+                            }
+                            TextButton(onClick = onFinished) {
+                                Text(stringResource(R.string.cooking_finish_session))
+                            }
+                        }
+                    } else {
+                        Button(
+                            onClick = { viewModel.markDishDone(currentDish.recipe) },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Icon(Icons.Filled.Check, contentDescription = null)
+                            Spacer(Modifier.width(8.dp))
                             Text(stringResource(R.string.mark_dish_done))
                         }
-                    }
-                    Button(
-                        onClick = onFinished,
-                        enabled = state.allDone,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp)
-                            .navigationBarsPadding()
-                    ) {
-                        Icon(Icons.Filled.Check, contentDescription = null)
-                        Spacer(Modifier.width(8.dp))
-                        Text(stringResource(R.string.done))
                     }
                 }
             }

@@ -245,6 +245,10 @@
     <string name="cooking_portions_count">×%1$d servings of this recipe</string>
     <string name="mark_dish_done">Mark as done</string>
     <string name="cooking_all_dishes_done">All dishes are ready! Bon appétit!</string>
+    <string name="cooking_finish_session">Finish cooking</string>
+    <string name="dish_ready">Dish ready</string>
+    <string name="filter_only_fridge">In fridge</string>
+    <string name="filter_all">All</string>
     <string name="missing_ingredients_title">Missing ingredients</string>
     <string name="missing_ingredients_message">Some ingredients for this recipe aren\'t in your fridge. They\'ve already been added to your shopping list.</string>
     <string name="go_to_shopping_list">Go to shopping list</string>

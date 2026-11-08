@@ -2,74 +2,82 @@ package com.shvarsman.coolinar.presentation.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-val Primary = Color(0xFF3E7764)
+// Warm Culinary Terracotta & Sage Palette
+val Primary = Color(0xFFAC7F5E)
 val OnPrimary = Color.White
+val PrimaryContainer = Color(0xFFF5EBE1)
+val OnPrimaryContainer = Color(0xFF3B2312)
 
+val Secondary = Color(0xFF4A7C59)
+val OnSecondary = Color.White
+val SecondaryContainer = Color(0xFFE8F0EA)
+val OnSecondaryContainer = Color(0xFF1E3825)
+
+val Tertiary = Color(0xFFD48B38)
+val OnTertiary = Color.White
 
 val Grey400 = Color(0xFF3A3A3C)
-
-val Tertiary = Color(0xFFFFCC00)
-val BackgroundLight = Color(0xFFF2F2F7)
-val OnBackgroundLight = Color(0xFF1A1A1A)
-
-val SurfaceVariantLight = Color(0xFFEDEDED)
-val GrayTransparentLight = Color(0x29787880)
-val OnSurfaceContainerLight = Color(0xFF1A1A1A)
-
 val White = Color.White
 val Black = Color.Black
 
-val SurfaceContainerDark = Color(0xFF1C1C1E)
-val SurfaceVariantDark = Color(0xFF121212)
-val OnSurfaceContainerDark = Color(0xFFF5F5F5)
-
-val BackgroundDark = Color.Black
-val OnBackgroundDark = Color(0xFFF5F5F5)
-val OnSurfaceDark = Color(0xFF8A8A8A)
-val GrayTransparentDark = Color(0x52787880)
-
-val ErrorDark = Color(0xFFFF4245)
-val ErrorLight = Color(0xFFFF383C)
-val OnError = Color(0xFFFFFFFF)
-
+// Light Theme Tokens
 val LightPrimary = Color(0xFFAC7F5E)
-val LightPrimaryContainer = Color(0xFFBE9272)
-val LightOnPrimaryContainer = Color(0xFFFFFFFF)
 val LightOnPrimary = Color(0xFFFFFFFF)
-val LightSecondary = Color(0xFF34C759)
-val LightOnSecondary = Color(0x993C3C43)
-val LightSecondaryContainer = Color(0x33787878)
-val LightTertiary = Color(0xFFFFCC00)
-val LightOnSurfaceVariant = Color(0xFF727272)
-val LightBackground = Color(0xFFF2F2F7)
-val LightOnBackground = Color(0xFF000000)
-val LightSurface = Color(0x1F767680)
-val LightError = Color(0xFFFF383C)
-val LightOnError = Color(0xFFFFFFFF)
-//val LightSurfaceContainerHighest = Color(0x1F767680)
-val LightSurfaceContainerHighest = Color(0xFFFFFFFF)
-val LightOnSurface = Color(0xFF1A1A1A)
+val LightPrimaryContainer = Color(0xFFF5EBE1)
+val LightOnPrimaryContainer = Color(0xFF3B2312)
+
+val LightSecondary = Color(0xFF4A7C59)
+val LightOnSecondary = Color(0xFFFFFFFF)
+val LightSecondaryContainer = Color(0xFFE8F0EA)
+val LightOnSecondaryContainer = Color(0xFF1E3825)
+
+val LightTertiary = Color(0xFFD48B38)
+val LightOnTertiary = Color(0xFFFFFFFF)
+
+val LightBackground = Color(0xFFFBF8F5)
+val LightOnBackground = Color(0xFF201A17)
+
+val LightSurface = Color(0xFFFFFFFF)
+val LightOnSurface = Color(0xFF201A17)
+val LightSurfaceVariant = Color(0xFFF0EBE5)
+val LightOnSurfaceVariant = Color(0xFF5D5751)
+
 val LightSurfaceContainer = Color(0xFFFFFFFF)
-val LightSurfaceVariant = Color(0xFFEDEDED)
-val LightSurfaceContainerHigh = Color(0xFFD9D9D9)
+val LightSurfaceContainerHigh = Color(0xFFEBE5DF)
+val LightSurfaceContainerHighest = Color(0xFFE3DDD6)
+val LightOutline = Color(0xFF867E77)
+val LightOutlineVariant = Color(0xFFD8D1C9)
 
-//  Dark Mode Colors
-val DarkPrimary = Color(0xFFB78A66)
-val DarkPrimaryContainer = Color(0xFF9B744C)
-val DarkOnPrimaryContainer = Color(0xFFFFFFFF)
-val DarkOnPrimary = Color(0xFFFFFFFF)
-val DarkSecondary = Color(0xFF30D158)
-val DarkOnSecondary = Color(0xB3EBEBF5)
-val DarkSecondaryContainer = Color(0x5C787880)
-val DarkTertiary = Color(0xFFFFD600)
-val DarkBackground = Color(0xFF000000)
-val DarkOnBackground = Color(0xFFFFFFFF)
+val LightError = Color(0xFFBA1A1A)
+val LightOnError = Color(0xFFFFFFFF)
 
-val DarkSurface = Color(0x5C787880)
-val DarkOnSurface = Color(0xFFF5F5F5)
-val DarkError = Color(0xFFFF4245)
-val DarkOnError = Color(0xFFFFFFFF)
-val DarkSurfaceContainerHighest = Color(0x52787880)
-val DarkSurfaceContainer = Color(0xFF1C1C1E)
-val DarkSurfaceVariant = Color(0xFF121212)
-val DarkOnSurfaceVariant = Color(0xFF8A8A8A)
+// Dark Theme Tokens
+val DarkPrimary = Color(0xFFD6A47E)
+val DarkOnPrimary = Color(0xFF3B2312)
+val DarkPrimaryContainer = Color(0xFF5A3E26)
+val DarkOnPrimaryContainer = Color(0xFFF5EBE1)
+
+val DarkSecondary = Color(0xFF7CB88F)
+val DarkOnSecondary = Color(0xFF112618)
+val DarkSecondaryContainer = Color(0xFF2C4A35)
+val DarkOnSecondaryContainer = Color(0xFFE8F0EA)
+
+val DarkTertiary = Color(0xFFF2B872)
+val DarkOnTertiary = Color(0xFF432B00)
+
+val DarkBackground = Color(0xFF151311)
+val DarkOnBackground = Color(0xFFEDE0D4)
+
+val DarkSurface = Color(0xFF1E1B18)
+val DarkOnSurface = Color(0xFFEDE0D4)
+val DarkSurfaceVariant = Color(0xFF2B2723)
+val DarkOnSurfaceVariant = Color(0xFFB0A59B)
+
+val DarkSurfaceContainer = Color(0xFF23201C)
+val DarkSurfaceContainerHigh = Color(0xFF2E2A26)
+val DarkSurfaceContainerHighest = Color(0xFF36322D)
+val DarkOutline = Color(0xFF8B847D)
+val DarkOutlineVariant = Color(0xFF45403B)
+
+val DarkError = Color(0xFFFFB4AB)
+val DarkOnError = Color(0xFF690005)

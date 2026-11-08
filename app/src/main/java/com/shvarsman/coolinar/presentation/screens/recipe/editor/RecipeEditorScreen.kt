@@ -406,6 +406,7 @@ fun RecipeEditorScreen(
     if (isIngredientPickerOpen) {
         ProductPickerDialog(
             catalog = fridgeProducts,
+            fridgeProductIds = fridgeItems.map { it.product.id }.toSet(),
             onDismiss = { viewModel.closeIngredientPicker() },
             onConfirm = { product, unit, qty, _ -> viewModel.addIngredient(product, unit, qty) },
             onCreateProduct = { name, category, unit, isToTaste, isAlwaysAvailable ->

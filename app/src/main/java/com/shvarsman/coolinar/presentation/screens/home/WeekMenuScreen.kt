@@ -112,7 +112,7 @@ fun WeekMenuScreen(
     onCreateRecipe: () -> Unit,
     onOpenCookSelection: () -> Unit,
     onViewRecipe: (recipeId: String) -> Unit,
-    viewModel: MenuViewModel = hiltViewModel()
+    viewModel: HomeViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val weekMenu = uiState.weekMenu
