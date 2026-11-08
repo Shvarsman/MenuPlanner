@@ -46,9 +46,39 @@
   - Интерактивный тур с живыми подсказками маскота Кулинара на ключевых экранах.
 
 ## Как запустить проект
-1. Открыть каталог проекта в Android Studio (Koala Feature Drop 2024.1.2 или новее).
-2. Дождаться автоматической синхронизации Gradle.
-3. Запустить сборку на эмуляторе или физическом устройстве с Android 7.0+ (minSdk 24).
+
+### 1. Настройка Firebase (`google-services.json`)
+Проект использует Firebase (Firebase Auth, Cloud Storage, Crashlytics). Плагин Google Services требует наличия файла конфигурации `google-services.json` в модуле `:app`.
+
+> **Безопасность:** файл `google-services.json` содержит ключи доступа к вашему проекту Firebase, добавлен в `.gitignore` и **не должен коммититься в публичный репозиторий**.
+
+Для локальной настройки:
+1. Перейдите в [Firebase Console](https://console.firebase.google.com/) и создайте новый проект (или выберите существующий).
+2. Зарегистрируйте в проекте Android-приложение:
+   - **Имя пакета (Package name):** `com.shvarsman.coolinar` *(обязательно должно совпадать)*.
+   - **Псевдоним приложения:** по желанию (например, `Coolinar Dev`).
+   - **Сертификат подписи SHA-1:** добавьте SHA-1 вашего отладочного ключа (debug keystore), если планируете тестировать Google Sign-In (`./gradlew signingReport`).
+3. В разделе **Build -> Authentication -> Sign-in method** включите провайдеры:
+   - **Email/Password** (Email и пароль).
+   - **Google** (при необходимости входа через Google-аккаунт).
+4. Скачайте файл `google-services.json` со страницы настроек приложения Firebase.
+5. Поместите его в директорию `app/` проекта:
+   ```text
+   MenuPlanner/
+   └── app/
+       ├── google-services.json        <-- поместить сюда
+       ├── google-services.json.example
+       └── build.gradle.kts
+   ```
+   *(В качестве образца структуры файла можно использовать [`app/google-services.json.example`](app/google-services.json.example)).*
+
+### 2. Сборка и запуск
+1. Откройте проект в **Android Studio** (Koala Feature Drop 2024.1.2 или новее, с JDK 21).
+2. Дождитесь автоматической синхронизации Gradle.
+3. Запустите сборку на эмуляторе или физическом устройстве с Android 7.0+ (minSdk 24):
+   ```bash
+   ./gradlew installDebug
+   ```
 
 ## Планы по развитию
 - Сканирование и распознавание чеков (OCR) для быстрого добавления покупок в холодильник.
